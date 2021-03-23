@@ -1,5 +1,4 @@
-
-# BTESGroundWaterSimulator.jl
+# BTESGroundWaterSimulator
 
 This package implement an example of simulation of a Borehole Thermal Energy where the storage volume is affected by regional ground water movement. 
 
