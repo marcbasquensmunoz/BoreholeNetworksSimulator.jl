@@ -1,10 +1,10 @@
 # BTESGroundWaterSimulator
 
-This package implement an example of simulation of a Borehole Thermal Energy where the storage volume is affected by regional ground water movement. 
+This package implement an example of simulation of a Borehole Thermal Energy Storage where the storage volume is affected by regional ground water movement. 
 
 
 ## Initial Set-up
-Simply clone the project using e.g. git clone, cd to the project directory, activate the pkg shell mode using `]` and call
+Simply clone the project using e.g. git clone, cd to the project directory, enter the pkg manager shell mode using the `]` key and type following two commands.
 ```
 (v1.5.4) pkg> activate .
 
