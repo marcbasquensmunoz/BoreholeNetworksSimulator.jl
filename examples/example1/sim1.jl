@@ -266,7 +266,7 @@ color_branch1 = range(colorant"blue", stop=colorant"darkorange", length=length(b
 color_branch2 = range(colorant"red", stop=colorant"green", length=length(branch2));
 
 
-scene1 = Figure(resolution = (400, 400))
+scene1 = Figure(size = (400, 400))
 ax1 = scene1[1, 1] = Axis(scene1, ylabel = "y [m]", xlabel = "x[m]",aspect = DataAspect())
 scatter!(ax1,  Makie.Point2.(borehole_positions) , markersize = 15.)
 
@@ -297,7 +297,7 @@ scene1
 
 # FIGURE 2: temperature and heat flow along selected boreholes
 
-scene12 = Figure(resolution = (450, 450))
+scene12 = Figure(size = (600, 450))
 ax2 = scene12[1, 1] = Axis(scene12, ylabel = "T [°C]") #, xlabel = "time [months]")
 for b in zip(branch1, color_branch1)
     lines!(ax2, collect(t ./ 12tstep), Tfin[:,b[1]], color = b[2], linewidth = 2.)
@@ -316,7 +316,7 @@ hidexdecorations!(ax2, grid = false)
 scene12
 ##.
 # FIGURE 3: temperature and heat flow along selected boreholes
-scene13 = Figure(resolution = (450, 450))
+scene13 = Figure(size = (600, 450))
 ax4 = scene13[1, 1] = Axis(scene13, ylabel = "T [°C]") #, xlabel = "time [months]")
 for b in zip(branch2, color_branch2)
     lines!(ax4, collect(t ./ 12tstep), Tfin[:,b[1]],  color = b[2], linewidth = 2.)    
@@ -417,7 +417,7 @@ Zs  = [collect(reshape(Tt, (length(y),length(x) ) )')   for Tt in Tts]
 
 scene3
 
-scene4 = Figure(resolution = (2700, 1300),  rowgap = 15, colgap =15 );
+scene4 = Figure(size = (2700, 1300),  rowgap = 15, colgap =15 );
 grid_structure = [(i,j) for i=1:2 for j =1:3]
 
 for i=1:6
@@ -444,7 +444,7 @@ supertitle = scene4[0, :] = Label(scene4, "ground water speed $ux_in_meterperday
 scene4
 
 # Makie.save("$(results_directory)/configuration.png",scene1)
-Makie.save("$(results_directory)/branch1_test$symtitle.png",scene12)
-Makie.save("$(results_directory)/branch2_test$symtitle.png",scene13)
-Makie.save("$(results_directory)/heatmap_test$symtitle.png",scene4)
+# Makie.save("$(results_directory)/branch1_test$symtitle.png",scene12)
+# Makie.save("$(results_directory)/branch2_test$symtitle.png",scene13)
+# Makie.save("$(results_directory)/heatmap_test$symtitle.png",scene4)
 
