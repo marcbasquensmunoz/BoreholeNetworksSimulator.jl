@@ -1,6 +1,6 @@
     
 using CSV, DataFrames, JLD2, Parameters
-using Makie, Colors, GeometryTypes
+using WGLMakie, Colors, GeometryTypes
 using Distances,LinearAlgebra, Dierckx
 using DSP,Statistics
 
@@ -171,7 +171,7 @@ end
 
 
 
-solve_problem!(X,M_injection,M_extraction,
+@time solve_problem!(X,M_injection,M_extraction,
                 b,
                 Nb, Ns, Nt,
                 Tfin_constraint,
@@ -231,6 +231,7 @@ Ex_extracted  =  Exergy_exchanged_by_season2[iseven.(1:length(Exergy_exchanged_b
 
 psi = - Ex_extracted ./ Ex_injected
 
+##.
 
 save("$(results_directory)/data_test$(symtitle).jld2" , 
         Dict( "ux" => ux,              
@@ -248,89 +249,92 @@ save("$(results_directory)/data_test$(symtitle).jld2" ,
                 )
 )
 
-
+##.
 # 11. PLOTS 
 set_theme!(
     font = "Arial", # inherited by layoutables if not overridden
-    fontsize = 40, # inherited by layoutables if not overridden
-    colgap = 30,
+    fontsize = 15, # inherited by layoutables if not overridden
+    colgap = 20,
 )
 
 
 # FIGURE 1: borehole configuration
-scene1 = Figure(resolution = (1000, 1000))
+nbranch1, nbranch2 = 8, 3 
+branch1 = external_to_internal[nbranch1]
+branch2 = external_to_internal[nbranch2]
+color_branch1 = range(colorant"blue", stop=colorant"darkorange", length=length(branch1));
+color_branch2 = range(colorant"red", stop=colorant"green", length=length(branch2));
+
+
+scene1 = Figure(resolution = (400, 400))
 ax1 = scene1[1, 1] = Axis(scene1, ylabel = "y [m]", xlabel = "x[m]",aspect = DataAspect())
-scatter!(ax1,  Makie.Point2.(borehole_positions) , markersize = 20.)
+scatter!(ax1,  Makie.Point2.(borehole_positions) , markersize = 15.)
 
 for i =1:length(borehole_positions)
-    text!(ax1, "$i", textsize = .8, position  = (borehole_positions[i] .+  (0.4 , 0)) , color = :blue )
+    text!(ax1, "$i", fontsize = 9, position  = (borehole_positions[i] .+  (0.8 , -0.7)) , color = :blue )
 end
 
 for b in internal_to_external
     for k=2:length(b)
         s = Makie.Point.([ borehole_positions[b][k-1], borehole_positions[b][k] ] )
-        linesegments!(ax1, s, color = :red, linewidth = 2. )
+        linesegments!(ax1, s, color = :red, linewidth = 1.5 )
     end
 end
 
 
-nbranch1, nbranch2 = 8, 3 
-branch1 = external_to_internal[nbranch1]
-branch2 = external_to_internal[nbranch2]
-color_branch1 = range(colorant"blue", stop=colorant"darkorange", length=length(branch1))
-color_branch2 = range(colorant"red", stop=colorant"green", length=length(branch2))
-
 for b in zip(branch1, color_branch1)
     local_p =  [ Makie.Point(borehole_positions[b[1]]) ]
-    scatter!(ax1,  local_p , color = b[2], markersize = 30)
+    scatter!(ax1,  local_p , color = b[2], markersize = 24)
 end
 
 for b in zip(branch2, color_branch2)
     local_p =  [ Makie.Point(borehole_positions[b[1]]) ]
-    scatter!(ax1,  local_p , color = b[2], markersize = 30)
+    scatter!(ax1,  local_p , color = b[2], markersize = 24)
 end
 
-
+scene1
+##.
 
 # FIGURE 2: temperature and heat flow along selected boreholes
 
-scene12 = Figure(resolution = (2000, 1000))
+scene12 = Figure(resolution = (450, 450))
 ax2 = scene12[1, 1] = Axis(scene12, ylabel = "T [°C]") #, xlabel = "time [months]")
 for b in zip(branch1, color_branch1)
-    lines!(ax2, collect(t ./ 12tstep), Tfin[:,b[1]], color = b[2], linewidth = 4.)
+    lines!(ax2, collect(t ./ 12tstep), Tfin[:,b[1]], color = b[2], linewidth = 2.)
     # scatter!(ax2, collect(t ./ tstep), Tfin[:,b[1]], color = b[2], markersize = 12., marker = '▲')
 end
-scatter!(ax2, collect(t ./ 12tstep), Tfos[:,nbranch1],  color = :black, markersize = 12.)
+scatter!(ax2, collect(t ./ 12tstep), Tfos[:,nbranch1],  color = :black, markersize = 8.)
 scatter!(ax2, collect(t ./ 12tstep), Tfo,  color = :grey, markersize = 12.)
 
 ax3 = scene12[2, 1] = Axis(scene12, ylabel = "q [W/m]", xlabel = "time [years]")
 for b in zip(branch1, color_branch1)    
-    lines!(ax3, collect(t ./ 12tstep), q[:,b[1]], color = b[2], linewidth = 4.)
+    lines!(ax3, collect(t ./ 12tstep), q[:,b[1]], color = b[2], linewidth = 2.)
 end
 
 hidexdecorations!(ax2, grid = false)
 
-
+scene12
+##.
 # FIGURE 3: temperature and heat flow along selected boreholes
-scene13 = Figure(resolution = (2000, 1000))
+scene13 = Figure(resolution = (450, 450))
 ax4 = scene13[1, 1] = Axis(scene13, ylabel = "T [°C]") #, xlabel = "time [months]")
 for b in zip(branch2, color_branch2)
-    lines!(ax4, collect(t ./ 12tstep), Tfin[:,b[1]],  color = b[2], linewidth = 4.)    
+    lines!(ax4, collect(t ./ 12tstep), Tfin[:,b[1]],  color = b[2], linewidth = 2.)    
 end
 
 scatter!(ax4, collect(t ./ 12tstep), Tfos[:,nbranch2],  color = :black, markersize = 12.)
-scatter!(ax4, collect(t ./ 12tstep), Tfo,  color = :grey, markersize = 12.)
+scatter!(ax4, collect(t ./ 12tstep), Tfo,  color = :grey, markersize = 8.)
 
 ax5 = scene13[2, 1] = Axis(scene13, ylabel = "q (W/m)", xlabel = "time [years]") #, xlabel = "time [months]")
 for b in zip(branch2, color_branch2)
-    lines!(ax5, collect(t ./ 12tstep), q[:,b[1]],  color = b[2], linewidth = 4.)
+    lines!(ax5, collect(t ./ 12tstep), q[:,b[1]],  color = b[2], linewidth = 2.)
     
 end
 
 hidexdecorations!(ax4, grid = false)
 
-
-
+scene13
+##.
 #############################
 # COLOR MAP VISUALIZATION
 
@@ -371,40 +375,47 @@ Tmax = maximum(vcat(Ts_verification...) .+ T0)
 # FIGURE 4: heat map of the temperature field in time
 # use the slider to visualize the evolution of the temperature field 
 
+##.
 # Slider figure
-scene3 = Figure(resolution = (1500, 1000),  rowgap = 10,);
-sl1 = scene3[2, 1] = Slider(scene3, range = 2:2:120, startvalue = 3)
+scene3 = Figure(size = (400, 400),  rowgap = 0.);
+
+sl1 = scene3[2, 1] = Slider(scene3, range = 2:2:120, startvalue = 3, tellheight = true)
 
 month_idx = @lift("month "*string($(sl1.value)))
 Tt = @lift( [T[$(sl1.value)] .+ T0 for T in  Ts_verification] )
 Z  = @lift( collect(reshape($(Tt), (length(y),length(x) ) )')  )
 
-
 ax31 = scene3[1, 1] = Axis(scene3; aspect = DataAspect());
 heatmap1 = heatmap!(ax31, x, y, Z, interpolate = true, colorrange = (10.,Tmax) )
-scatter!(ax31, p, markersize = 15)
+scatter!(ax31, p, markersize = 10)
 
 text!(ax31, month_idx,
       position = GeometryTypes.Point2(-15, 12.5),
       color= :white,
       align = (:left, :bottom), 
-      textsize = 2.5
+      fontsize = 15
      )
 
 limits!(ax31, -17.5, 29.5, -17.5, 17.5)
 hidedecorations!(ax31)
 
-cbar = scene3[1, 2] = Colorbar(scene3, heatmap1, label = "T [°C]", width = 50)
+cbar = scene3[1, 2] = Colorbar(scene3, heatmap1, label = "T [°C]", width = 10)
 cbar.height = Relative(2/3)
      
-supertitle = scene3[0, :] = Label(scene3, "ground water speed $ux_in_meterperday m/day", textsize = 50)
-     
+supertitle = scene3[0, :] = Label(scene3, "ground water speed $ux_in_meterperday m/day", fontsize = 18 ,tellheight = true)
+
+scene3
+
+##.
+
 
 # FIGURE 5: snapshots of the temperature field
 # six figures stacked
 steps_of_interest = collect(2:2:12) .+ 12*9
 Tts = [ [T[idx] .+ T0 for T in  Ts_verification] for idx in steps_of_interest]
 Zs  = [collect(reshape(Tt, (length(y),length(x) ) )')   for Tt in Tts]
+
+scene3
 
 scene4 = Figure(resolution = (2700, 1300),  rowgap = 15, colgap =15 );
 grid_structure = [(i,j) for i=1:2 for j =1:3]
@@ -419,7 +430,7 @@ for i=1:6
           position = GeometryTypes.Point2(-15, 12.5),
           color= :white,
           align = (:left, :bottom), 
-          textsize = 2.5
+          fontsize = 2.5
          )
 
     limits!(ax, -17.5, 29.5, -17.5, 17.5)
@@ -429,8 +440,8 @@ end
 cbar = scene4[1:end, end+1 ] = Colorbar(scene4, heatmap1, label = "T [°C]", width = 50)
 cbar.height = Relative(2/3)
      
-supertitle = scene4[0, :] = Label(scene4, "ground water speed $ux_in_meterperday m/day", textsize = 50)
-
+supertitle = scene4[0, :] = Label(scene4, "ground water speed $ux_in_meterperday m/day", fontsize = 50)
+scene4
 
 # Makie.save("$(results_directory)/configuration.png",scene1)
 Makie.save("$(results_directory)/branch1_test$symtitle.png",scene12)

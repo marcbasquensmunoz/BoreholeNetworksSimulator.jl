@@ -1,5 +1,6 @@
 using DataFrames, CSV
 using Makie, Colors
+using WGLMakie
 
 cdir = @__DIR__
 df = CSV.File("$cdir/data/Braedstrup_borehole_coordinates.txt"; decimal=',', delim = ';') |> DataFrame
@@ -25,20 +26,22 @@ internal_to_external = reverse.(external_to_internal)
 # VISUALIZATION OF THE BOREHOLE FIELD
 
 # draw boreholes
-scene1, layout = layoutscene(resolution = (1000, 1000))
-ax1 = layout[1, 1] = Axis(scene1, ylabel = "y [m]", xlabel = "x[m]",aspect = DataAspect())
-scatter!(ax1,  Makie.Point2.(borehole_positions) , markersize = 20.)
+# scene1, layout = fig(resolution = (1000, 1000))
+
+ff1 = Figure(size = (500, 500))
+ax1 = ff1[1, 1] = Axis(ff1, ylabel = "y [m]", xlabel = "x[m]",aspect = DataAspect())
+scatter!(ax1,  Makie.Point2.(borehole_positions) , markersize = 15.)
 
 # numbering boreholes
 for i =1:length(borehole_positions)
-    text!(ax1, "$i", textsize = 1., position  = (borehole_positions[i] .+  (0.6 , 0)) , color = :blue )
+    text!(ax1, "$i", fontsize = 10., position  = (borehole_positions[i] .+  (0.7 , -0.3)) , color = :blue )
 end
 
 # visualize connections
 for b in internal_to_external
     for k=2:length(b)
         s = Makie.Point.([ borehole_positions[b][k-1], borehole_positions[b][k] ] )
-        linesegments!(ax1, s, color = :red, linewidth = 2. )
+        linesegments!(ax1, s, color = :red, linewidth = 1.5)
     end
 end
 
@@ -46,27 +49,29 @@ end
 nbranch1, nbranch2 = 8, 3 
 branch1 = external_to_internal[nbranch1]
 branch2 = external_to_internal[nbranch2]
-color_branch1 = range(colorant"blue", stop=colorant"darkorange", length=length(branch1))
-color_branch2 = range(colorant"red", stop=colorant"green", length=length(branch2))
+color_branch1 = range(colorant"blue", stop=colorant"darkorange", length=length(branch1));
+color_branch2 = range(colorant"red", stop=colorant"green", length=length(branch2));
 
 for b in zip(branch1, color_branch1)
     local_p =  [ Makie.Point(borehole_positions[b[1]]) ]
-    scatter!(ax1,  local_p , color = b[2], markersize = 30)
+    scatter!(ax1,  local_p , color = b[2], markersize = 24)
 end
 
 for b in zip(branch2, color_branch2)
     local_p =  [ Makie.Point(borehole_positions[b[1]]) ]
-    scatter!(ax1,  local_p , color = b[2], markersize = 30)
+    scatter!(ax1,  local_p , color = b[2], markersize = 24)
 end
 
 
 # create arrows to visualize ground water velocity
 p1 = [Makie.Point(-15.2,y) for y = -8:3:8]
 v1 = fill(Makie.Vec(2.,0), length(p1))
-text!(ax1, "ux", textsize = 1.5, position  = Makie.Point(-15. , -1.2) , color = :dodgerblue )
+text!(ax1, "ux", fontsize = 1.5, position  = Makie.Point(-15. , -1.2) , color = :dodgerblue )
 
-arrows!(ax1, p1, v1, linecolor =:dodgerblue, arrowcolor =:dodgerblue, linewidth = 4., arrowsize = 0.8)
+arrows!(ax1, p1, v1, linecolor =:dodgerblue, arrowcolor =:dodgerblue, linewidth = 4., arrowsize = 15)
 
 limits!(ax1, -17.5, 13.5, -15.5, 13.5)
 
-Makie.save("$cdir/results/configuration.png",scene1)
+# Makie.save("$cdir/results/configuration.png",ff1)
+
+ff1
