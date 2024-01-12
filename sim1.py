@@ -1,7 +1,7 @@
 from juliacall import Main as jl
 from juliacall import Pkg as jlPkg
 
-jlPkg.activate("../BTESGroundWaterSimulator")
+jlPkg.activate(".")
 jl.seval("using BTESGroundWaterSimulator")
 
 jl.seval("using BoreholeResponseFunctions")
@@ -13,6 +13,8 @@ jl.seval("using LinearAlgebra")
 
 import numpy as np
 import os
+import pandas as pd
+import math
 
 # 1. PROPERTIES OF BOREHOLE FIELD
 ux_in_meterperday  = 1. * 1e-2      # groundwater speed along the flow coordinate
@@ -59,7 +61,11 @@ A = jl.coefficient_matrix(R, Cf, Vf)
 cdir = os.getcwd()
 cdir = os.path.join(cdir,"examples/example1")
 tdir = os.path.join(cdir,"data/Braedstrup_borehole_coordinates.txt")
-df = jl.DataFrame(jl.CSV.File(tdir)) 
+
+with open(tdir) as csv_file:
+    csv_reader = pd.read_csv(csv_file, delimiter=';', decimal=",")
+    df = jl.DataFrame(csv_reader) 
+
 #geometry of the field
 borehole_positions =  [(x, y) for (x,y) in zip(df.X,df.Y) ]
 
@@ -90,16 +96,17 @@ bh_map     =  jl.reshape(jl.ones(jl.Int64, Nsb)* jl.transpose(jl.collect(jl.rang
 coord_source = [(x[0],x[1],p) for x in borehole_positions for p in z_ref] # position of sources 
 coord_eval = [(x[0],x[1],p) for x in borehole_positions for p in z_eval]  # position of evaluation points
 
-# p = jl.broadcast(jl.GeometryTypes.Point3{jl.Float64} , coord_source)
-# tp = GeometryTypes.Point3{Float64}.(coord_eval)  
+p = jl.broadcast(jl.GeometryTypes.Point3[jl.Float64], coord_source)
+tp = jl.broadcast(jl.GeometryTypes.Point3[jl.Float64], coord_eval)  
 
 # # # rotation of points in new coordinate system where Darcy velocity is parallel to x axis
-# p_rot  = rotation_z(p,-θ) 
-# tp_rot = rotation_z(tp,-θ) 
+p_rot  = jl.rotation_z(p,-θ) 
+tp_rot = jl.rotation_z(tp,-θ) 
 
-# d = evaluate_relevant_distances(GroundWaterFlow(), p_rot, tp_rot) 
-# d = [d[1] == 0. && d[2] == 0. ?  (0.,params.rb, d[3],d[4]) : d for d in d]
+d = jl.evaluate_relevant_distances(jl.GroundWaterFlow(), p_rot, tp_rot) 
+d = list(map(lambda x : (0., params.rb, x[2], x[3]) if x[0] == 0.0 and x[1] == 0.0 else x, d))
 
-# tstep, tmax = 8760*3600/12., 8760*3600*10.
-# t = tstep:tstep:tmax
-# Nt = length(t) # number of time steps
+tstep = 8760*3600/12.
+tmax = 8760*3600*10.
+t = jl.range(tstep, tmax, step=tstep)
+Nt = jl.length(t) # number of time steps
