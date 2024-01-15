@@ -55,6 +55,9 @@ Vf  =  mf/ρf        # volume flow
 R = jl.resistance_network(params, upipe_crossection)   # resistance network in the cross-section
 A = jl.coefficient_matrix(R, Cf, Vf)
 
+# determine coefficients k_in, k_out and k_b for matrix build (Cimmino (2016))
+k_in, k_out, k_b = jl.uniformTb_koeff(A,H)    # COEFFICIENTS OF THE BOREHOLE MODEL
+
 
 # 4. BOREHOLE FIELD CONFIGURATION
 #import configuration
@@ -67,7 +70,7 @@ with open(tdir) as csv_file:
     df = jl.DataFrame(csv_reader) 
 
 #geometry of the field
-borehole_positions =  [(x, y) for (x,y) in zip(df.X,df.Y) ]
+borehole_positions =  [(x, y) for (x,y) in zip(df.X,df.Y)]
 
 # borehole connections map for extraction mode
 external_to_internal = jl.Array([ [22,30,37,29,36,35], 
@@ -108,5 +111,84 @@ d = list(map(lambda x : (0., params.rb, x[2], x[3]) if x[0] == 0.0 and x[1] == 0
 
 tstep = 8760*3600/12.
 tmax = 8760*3600*10.
-t = jl.range(tstep, tmax, step=tstep)
+t = jl.range(tstep, step = tstep, stop = tmax)
 Nt = jl.length(t) # number of time steps
+
+
+# 6. THERMAL RESPONSES
+# mutual response function between pairs of segments (adiabatic surface boundary condition)
+g = [[ 1 / (2*np.pi*params.λs)*jl.mfls_adiabatic_surface(tt, α, coord[0], coord[1], coord[2], vt, h, coord[3], atol = 1e-9) for tt in t]  for coord in d]
+# Matrix containing response function for each pair of segments at time-step 1
+G = [g[0] for g in g]
+
+
+# 7. LOADING CONDITION: for this particular simulation we impose temperature as boundary condition
+T0 = 10.                                                 # undisturbed temperature
+Tfin_constraint = [90. if i%12 in range(1, 6) else 55. for i in range(1,Nt)] # input temperature
+# Tfin_constraint = 90*ones(Nt)
+
+
+# 8. MATRIX ASSEMBLY EXAMPLE
+M_injection = np.zeros((3*Nb+Ns,3*Nb+Ns))      # matrix describing topology of injection problem
+M_extraction = np.zeros((3*Nb+Ns,3*Nb+Ns))     # matrix describing topology of extraction problem
+b = np.zeros(3*Nb+Ns)                       # given term 
+X = np.zeros((Nt, 3*Nb+Ns))                    # vector of unknowns
+qprime = np.zeros((Nt, Ns))                  # heat injection per meter
+Δqbcurrentsum = np.zeros(Ns)               # net heat injection on a given segment (this variable is needed by the solver)
+
+
+jl.build_matrix_b(M_injection, Nb, Ns,  
+              k_in, k_out, k_b,  
+              G, 
+              mf, cpf, bh_map, h,          
+              internal_to_external 
+            )
+
+jl.build_matrix_b(M_extraction, Nb, Ns,
+            k_in, k_out, k_b, 
+            G,
+            mf, cpf, bh_map, h,             
+            external_to_internal
+          )
+
+jl.build_giventerm_b(b, Nb, Ns, Tfin_constraint[0], T0, internal_to_external)
+
+
+def solve_problem_b(X, M_injection,M_extraction,
+                    b,
+                    Nb, Ns, Nt,
+                    Tfin_constraint,
+                    internal_to_external,external_to_internal,
+                    qprime, g, T0,
+                    Δqbcurrentsum, h):
+    for i in range(1, Nt):
+        M = M_injection if i%12 in range(1, 6) else M_extraction
+        branches = internal_to_external if i%12 in range(1, 6) else external_to_internal
+
+        jl.solve_full_convolution_step_b(X, M, b, i, Nb, Ns,
+                        Tfin_constraint, branches,
+                        qprime, g, T0,
+                        Δqbcurrentsum, h                  
+                    )
+    
+
+solve_problem_b(X,M_injection,M_extraction,
+                b,
+                Nb, Ns, Nt,
+                Tfin_constraint,
+                internal_to_external, external_to_internal,
+                qprime, g, T0,
+                Δqbcurrentsum, h                  
+                )
+
+# 9. EXTRACT FROM SOLUTION VECTOR X
+Tfin  = X[:, 0:2*Nb-1:2]
+Tfout = X[:, 1:2*Nb+1:2]
+Tb    = X[:, 2*Nb:3*Nb] 
+q     =  jl.cumsum(qprime, dims = 1) 
+
+# output temperature to compute  energy and exergy echanged 
+last_borehole_in_branch = [[x[0][-1] if i%12 in range(1, 6) else x[1][-1] for i in range(1, Nt)] for x in zip(internal_to_external, external_to_internal)]
+Tfos  = np.reshape([[Tfout[idx,i] for (idx,i) in enumerate(ll)] for ll in last_borehole_in_branch], (Nt, len(last_borehole_in_branch)))
+Tfo   = jl.mean(Tfos, dims = 2)
+Tfo   = jl.reshape(Tfo, jl.length(Tfo))
