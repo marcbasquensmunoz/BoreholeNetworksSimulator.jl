@@ -378,7 +378,7 @@ Tmax = maximum(vcat(Ts_verification...) .+ T0)
 # Slider figure
 scene3 = Figure(size = (400, 400),  rowgap = 0.);
 
-sl1 = scene3[2, 1] = Slider(scene3, range = 2:2:120, startvalue = 3, tellheight = true)
+sl1 = scene3[2, 1] = Makie.Slider(scene3, range = 2:2:120, startvalue = 3, tellheight = true)
 
 month_idx = @lift("month "*string($(sl1.value)))
 Tt = @lift( [T[$(sl1.value)] .+ T0 for T in  Ts_verification] )

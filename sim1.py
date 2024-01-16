@@ -134,7 +134,7 @@ G = g[:,:,0]
 
 # 7. LOADING CONDITION: for this particular simulation we impose temperature as boundary condition
 T0 = 10.                                                 # undisturbed temperature
-Tfin_constraint = [90. if i%12 in range(0, 6) else 55. for i in range(0,Nt)] # input temperature
+Tfin_constraint = np.array([90. if i%12 in range(0, 6) else 55. for i in range(0,Nt)]) # input temperature
 # Tfin_constraint = 90*ones(Nt)
 
 
@@ -201,3 +201,24 @@ q     =  jl.cumsum(qprime, dims = 1)
 last_borehole_in_branch = np.array([[x[0][-1] if i%12 in range(0, 6) else x[1][-1] for i in range(0, Nt)] for x in zip(internal_to_external, external_to_internal)])
 Tfos  = np.array([[Tfout[idx,i-1] for (idx,i) in enumerate(ll)] for ll in last_borehole_in_branch]).transpose()
 Tfo   = np.mean(Tfos, axis=1)
+
+
+# 10. KPIs COMPUTATION
+nbranches = 8
+Energy_exchanged   = mf * cpf * nbranches * (Tfin_constraint - Tfo) * (8760/12.)/1e6
+Energy_exchanged_by_season = np.reshape(Energy_exchanged, (Nt//6, 6))
+Energy_exchanged_by_season2 = np.sum(Energy_exchanged_by_season, axis=1)
+
+E_injected   =  Energy_exchanged_by_season2[0::2]
+E_extracted  =  Energy_exchanged_by_season2[1::2]
+
+eta = - E_extracted / E_injected
+
+Exergy_exchanged = mf * cpf * nbranches * (Tfin_constraint - Tfo - (T0 + 273.15) * np.log( (Tfin_constraint + 273.15) / (Tfo + 273.15) )  ) * (8760/12.)/1e6
+Exergy_exchanged_by_season = np.reshape(Exergy_exchanged, (Nt//6, 6))
+Exergy_exchanged_by_season2 = np.sum(Exergy_exchanged_by_season, axis=1)
+
+Ex_injected   =  Exergy_exchanged_by_season2[0::2]
+Ex_extracted  =  Exergy_exchanged_by_season2[1::2]
+
+psi = - Ex_extracted / Ex_injected
