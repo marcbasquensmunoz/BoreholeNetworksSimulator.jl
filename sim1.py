@@ -14,7 +14,6 @@ jl.seval("using LinearAlgebra")
 import numpy as np
 import os
 import pandas as pd
-import math
 
 # 1. PROPERTIES OF BOREHOLE FIELD
 ux_in_meterperday  = 1. * 1e-2      # groundwater speed along the flow coordinate
@@ -107,7 +106,11 @@ p_rot  = jl.rotation_z(p,-θ)
 tp_rot = jl.rotation_z(tp,-θ) 
 
 d = jl.evaluate_relevant_distances(jl.GroundWaterFlow(), p_rot, tp_rot) 
-d = list(map(lambda x : (0., params.rb, x[2], x[3]) if x[0] == 0.0 and x[1] == 0.0 else x, d))
+with np.nditer(d, op_flags=['readwrite']) as it:
+    for x in it:
+      y = x.item()
+      if y[0] == 0.0 and y[1] == 0.0:
+          x[...] = (0., params.rb, y[2], y[3])
 
 tstep = 8760*3600/12.
 tmax = 8760*3600*10.
@@ -117,14 +120,21 @@ Nt = jl.length(t) # number of time steps
 
 # 6. THERMAL RESPONSES
 # mutual response function between pairs of segments (adiabatic surface boundary condition)
-g = [[ 1 / (2*np.pi*params.λs)*jl.mfls_adiabatic_surface(tt, α, coord[0], coord[1], coord[2], vt, h, coord[3], atol = 1e-9) for tt in t]  for coord in d]
+g = np.ones(d.shape + (len(t),))
+with np.nditer(g, flags=['multi_index'], op_flags=['readwrite']) as it:
+    for x in it:
+      i = it.multi_index
+      coord = d[i[0], i[1]]
+      tt = t[i[2]]
+      x[...] = 1 / (2*np.pi*params.λs)*jl.mfls_adiabatic_surface(tt, α, coord[0], coord[1], coord[2], vt, h, coord[3], atol = 1e-9)
+
 # Matrix containing response function for each pair of segments at time-step 1
-G = [g[0] for g in g]
+G = g[:,:,0]
 
 
 # 7. LOADING CONDITION: for this particular simulation we impose temperature as boundary condition
 T0 = 10.                                                 # undisturbed temperature
-Tfin_constraint = [90. if i%12 in range(1, 6) else 55. for i in range(1,Nt)] # input temperature
+Tfin_constraint = [90. if i%12 in range(0, 6) else 55. for i in range(0,Nt)] # input temperature
 # Tfin_constraint = 90*ones(Nt)
 
 
@@ -161,11 +171,11 @@ def solve_problem_b(X, M_injection,M_extraction,
                     internal_to_external,external_to_internal,
                     qprime, g, T0,
                     Δqbcurrentsum, h):
-    for i in range(1, Nt):
-        M = M_injection if i%12 in range(1, 6) else M_extraction
-        branches = internal_to_external if i%12 in range(1, 6) else external_to_internal
+    for i in range(0, Nt):
+        M = M_injection if i%12 in range(0, 6) else M_extraction
+        branches = internal_to_external if i%12 in range(0, 6) else external_to_internal
 
-        jl.solve_full_convolution_step_b(X, M, b, i, Nb, Ns,
+        jl.solve_full_convolution_step_b(X, M, b, i+1, Nb, Ns,
                         Tfin_constraint, branches,
                         qprime, g, T0,
                         Δqbcurrentsum, h                  
@@ -188,7 +198,6 @@ Tb    = X[:, 2*Nb:3*Nb]
 q     =  jl.cumsum(qprime, dims = 1) 
 
 # output temperature to compute  energy and exergy echanged 
-last_borehole_in_branch = [[x[0][-1] if i%12 in range(1, 6) else x[1][-1] for i in range(1, Nt)] for x in zip(internal_to_external, external_to_internal)]
-Tfos  = np.reshape([[Tfout[idx,i] for (idx,i) in enumerate(ll)] for ll in last_borehole_in_branch], (Nt, len(last_borehole_in_branch)))
-Tfo   = jl.mean(Tfos, dims = 2)
-Tfo   = jl.reshape(Tfo, jl.length(Tfo))
+last_borehole_in_branch = np.array([[x[0][-1] if i%12 in range(0, 6) else x[1][-1] for i in range(0, Nt)] for x in zip(internal_to_external, external_to_internal)])
+Tfos  = np.array([[Tfout[idx,i-1] for (idx,i) in enumerate(ll)] for ll in last_borehole_in_branch]).transpose()
+Tfo   = np.mean(Tfos, axis=1)

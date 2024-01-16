@@ -112,7 +112,7 @@ function update_b!(b, nth_step, Nb, Ns,
         b[i] = -T0 #0.  there was a mistake here
         for j=1:Ns
             for k=2:nth_step
-                b[i] +=  - qprime[nth_step - k + 1, j] * g[j,idx][k]
+                b[i] +=  - qprime[nth_step - k + 1, j] * g[j,idx, k]
             end
         end
     end
@@ -145,6 +145,4 @@ function solve_full_convolution_step!(X,A,b, nth_step, Nb, Ns,
 
     qprime[nth_step,:] =  x[3Nb+1:end]
     Δqbcurrentsum .+= x[3Nb+1:end]
-    
 end
-
