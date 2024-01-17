@@ -41,7 +41,7 @@ H,h,D = 50., 50., 4.
 
 # 3. U-PIPE MODEL 
 params = jl.BoreholePara(λg=2.5,λs = λ)                          # Define borehole u-pipe cross-section geometry 
-upipe_crossection = jl.broadcast(jl.GeometryTypes.Point2, ([[0.03,0.0],[-0.03,.0]]))   # (x,y) pipe positions on the borehole cross-section
+upipe_crossection = [jl.GeometryTypes.Point2(x) for x in ([[0.03,0.0],[-0.03,.0]])]     # (x,y) pipe positions on the borehole cross-section
 rb  = params.rb
 rpo = params.rpo
 
@@ -57,7 +57,6 @@ A = jl.coefficient_matrix(R, Cf, Vf)
 # determine coefficients k_in, k_out and k_b for matrix build (Cimmino (2016))
 k_in, k_out, k_b = jl.uniformTb_koeff(A,H)    # COEFFICIENTS OF THE BOREHOLE MODEL
 
-
 # 4. BOREHOLE FIELD CONFIGURATION
 #import configuration
 cdir = os.getcwd()
@@ -69,10 +68,11 @@ with open(tdir) as csv_file:
     df = jl.DataFrame(csv_reader) 
 
 #geometry of the field
-borehole_positions =  [(x, y) for (x,y) in zip(df.X,df.Y)]
+borehole_positions = [(x, y) for (x,y) in zip(df.X,df.Y)]
 
 # borehole connections map for extraction mode
-external_to_internal = jl.Array([ [22,30,37,29,36,35], 
+external_to_internal = jl.Array([ 
+                        [22,30,37,29,36,35], 
                         [34,40,41,42,48,43],  
                         [33,32,39,45,46,47],                        
                         [26,25,24,31,38,44],  
@@ -80,15 +80,14 @@ external_to_internal = jl.Array([ [22,30,37,29,36,35],
                         [10,5,6,7,13,19],     
                         [1,2,3,8,14,20],      
                         [4,9,15,21,28,27]                                         
-                        ]
-                        )
+                      ])
 
 # borehole connections map for injection mode
 internal_to_external = jl.broadcast(jl.reverse, external_to_internal)
 
 # 5. DISCRETIZATION
-z_ref = jl.collect(jl.range(D, step = h, stop = D+H-h) )         # line source reference point
-z_eval = jl.collect(jl.range(D+h/2, step = h, stop = D+H-h/2))   # evaluation points (evaluate at the mid point of the segment)
+z_ref = np.arange(D, D+H, h)           # line source reference point
+z_eval = np.arange(D+h/2, D+H+h/2, h)  # evaluation points (evaluate at the mid point of the segment)
 
 Nb = len(borehole_positions)     # number of boreholes
 Nsb = len(z_eval)                # number of segments per borehole !
@@ -98,8 +97,8 @@ bh_map     =  jl.reshape(jl.ones(jl.Int64, Nsb)* jl.transpose(jl.collect(jl.rang
 coord_source = [(x[0],x[1],p) for x in borehole_positions for p in z_ref] # position of sources 
 coord_eval = [(x[0],x[1],p) for x in borehole_positions for p in z_eval]  # position of evaluation points
 
-p = jl.broadcast(jl.GeometryTypes.Point3[jl.Float64], coord_source)
-tp = jl.broadcast(jl.GeometryTypes.Point3[jl.Float64], coord_eval)  
+p = [jl.GeometryTypes.Point3[jl.Float64](x) for x in coord_source]
+tp = [jl.GeometryTypes.Point3[jl.Float64](x) for x in coord_eval]
 
 # # # rotation of points in new coordinate system where Darcy velocity is parallel to x axis
 p_rot  = jl.rotation_z(p,-θ) 
@@ -114,8 +113,8 @@ with np.nditer(d, op_flags=['readwrite']) as it:
 
 tstep = 8760*3600/12.
 tmax = 8760*3600*10.
-t = jl.range(tstep, step = tstep, stop = tmax)
-Nt = jl.length(t) # number of time steps
+t = np.arange(tstep, tmax+tstep, step=tstep)
+Nt = len(t) # number of time steps
 
 
 # 6. THERMAL RESPONSES
@@ -195,7 +194,7 @@ solve_problem_b(X,M_injection,M_extraction,
 Tfin  = X[:, 0:2*Nb-1:2]
 Tfout = X[:, 1:2*Nb+1:2]
 Tb    = X[:, 2*Nb:3*Nb] 
-q     =  jl.cumsum(qprime, dims = 1) 
+q     = np.cumsum(qprime, axis = 0) 
 
 # output temperature to compute  energy and exergy echanged 
 last_borehole_in_branch = np.array([[x[0][-1] if i%12 in range(0, 6) else x[1][-1] for i in range(0, Nt)] for x in zip(internal_to_external, external_to_internal)])
