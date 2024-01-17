@@ -1,7 +1,7 @@
 from juliacall import Main as jl
 from juliacall import Pkg as jlPkg
 
-jlPkg.activate(".")
+jlPkg.activate("../..")
 jl.seval("using BTESGroundWaterSimulator")
 
 jl.seval("using BoreholeResponseFunctions")
@@ -60,7 +60,6 @@ k_in, k_out, k_b = jl.uniformTb_koeff(A,H)    # COEFFICIENTS OF THE BOREHOLE MOD
 # 4. BOREHOLE FIELD CONFIGURATION
 #import configuration
 cdir = os.getcwd()
-cdir = os.path.join(cdir,"examples/example1")
 tdir = os.path.join(cdir,"data/Braedstrup_borehole_coordinates.txt")
 
 with open(tdir) as csv_file:

@@ -17,4 +17,7 @@ include("geometrical_transformation.jl")
 export BoreholePara, resistance_network, coefficient_matrix, deltacircuit, effective_borehole_resistance, uniformTb_koeff
 include("innerborehole_model.jl")
 
+export BorefieldProperties, BoreholeProperties, sim1
+include("../examples/example1/sim1_encapsulated.jl")
+
 end # module
