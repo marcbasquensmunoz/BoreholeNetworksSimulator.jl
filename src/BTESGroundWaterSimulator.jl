@@ -18,6 +18,6 @@ export BoreholePara, resistance_network, coefficient_matrix, deltacircuit, effec
 include("innerborehole_model.jl")
 
 export BorefieldProperties, BoreholeProperties, sim1
-include("../examples/example1/sim1_encapsulated.jl")
+include("../examples/example1/sim1_operable.jl")
 
 end # module

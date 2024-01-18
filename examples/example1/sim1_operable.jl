@@ -129,7 +129,6 @@ function sim1(;operator, borefield::BorefieldProperties, borehole::BoreholePrope
     # Solve problem by iterating
     for i=1:Nt
         topology = pyconvert(Int, operator(i, X, qprime))
-        println(topology)
         @views solve_full_convolution_step!(X, 
                     M[:, :, topology], b, i, Nb, Ns,
                     Tfin_constraint, configurations[topology],
@@ -189,7 +188,6 @@ function sim1(;operator, borefield::BorefieldProperties, borehole::BoreholePrope
             "psi" => psi
         )
     )
-    return eta
 end
 
 
