@@ -7,6 +7,8 @@ using DSP,Statistics
 using BoreholeResponseFunctions
 using BTESGroundWaterSimulator
 
+using PythonCall
+
 @with_kw struct BorefieldProperties
     ux_in_meterperday      # groundwater speed along the flow coordinate
     λw                     # water thermal conductivity
@@ -27,7 +29,7 @@ end
     cpf     # specific heat capacity
 end
 
-function sim1(;operator::Function, borefield::BorefieldProperties, borehole::BoreholeProperties, configurations, tstep, tmax)
+function sim1(;operator, borefield::BorefieldProperties, borehole::BoreholeProperties, configurations, tstep, tmax)
 
     cdir = @__DIR__
 
@@ -95,7 +97,7 @@ function sim1(;operator::Function, borefield::BorefieldProperties, borehole::Bor
 
     # 6. THERMAL RESPONSES
     # mutual response function between pairs of segments (adiabatic surface boundary condition)
-    g = [1/(2π*params.λs) * mfls_adiabatic_surface(tt, α, coord[1:3]... ,vt, h, coord[4], atol =1e-9) for coord in d, tt in t]
+    g = [1/(2π*params.λs) * mfls_adiabatic_surface(tt, α, coord[1:3]..., vt, h, coord[4], atol = 1e-9) for coord in d, tt in t]
     # Matrix containing response function for each pair of segments at time-step 1
     G = g[:, :, 1]
 
@@ -126,7 +128,8 @@ function sim1(;operator::Function, borefield::BorefieldProperties, borehole::Bor
 
     # Solve problem by iterating
     for i=1:Nt
-        topology = operator(i, X, qprime)
+        topology = pyconvert(Int, operator(i, X, qprime))
+        println(topology)
         @views solve_full_convolution_step!(X, 
                     M[:, :, topology], b, i, Nb, Ns,
                     Tfin_constraint, configurations[topology],
@@ -186,6 +189,7 @@ function sim1(;operator::Function, borefield::BorefieldProperties, borehole::Bor
             "psi" => psi
         )
     )
+    return eta
 end
 
 
