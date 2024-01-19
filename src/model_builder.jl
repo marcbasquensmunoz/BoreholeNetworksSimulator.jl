@@ -11,7 +11,7 @@
 # |  0     -1       1      0      0      0       0         0       0       0   |  |  Tf_out2 |  =  |  0                          |
 # |  0      0       0      0   -1*2πkg   0      g11      g12       g13     g14 |  |  Tb1     |     |  -T0 - effect_of_past_loads |  3. Ground Model
 # |  0      0       0      0   -1*2πkg   0      g21      g22       g23     g24 |  |  Tb2     |     |  -T0 - effect_of_past_loads |
-# |  0      0       0      0      0   -1*2πkg   g31      g32       g33     g34 |  |  Δqb1'   |     |  -T0 - effect_of_past_loads |  b
+# |  0      0       0      0      0   -1*2πkg   g31      g32       g33     g34 |  |  Δqb1'   |     |  -T0 - effect_of_past_loads |  
 # |  0      0       0      0      0   -1*2πkg   g41      g32       g43     g44 |  |  Δqb2'   |     |  -T0 - effect_of_past_loads |
 # | mcp   -mcp      0      0      0      0      -h        -h       0       0   |  |  Δqb3'   |     | +H*sum(Δqb1'past)           |  4. Heat Balance
 # |_ 0      0      mcp   -mcp     0      0       0         0       -h     -h  _|  |_ Δqb4'  _|     |_+H*sum(Δqb2'past)          _|
@@ -143,6 +143,6 @@ function solve_full_convolution_step!(X,A,b, nth_step, Nb, Ns,
     x = A\b
     X[nth_step,:] = x
 
-    qprime[nth_step,:] =  x[3Nb+1:end]
+    qprime[nth_step,:] = x[3Nb+1:end]
     Δqbcurrentsum .+= x[3Nb+1:end]
 end

@@ -29,7 +29,9 @@ end
     cpf     # specific heat capacity
 end
 
-function sim1(;operator, borefield::BorefieldProperties, borehole::BoreholeProperties, configurations, tstep, tmax)
+data = load("/Users/marc5/.julia/dev/BTESGroundWaterSimulator/examples/example1/results/sym1/cache1.jld2")
+
+function sim1(;operator, borefield::BorefieldProperties, borehole::BoreholeProperties, configurations, tstep, tmax, cache="")
 
     cdir = @__DIR__
 
@@ -45,8 +47,8 @@ function sim1(;operator, borefield::BorefieldProperties, borehole::BoreholePrope
     ux = ux_in_meterperday/(3600*24)
     λ = λs *(1-Φ) + λw*Φ        # porous medium conductivity
     C = Cs *(1-Φ) + Cw*Φ        # porous medium capacity
-    α  = λ/C                                                            # porus medium thermal diffusivity
-    vt = ux * Cw/C                                            # porous medium darcy velocity
+    α  = λ/C                    # porus medium thermal diffusivity
+    vt = ux * Cw/C              # porous medium darcy velocity
 
     # 3. U-PIPE MODEL 
     params = BoreholePara(λg = λg, λs = λ)                               # Define borehole u-pipe cross-section geometry 
@@ -64,7 +66,6 @@ function sim1(;operator, borefield::BorefieldProperties, borehole::BoreholePrope
 
     # 4. BOREHOLE FIELD CONFIGURATION
     #import configuration
-    cdir = @__DIR__
     df = CSV.File("$cdir/data/Braedstrup_borehole_coordinates.txt"; decimal=',', delim = ';') |> DataFrame
     #geometry of the field
     borehole_positions = [(x,y) for (x,y) in zip(df.X,df.Y)]
@@ -105,13 +106,31 @@ function sim1(;operator, borefield::BorefieldProperties, borehole::BoreholePrope
     T0 = 10.                                                 # undisturbed temperature
     Tfin_constraint =  [i%12 in 1:6 ? 90. : 55. for i=1:Nt]  # input temperature
 
-    # 8. MATRIX ASSEMBLY EXAMPLE
-    M = zeros(3Nb+Ns, 3Nb+Ns, Nc)           # matrix describing topology
+    # 8. INITIALIZE 
+    Ts = 1
+    M = zeros(3Nb+Ns, 3Nb+Ns, Nc)           # matrix describing system
     b = zeros(3Nb+Ns)                       # given term 
     X = zeros(Nt,3Nb+Ns)                    # vector of unknowns
     qprime = zeros(Nt, Ns)                  # heat injection per meter
     Δqbcurrentsum = zeros(Ns)               # net heat injection on a given segment (this variable is needed by the solver)
+    last_borehole_in_branch = [zeros(Int, Nt) for i in eachindex(configurations[1])]
 
+    if cache != ""
+        data = load(cache)
+        Ts = size(data["X"])[1]
+        X[1:Ts, :] = data["X"]
+        b = data["b"]
+        qprime[1:Ts, :] = data["qprime"]
+        Δqbcurrentsum = data["Δqbcurrentsum"]
+
+        for i in eachindex(last_borehole_in_branch)
+            last_borehole_in_branch[i][1:Ts] =  data["last_borehole_in_branch"][i]
+        end
+        Ts += 1
+    else
+        build_giventerm!(b, Nb, Ns, Tfin_constraint[1], T0, configurations[1])
+    end
+   
     # Build matrix M
     for i in 1:Nc
         @views build_matrix!(
@@ -123,11 +142,8 @@ function sim1(;operator, borefield::BorefieldProperties, borehole::BoreholePrope
         )
     end
 
-    build_giventerm!(b, Nb, Ns, Tfin_constraint[1], T0, configurations[1])
-    last_borehole_in_branch = [zeros(Int, Nt) for i in eachindex(configurations[1])]
-
     # Solve problem by iterating
-    for i=1:Nt
+    for i = Ts:Nt
         topology = pyconvert(Int, operator(i, X, qprime))
         @views solve_full_convolution_step!(X, 
                     M[:, :, topology], b, i, Nb, Ns,
@@ -188,10 +204,22 @@ function sim1(;operator, borefield::BorefieldProperties, borehole::BoreholePrope
             "psi" => psi
         )
     )
+    save("$(results_directory)/cache$(symtitle).jld2" , 
+        Dict( 
+            "X" => X,
+            "b" => b,
+            "qprime" => qprime,
+            "Δqbcurrentsum" => Δqbcurrentsum,
+            "last_borehole_in_branch" => last_borehole_in_branch
+        )
+    )
 end
 
+function trim_zeros(A)
+    @views A[vec(mapslices(col -> any(col .!= 0), A, dims = 2)), :]
+end
 
-function seasonal_operator(i, X, q)
+function operator(i, X, q)
     i%12 in 1:6 ? 2 : 1
 end
 
@@ -223,5 +251,6 @@ configurations =
 ]
 tstep = 8760*3600/12.
 tmax  = 8760*3600*10.
-
-sim1(operator=seasonal_operator, borefield=borefield, borehole=borehole, configurations=configurations, tstep=tstep, tmax=tmax)
+cache = "/Users/marc5/.julia/dev/BTESGroundWaterSimulator/examples/example1/results/sym1/cache1.jld2"
+cache = ""
+sim1(operator=operator, borefield=borefield, borehole=borehole, configurations=configurations, tstep=tstep, tmax=tmax, cache=cache)
