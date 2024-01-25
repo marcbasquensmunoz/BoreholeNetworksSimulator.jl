@@ -3,14 +3,16 @@ using Parameters
 @with_kw struct BoreholeOperation
     network
     mass_flows
+    cpf = 4182.        # specific heat capacity
 end
+BoreholeOperation(::Nothing) =  BoreholeOperation(nothing, nothing, nothing)
 
-function heat_balance_coeffs!(M, borefield::Borefield, operation::BoreholeOperation, cpf)
+function heat_balance_coeffs!(M, borefield::Borefield, operation::BoreholeOperation)
     Nb = borehole_amount(borefield)
     Ns = segment_amount(borefield)
 
     for i in 1:Nb
-        M[i, i*2-1:i*2] = [cpf -cpf] .* operation.mass_flows[i]
+        M[i, i*2-1:i*2] = operation.cpf .* operation.mass_flows[i] .* [1 -1]
     end
 
     map = segment_map(borefield)

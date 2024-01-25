@@ -1,13 +1,13 @@
+using JLD2
 
-function simulate(;operator, borefield::Borefield, constraint::Constraint, model::GroundModel, tstep, tmax)
+function simulate(;operator, borefield::Borefield, constraint::Constraint, model::GroundModel, tstep, tmax, symtitle="simulation", cache="")
 
     t = tstep:tstep:tmax
     Nt = length(t)
+    Ts = 0
 
     Nb = borehole_amount(borefield)
     Ns = segment_amount(borefield)
-
-    cpf = 4182.        # specific heat capacity
 
     # Initialize system of equations
     M = zeros(3Nb+Ns, 3Nb+Ns)    
@@ -18,24 +18,34 @@ function simulate(;operator, borefield::Borefield, constraint::Constraint, model
     
     precompute_auxiliaries!(model, borefield, t)
 
-    last_operation = BoreholeOperation(nothing, nothing)
+    last_operation = BoreholeOperation(nothing)
+
+    # Load cached data to continue simulation
+    if cache != ""
+        data = load(cache)
+        Ts = size(data["X"])[1]
+        X[1:Ts, :] = data["X"]
+        b = data["b"]
+        current_Q = data["current_Q"]
+    end
+    Ts += 1
 
     # Simulation loop
-    for i = 1:Nt
+    for i = Ts:Nt
         operation = @views operator(i, X[:, 1:2:2Nb], X[:, 2:2:2Nb], X[:, 2Nb+1:3Nb], X[3Nb+1:end], current_Q)
 
         # Add smart updating of the elements depending on what changed in the operation
 
         # Update M
         if last_operation.mass_flows != operation.mass_flows
-            @views internal_model_coeffs!(M[1:Nb, :], borefield, operation, cpf)
+            @views internal_model_coeffs!(M[1:Nb, :], borefield, operation)
         end
         if last_operation.network != operation.network
             @views branches_constraints_coeffs!(M[Nb+1:2Nb, :], constraint, operation)
         end
         @views ground_model_coeffs!(M[2Nb+1:2Nb+Ns, :], model, borefield)
         if last_operation.mass_flows != operation.mass_flows
-            @views heat_balance_coeffs!(M[2Nb+Ns+1:3Nb+Ns, :], borefield, operation, cpf)
+            @views heat_balance_coeffs!(M[2Nb+Ns+1:3Nb+Ns, :], borefield, operation)
         end
 
         # Update b
@@ -53,7 +63,13 @@ function simulate(;operator, borefield::Borefield, constraint::Constraint, model
         last_operation = operation
     end
 
-    save("$(results_directory)/cache$(symtitle)_$(tmax).jld2" , 
+
+    cdir = @__DIR__
+    results_directory = "$cdir/results"
+    simulation_results_directory = "$results_directory/$symtitle"
+    !isdir(results_directory) && mkdir(results_directory)
+    !isdir(simulation_results_directory) && mkdir(simulation_results_directory)
+    save("$(simulation_results_directory)/cache_$(tmax).jld2" , 
         Dict( 
             "X" => X,
             "b" => b,

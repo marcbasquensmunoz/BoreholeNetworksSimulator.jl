@@ -9,7 +9,7 @@ ConvolutionGroundModel(;T0) = ConvolutionGroundModel([], [], T0)
 function precompute_auxiliaries!(model::ConvolutionGroundModel, borefield::Borefield, t) 
     coord_source, coord_eval = segment_coordinates(borefield)
     model.g = response(borefield.medium, borefield, coord_source, coord_eval, t)
-    model.Δq = zeros(length(t), number_segments(borefield))
+    model.Δq = zeros(length(t), segment_amount(borefield))
 end
 
 function update_auxiliaries!(model::ConvolutionGroundModel, X, borefield::Borefield, step)

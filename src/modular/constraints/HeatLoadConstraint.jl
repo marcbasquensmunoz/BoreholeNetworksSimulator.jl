@@ -9,7 +9,7 @@ function branches_constraints_coeffs!(M, ::HeatLoadConstraint, operation)
 
     first_branch = operation.network[1]
     for i = 1:2*Nb
-        M[first_branch[1], i] = (-1)^i * operation.mass_flows[div(i+1, 2)] * cpf
+        M[first_branch[1], i] = (-1)^i * operation.mass_flows[div(i+1, 2)] * operation.cpf
     end
 
     for i in 2:Nbr   

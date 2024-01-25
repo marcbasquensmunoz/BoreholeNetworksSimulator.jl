@@ -8,7 +8,7 @@ function load_borefield_from_file(file)
 end
 
 function operator(i, Tin, Tout, Tb, Δq, Q)
-    BoreholeOperation(networks[i%12 in 1:6 ? 2 : 1], ones(48))
+    BoreholeOperation(networks[i%12 in 1:6 ? 2 : 1], ones(48), 4182.)
 end
 
 networks = 
