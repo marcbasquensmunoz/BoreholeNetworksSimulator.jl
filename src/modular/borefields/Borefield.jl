@@ -13,7 +13,7 @@ internal_model_b!(b, borefield)                             Compute the independ
 abstract type Borefield end
 
 """
-λ                                                           Get the thermal conductivity of the medium
+get_λ                                                       Get the thermal conductivity of the medium
 response(medium, borefield, coord_source, coord_eval, t)    Compute the thermal responses between segments for all times in t                                 
 """
 abstract type Medium end

@@ -34,8 +34,6 @@ function simulate(;operator, borefield::Borefield, constraint::Constraint, model
     for i = Ts:Nt
         operation = @views operator(i, X[:, 1:2:2Nb], X[:, 2:2:2Nb], X[:, 2Nb+1:3Nb], X[3Nb+1:end], current_Q)
 
-        # Add smart updating of the elements depending on what changed in the operation
-
         # Update M
         if last_operation.mass_flows != operation.mass_flows
             @views internal_model_coeffs!(M[1:Nb, :], borefield, operation)

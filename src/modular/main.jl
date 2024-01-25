@@ -8,7 +8,7 @@ function load_borefield_from_file(file)
 end
 
 function operator(i, Tin, Tout, Tb, Δq, Q)
-    BoreholeOperation(networks[i%12 in 1:6 ? 2 : 1], ones(48), 4182.)
+    BoreholeOperation(networks[i%12 in 1:6 ? 2 : 1], 0.5 .* ones(48), 4182.)
 end
 
 networks = 
@@ -45,4 +45,11 @@ cdir = @__DIR__
 borehole_positions_file = "$cdir/../../examples/example1/data/Braedstrup_borehole_coordinates.txt"
 borefield = load_borefield_from_file(borehole_positions_file)
 
-simulate(operator=operator, borefield=borefield, constraint=constraint, model=model, tstep=tstep, tmax=tmax)
+cache = ""
+cache = "$cdir/results/simulation/cache_3.1536e7.jld2"
+cache = "$cdir/results/simulation/cache_3.1536e8.jld2"
+
+simulate(operator=operator, borefield=borefield, constraint=constraint, model=model, tstep=tstep, tmax=tmax, cache=cache)
+
+data = load(cache)
+X = data["X"]

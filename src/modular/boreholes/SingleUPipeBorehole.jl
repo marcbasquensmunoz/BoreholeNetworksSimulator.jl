@@ -1,7 +1,7 @@
 using Parameters
 
 @with_kw struct SingleUPipeBorehole <: Borehole
-    λg = 1.5                            # grout conductivity
+    λg = 2.5                            # grout conductivity
     Cg = 2000. * 1550.                  # grout capacity
     αg = λg/Cg	                        # grout thermal diffusivity
 
@@ -25,7 +25,7 @@ get_rb(bh::SingleUPipeBorehole) = bh.rb
 function resistance_network(borehole::SingleUPipeBorehole, λs, mass_flow)
     x = [p.data[1] for p in borehole.pipe_position]
     y = [p.data[2] for p in borehole.pipe_position]
-    
+
     @unpack λg, λp, rb, rp, rpo, dpw, hp = borehole
 
     # Make hp as a function of mass flow
@@ -40,7 +40,7 @@ function resistance_network(borehole::SingleUPipeBorehole, λs, mass_flow)
                 R[i,j] = 1/(2*pi*λg) * ( log(rb/rpo) - (λg - λs)/(λg + λs) * log(1 - (x[j]^2 + y[j]^2) / rb^2) ) + Rp
             else
                 dij = sqrt( (1 - (x[i]^2+y[i]^2) / rb^2) * (1 - (x[j]^2+y[j]^2) / rb^2) + ( (x[i] - x[j])^2 + (y[i] - y[j])^2) / rb^2 )
-                R[i,j] = - 1/(2*pi*λg) * (log(( (x[i] - x[j])^2 + (y[i] - y[j])^2) / rb^2 ) + (λg - λs)/(λg + λs) * log(dij))
+                R[i,j] = -1/(2*pi*λg) * (log(( (x[i] - x[j])^2 + (y[i] - y[j])^2) / rb^2 ) + (λg - λs)/(λg + λs) * log(dij))
             end
         end
     end

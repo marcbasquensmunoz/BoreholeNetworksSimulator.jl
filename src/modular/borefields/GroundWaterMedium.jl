@@ -17,7 +17,7 @@ using BoreholeResponseFunctions
     vt = ux * Cw/C                      # porous medium darcy velocity
 end
 
-λ(bfp::GroundWaterMedium) = bfp.λ
+get_λ(bfp::GroundWaterMedium) = bfp.λ
 
 function response(medium::GroundWaterMedium, borefield::Borefield, coord_source, coord_eval, t) 
     p =  GeometryTypes.Point3{Float64}.(coord_source)
@@ -30,6 +30,7 @@ function response(medium::GroundWaterMedium, borefield::Borefield, coord_source,
     distances = evaluate_relevant_distances(GroundWaterFlow(), p_rot, tp_rot) 
     d = [d[1] == 0. && d[2] == 0. ?  (0., get_rb(borefield, i), d[3], d[4]) : d for (i, d) in enumerate(distances)]
 
-    g = [1/(2π*medium.λs)*mfls_adiabatic_surface(tt, medium.α, coord[1:3]..., medium.vt, get_h(borefield, i), coord[4]; atol =1e-9) for (i, coord) in enumerate(d), tt in t]
+    print(medium.λ)
+    g = [1/(2π*medium.λ)*mfls_adiabatic_surface(tt, medium.α, coord[1:3]..., medium.vt, get_h(borefield, i), coord[4]; atol =1e-9) for (i, coord) in enumerate(d), tt in t]
     return g
 end

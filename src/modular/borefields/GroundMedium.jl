@@ -5,4 +5,4 @@ using Parameters
     C
     α = λ/C 
 end
-λ(bfp::GroundMedium) = bfp.λ
+get_λ(bfp::GroundMedium) = bfp.λ
