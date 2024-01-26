@@ -9,7 +9,7 @@ function load_borefield_from_file(file)
 end
 
 function operator(i, Tin, Tout, Tb, Δq, Q)
-    BoreholeOperation(networks[i%12 in 1:6 ? 2 : 1], 0.5 .* ones(48), 4182.)
+    BoreholeOperation(networks[i%12 in 1:6 ? 2 : 1], 0.5 .* ones(8), 4182.)
 end
 
 networks = 
@@ -55,7 +55,6 @@ model = ConvolutionGroundModel(T0 = 10., parameters=parameters)
 containers = SimulationContainers(parameters)
 load_cache!(containers=containers, parameters=parameters, cache=cache)
 
-simulate(parameters=parameters, containers=containers, operator=operator, borefield=borefield, constraint=constraint, model=model)
+@btime simulate(parameters=parameters, containers=containers, operator=operator, borefield=borefield, constraint=constraint, model=model)
 
-data = load(cache)
-X = data["X"]
+save_cache(containers=containers, parameters=parameters, path=@__DIR__, title="test")

@@ -22,18 +22,26 @@ function SimulationContainers(parameters::SimulationParameters)
 end
           
 @with_kw struct BoreholeOperation
-    network
-    mass_flows
+    network            
+    mass_flows         # Mass flow for each branch in network
     cpf = 4182.        # specific heat capacity
 end
 BoreholeOperation(::Nothing) =  BoreholeOperation(nothing, nothing, nothing)
+
+function branch_of_borehole(operation::BoreholeOperation, borehole)
+    for (i, branch) in enumerate(operation.network)
+        if borehole in branch
+            return i
+        end
+    end
+end
 
 function heat_balance_coeffs!(M, borefield::Borefield, operation::BoreholeOperation)
     Nb = borehole_amount(borefield)
     Ns = segment_amount(borefield)
 
     for i in 1:Nb
-        M[i, i*2-1:i*2] = operation.cpf .* operation.mass_flows[i] .* [1 -1]
+        M[i, i*2-1:i*2] = operation.cpf .* operation.mass_flows[branch_of_borehole(operation, i)] .* [1 -1]
     end
 
     map = segment_map(borefield)
@@ -72,4 +80,18 @@ function load_cache!(;containers::SimulationContainers, parameters::SimulationPa
         b = data["b"]
         current_Q = data["current_Q"]
     end
+end
+
+function save_cache(;containers::SimulationContainers, parameters::SimulationParameters, path, title)
+    results_directory = "$path/results"
+    simulation_results_directory = "$results_directory/$title"
+    !isdir(results_directory) && mkdir(results_directory)
+    !isdir(simulation_results_directory) && mkdir(simulation_results_directory)
+    save("$(simulation_results_directory)/cache_$(parameters.tmax).jld2" , 
+        Dict( 
+            "X" => containers.X,
+            "b" => containers.b,
+            "current_Q" => containers.current_Q
+        )
+    )
 end

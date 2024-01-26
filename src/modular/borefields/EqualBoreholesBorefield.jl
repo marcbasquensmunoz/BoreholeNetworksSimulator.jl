@@ -29,15 +29,18 @@ end
 
 function internal_model_coeffs!(M, borefield::EqualBoreholesBorefield, operation)
     Nb = borehole_amount(borefield)
-    for i = 1:Nb
+    for (i, branch) in enumerate(operation.network)
         mass_flow = operation.mass_flows[i]
+
         R = resistance_network(borefield.borehole_prototype, get_λ(borefield.medium), mass_flow)
         A = coefficient_matrix(R, operation.cpf, mass_flow)
         k_in, k_out, k_b = uniformTb_koeff(A, get_H(borefield.borehole_prototype)) 
 
-        M[i, i*2 - 1]  = k_in[1]
-        M[i, i*2]      = k_out[1]
-        M[i, Nb*2 + i] = k_b[1]    
+        for j in branch
+            M[j, j*2 - 1]  = k_in[1]
+            M[j, j*2]      = k_out[1]
+            M[j, Nb*2 + j] = k_b[1]    
+        end
     end
 end
 

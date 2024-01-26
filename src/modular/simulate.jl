@@ -39,19 +39,4 @@ function simulate(;parameters::SimulationParameters, containers::SimulationConta
 
         last_operation = operation
     end
-
-    #=
-    cdir = @__DIR__
-    results_directory = "$cdir/results"
-    simulation_results_directory = "$results_directory/$symtitle"
-    !isdir(results_directory) && mkdir(results_directory)
-    !isdir(simulation_results_directory) && mkdir(simulation_results_directory)
-    save("$(simulation_results_directory)/cache_$(tmax).jld2" , 
-        Dict( 
-            "X" => X,
-            "b" => b,
-            "current_Q" => current_Q
-        )
-    )
-    =#
 end
