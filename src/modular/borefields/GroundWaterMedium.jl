@@ -19,8 +19,10 @@ end
 
 get_λ(bfp::GroundWaterMedium) = bfp.λ
 
-function response(medium::GroundWaterMedium, borefield::Borefield, coord_source, coord_eval, t) 
-    p =  GeometryTypes.Point3{Float64}.(coord_source)
+function compute_response!(g, medium::GroundWaterMedium, borefield::Borefield, t) 
+    coord_source, coord_eval = segment_coordinates(borefield)
+
+    p  = GeometryTypes.Point3{Float64}.(coord_source)
     tp = GeometryTypes.Point3{Float64}.(coord_eval)  
 
     # Rotation of points in new coordinate system where Darcy velocity is parallel to x axis
@@ -30,7 +32,11 @@ function response(medium::GroundWaterMedium, borefield::Borefield, coord_source,
     distances = evaluate_relevant_distances(GroundWaterFlow(), p_rot, tp_rot) 
     d = [d[1] == 0. && d[2] == 0. ?  (0., get_rb(borefield, i), d[3], d[4]) : d for (i, d) in enumerate(distances)]
 
-    print(medium.λ)
-    g = [1/(2π*medium.λ)*mfls_adiabatic_surface(tt, medium.α, coord[1:3]..., medium.vt, get_h(borefield, i), coord[4]; atol =1e-9) for (i, coord) in enumerate(d), tt in t]
-    return g
+    Ns = segment_amount(borefield)
+    for (j, tt) in enumerate(t)
+        for (i, coord) in enumerate(d)
+            # This creates A LOT of allocations
+            g[(i-1)%Ns+1, div(i-1, Ns) + 1, j] = 1/(2π*medium.λ)*mfls_adiabatic_surface(tt, medium.α, coord[1:3]..., medium.vt, get_h(borefield, i), coord[4]; atol =1e-9) 
+        end
+    end
 end

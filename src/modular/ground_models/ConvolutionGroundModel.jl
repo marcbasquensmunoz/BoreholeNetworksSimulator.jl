@@ -4,17 +4,18 @@ mutable struct ConvolutionGroundModel <: GroundModel
     Δq
     T0
 end
-ConvolutionGroundModel(;T0) = ConvolutionGroundModel([], [], T0)
+function ConvolutionGroundModel(;T0, parameters)
+    @unpack Nb, Nt, Ns = parameters
+    ConvolutionGroundModel(zeros(Nb, Nb, Nt), zeros(Nt, Ns), T0)
+end
 
 function precompute_auxiliaries!(model::ConvolutionGroundModel, borefield::Borefield, t) 
-    coord_source, coord_eval = segment_coordinates(borefield)
-    model.g = response(borefield.medium, borefield, coord_source, coord_eval, t)
-    model.Δq = zeros(length(t), segment_amount(borefield))
+    compute_response!(model.g, borefield.medium, borefield, t)
 end
 
 function update_auxiliaries!(model::ConvolutionGroundModel, X, borefield::Borefield, step)
     Nb = borehole_amount(borefield)
-    model.Δq[step, :] = X[step, 3Nb+1:end] 
+    model.Δq[step, :] = @views X[step, 3Nb+1:end] 
 end
 
 function ground_model_coeffs!(M, model::ConvolutionGroundModel, borefield::Borefield)

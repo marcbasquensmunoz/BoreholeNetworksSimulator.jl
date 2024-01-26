@@ -5,6 +5,8 @@ using Distances
 using Parameters
 using BoreholeResponseFunctions
 
+include("utils.jl")
+
 export GroundWaterFlow, evaluate_relevant_distances, map_unique_pairs
 include("mls_simmetries.jl")
 
@@ -17,7 +19,15 @@ include("geometrical_transformation.jl")
 export BoreholePara, resistance_network, coefficient_matrix, deltacircuit, effective_borehole_resistance, uniformTb_koeff
 include("innerborehole_model.jl")
 
-export BorefieldProperties, BoreholeProperties, sim1
-include("../examples/example1/sim1_operable.jl")
+export Borehole, SingleUPipeBorehole
+export Borefield, EqualBoreholesBorefield
+export Medium, GroundMedium, GroundWaterMedium
+export Constraint, HeatLoadConstraint, InletTempConstraint
+export GroundModel, ConvolutionGroundModel
+export SimulationParameters, SimulationContainers, BoreholeOperation, compute_parameters, load_cache!
+export simulate
+modular = get_all_julia_files_in_dir("$(pwd())/src/modular")
+sort_dependencies!(modular, ["interfaces/"])
+include.(modular)
 
 end # module

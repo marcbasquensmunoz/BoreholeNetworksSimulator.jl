@@ -1,34 +1,13 @@
 using JLD2
 
-function simulate(;operator, borefield::Borefield, constraint::Constraint, model::GroundModel, tstep, tmax, symtitle="simulation", cache="")
-
-    t = tstep:tstep:tmax
-    Nt = length(t)
-    Ts = 0
-
-    Nb = borehole_amount(borefield)
-    Ns = segment_amount(borefield)
-
-    # Initialize system of equations
-    M = zeros(3Nb+Ns, 3Nb+Ns)    
-    b = zeros(3Nb + Ns)            
-    X = zeros(Nt, 3Nb + Ns)          
-    # Net heat injection on a given segment (this variable is needed by the solver)
-    current_Q = zeros(Ns)          
+function simulate(;parameters::SimulationParameters, containers::SimulationContainers, operator, borefield::Borefield, constraint::Constraint, model::GroundModel, symtitle="simulation")
+    
+    @unpack Nb, Ns, Nt, t, Ts = parameters
+    @unpack M, b, X, current_Q = containers 
     
     precompute_auxiliaries!(model, borefield, t)
 
     last_operation = BoreholeOperation(nothing)
-
-    # Load cached data to continue simulation
-    if cache != ""
-        data = load(cache)
-        Ts = size(data["X"])[1]
-        X[1:Ts, :] = data["X"]
-        b = data["b"]
-        current_Q = data["current_Q"]
-    end
-    Ts += 1
 
     # Simulation loop
     for i = Ts:Nt
@@ -61,7 +40,7 @@ function simulate(;operator, borefield::Borefield, constraint::Constraint, model
         last_operation = operation
     end
 
-
+    #=
     cdir = @__DIR__
     results_directory = "$cdir/results"
     simulation_results_directory = "$results_directory/$symtitle"
@@ -74,4 +53,5 @@ function simulate(;operator, borefield::Borefield, constraint::Constraint, model
             "current_Q" => current_Q
         )
     )
+    =#
 end

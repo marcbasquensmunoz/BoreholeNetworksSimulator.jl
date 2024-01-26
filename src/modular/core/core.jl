@@ -1,5 +1,26 @@
 using Parameters
 
+@with_kw struct SimulationParameters
+    Nb
+    Ns
+    tstep
+    tmax
+    t = tstep:tstep:tmax
+    Nt = length(t)
+    Ts = 1
+end
+
+@with_kw struct SimulationContainers
+    M
+    X
+    b
+    current_Q
+end
+function SimulationContainers(parameters::SimulationParameters) 
+    @unpack Nb, Ns, Nt = parameters
+    SimulationContainers(M = zeros(3Nb + Ns, 3Nb + Ns), b = zeros(3Nb + Ns), X = zeros(Nt, 3Nb + Ns), current_Q = zeros(Ns))
+end
+          
 @with_kw struct BoreholeOperation
     network
     mass_flows
@@ -36,4 +57,19 @@ function solve_step!(X, A, b, step, Nb, current_Q)
     x = A\b
     X[step,:] = x
     current_Q .+= x[3Nb+1:end]
+end
+
+function compute_parameters(;borefield::Borefield, tstep, tmax)
+    SimulationParameters(Nb=borehole_amount(borefield), Ns=segment_amount(borefield), tstep=tstep, tmax=tmax)
+end
+
+function load_cache!(;containers::SimulationContainers, parameters::SimulationParameters, cache)
+    if cache != ""
+        @unpack X, b, current_Q = containers
+        data = load(cache)
+        parameters.Ts = size(data["X"])[1]
+        X[1:parameters.Ts, :] = data["X"]
+        b = data["b"]
+        current_Q = data["current_Q"]
+    end
 end
