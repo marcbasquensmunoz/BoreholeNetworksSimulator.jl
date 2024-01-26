@@ -46,9 +46,6 @@ borehole_positions_file = "$cdir/../example1/data/Braedstrup_borehole_coordinate
 borefield = load_borefield_from_file(borehole_positions_file)
 
 cache = ""
-cache = "$cdir/results/simulation/cache_3.1536e7.jld2"
-cache = "$cdir/results/simulation/cache_3.1536e8.jld2"
-
 
 parameters = compute_parameters(borefield=borefield, tstep=tstep, tmax=tmax)
 model = ConvolutionGroundModel(T0 = 10., parameters=parameters)
@@ -56,5 +53,9 @@ containers = SimulationContainers(parameters)
 load_cache!(containers=containers, parameters=parameters, cache=cache)
 
 @btime simulate(parameters=parameters, containers=containers, operator=operator, borefield=borefield, constraint=constraint, model=model)
+
+
+cache = "$cdir/results/simulation/cache_3.1536e7.jld2"
+cache = "$cdir/results/simulation/cache_3.1536e8.jld2"
 
 save_cache(containers=containers, parameters=parameters, path=@__DIR__, title="test")

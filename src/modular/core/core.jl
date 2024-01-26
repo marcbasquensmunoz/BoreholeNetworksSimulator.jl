@@ -1,4 +1,5 @@
 using Parameters
+using SparseArrays
 
 @with_kw struct SimulationParameters
     Nb
@@ -18,7 +19,7 @@ end
 end
 function SimulationContainers(parameters::SimulationParameters) 
     @unpack Nb, Ns, Nt = parameters
-    SimulationContainers(M = zeros(3Nb + Ns, 3Nb + Ns), b = zeros(3Nb + Ns), X = zeros(Nt, 3Nb + Ns), current_Q = zeros(Ns))
+    SimulationContainers(M = spzeros(3Nb + Ns, 3Nb + Ns), b = zeros(3Nb + Ns), X = zeros(Nt, 3Nb + Ns), current_Q = zeros(Ns))
 end
           
 @with_kw struct BoreholeOperation
@@ -62,6 +63,7 @@ function heat_balance_b!(b, borefield, current_Q)
 end
 
 function solve_step!(X, A, b, step, Nb, current_Q)
+    dropzeros!(A)
     x = A\b
     X[step,:] = x
     current_Q .+= x[3Nb+1:end]
