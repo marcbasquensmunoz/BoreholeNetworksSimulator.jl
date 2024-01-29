@@ -1,30 +1,30 @@
 using Parameters
+using GeometryTypes
 
 @with_kw struct EqualBoreholesBorefield <: Borefield
     borehole_prototype::Borehole
-    positions
+    positions::Vector{Point2{Float64}}
     medium::Medium
 end
 
-borehole_amount(bf::EqualBoreholesBorefield) = length(bf.positions)
-segment_amount(bf::EqualBoreholesBorefield) = length(bf.positions)
-get_H(bf::EqualBoreholesBorefield, i) = get_H(bf.borehole_prototype)
-get_h(bf::EqualBoreholesBorefield, i) = get_h(bf.borehole_prototype)
-get_rb(bf::EqualBoreholesBorefield, i) = get_rb(bf.borehole_prototype)
-segment_map(bf::EqualBoreholesBorefield) = 1:length(bf.positions)           # Return an array indicating to which borehole each segments belongs
+borehole_amount(bf::EqualBoreholesBorefield)::Int = length(bf.positions)
+segment_amount(bf::EqualBoreholesBorefield)::Int = length(bf.positions)
+get_H(bf::EqualBoreholesBorefield, i)::Float64 = get_H(bf.borehole_prototype)
+get_h(bf::EqualBoreholesBorefield, i)::Float64 = get_h(bf.borehole_prototype)
+get_rb(bf::EqualBoreholesBorefield, i)::Float64 = get_rb(bf.borehole_prototype)
+where_is_segment(bf::EqualBoreholesBorefield, i)::Int = div((i-1), get_n_segments(bf.borehole_prototype)) + 1  
 
-function segment_coordinates(bf::EqualBoreholesBorefield)
+function segment_coordinates(bf::EqualBoreholesBorefield, segment)::NTuple{4, Float64}
     D = get_D(bf.borehole_prototype)
-    H = get_H(bf.borehole_prototype)
     h = get_h(bf.borehole_prototype)
 
-    z_ref = collect(D:h:D+H-h)          # line source reference point
-    z_eval = collect(D+h/2:h:D+H-h/2)   # evaluation points (evaluate at the mid point of the segment)
-      
-    coord_source = [(x[1],x[2],p) for x in bf.positions for p in z_ref]   # position of sources 
-    coord_eval = [(x[1],x[2],p) for x in bf.positions for p in z_eval]    # position of evaluation points
+    position = bf.positions[where_is_segment(bf, segment)]
+    i = mod((segment-1), get_n_segments(bf.borehole_prototype)) + 1
+    z_ref = D + (i - 1) * h
+    z_eval = z_ref + h/2
 
-    return (coord_source, coord_eval)
+    # (x, y, z_ref, z_eval)
+    return (position[1], position[2], z_ref, z_eval)
 end
 
 function internal_model_coeffs!(M, borefield::EqualBoreholesBorefield, operation)

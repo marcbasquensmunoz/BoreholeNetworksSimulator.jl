@@ -1,6 +1,6 @@
 using Parameters
 
-@with_kw struct SingleUPipeBorehole <: Borehole
+@with_kw struct SingleUPipeBorehole{R<:Real} <: Borehole @deftype R
     λg = 2.5                            # grout conductivity
     Cg = 2000. * 1550.                  # grout capacity
     αg = λg/Cg	                        # grout thermal diffusivity
@@ -10,17 +10,20 @@ using Parameters
     dpw = 0.0023                        # pipe thickness
     rpo = rp + dpw                      # equivalent pipe radius
     hp = 725.                           # heat transfer coefficient fluid to pipe ?
-    pipe_position = Point2.([[0.03,0.0], [-0.03,.0]]) 
+    pipe_position::Vector{Point2} = Point2.([[0.03,0.0], [-0.03,.0]]) 
         
     rb = 0.115/2                        # borehole radius
     H                                   # length of the borehole
     D                                   # burial depth of the borehole
+
+    n_segments::Int = 1
 end
 
-get_H(bh::SingleUPipeBorehole) = bh.H
-get_D(bh::SingleUPipeBorehole) = bh.D
-get_h(bh::SingleUPipeBorehole) = bh.H
-get_rb(bh::SingleUPipeBorehole) = bh.rb
+get_H(bh::SingleUPipeBorehole)::Float64 = bh.H
+get_D(bh::SingleUPipeBorehole)::Float64 = bh.D
+get_h(bh::SingleUPipeBorehole)::Float64 = bh.H / bh.n_segments
+get_rb(bh::SingleUPipeBorehole)::Float64 = bh.rb
+get_n_segments(bh::SingleUPipeBorehole)::Int = bh.n_segments
 
 function resistance_network(borehole::SingleUPipeBorehole, λs, mass_flow)
     x = [p.data[1] for p in borehole.pipe_position]

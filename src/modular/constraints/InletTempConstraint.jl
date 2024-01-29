@@ -1,9 +1,11 @@
+
 struct InletTempConstraint <: Constraint 
     T_in
 end
 
 function branches_constraints_coeffs!(M, ::InletTempConstraint, operation)
     M .= 0
+    dropzeros!(M)
     Nb = sum([length(branch) for branch in operation.network])
 
     for i = 1:Nb

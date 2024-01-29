@@ -45,10 +45,10 @@ function heat_balance_coeffs!(M, borefield::Borefield, operation::BoreholeOperat
         M[i, i*2-1:i*2] = operation.cpf .* operation.mass_flows[branch_of_borehole(operation, i)] .* [1 -1]
     end
 
-    map = segment_map(borefield)
     for i in 1:Nb
         for j in 1:Ns
-            if map[j] == i
+            bh = where_is_segment(borefield, j)
+            if bh == i
                 M[i, 3Nb+j] = -get_h(borefield, i)
             end
         end
@@ -63,7 +63,6 @@ function heat_balance_b!(b, borefield, current_Q)
 end
 
 function solve_step!(X, A, b, step, Nb, current_Q)
-    dropzeros!(A)
     x = A\b
     X[step,:] = x
     current_Q .+= x[3Nb+1:end]

@@ -20,23 +20,28 @@ end
 get_λ(bfp::GroundWaterMedium) = bfp.λ
 
 function compute_response!(g, medium::GroundWaterMedium, borefield::Borefield, t) 
-    coord_source, coord_eval = segment_coordinates(borefield)
-
-    p  = GeometryTypes.Point3{Float64}.(coord_source)
-    tp = GeometryTypes.Point3{Float64}.(coord_eval)  
-
-    # Rotation of points in new coordinate system where Darcy velocity is parallel to x axis
-    p_rot  = rotation_z(p, -medium.θ) 
-    tp_rot = rotation_z(tp, -medium.θ) 
-
-    distances = evaluate_relevant_distances(GroundWaterFlow(), p_rot, tp_rot) 
-    d = [d[1] == 0. && d[2] == 0. ?  (0., get_rb(borefield, i), d[3], d[4]) : d for (i, d) in enumerate(distances)]
-
+    @unpack θ, λ, vt, α = medium
     Ns = segment_amount(borefield)
-    for (j, tt) in enumerate(t)
-        for (i, coord) in enumerate(d)
-            # This creates A LOT of allocations
-            g[(i-1)%Ns+1, div(i-1, Ns) + 1, j] = 1/(2π*medium.λ)*mfls_adiabatic_surface(tt, medium.α, coord[1:3]..., medium.vt, get_h(borefield, i), coord[4]; atol =1e-9) 
+
+    coords = [segment_coordinates(borefield, i) for i in 1:Ns]
+    
+    for (k, tt) in enumerate(t)
+        for j in 1:Ns
+            for i in 1:Ns
+                # Return is causing allocations
+                x1, y1, zref1, _  = coords[i]
+                x2, y2, _, zeval2 = coords[j]
+
+                x = x2 - x1
+                y = abs(y2 - y1) 
+                D = zref1
+                z = zeval2
+                if x == 0. && y == 0.
+                    y = get_rb(borefield, i)
+                end
+                h = get_h(borefield, i)
+                g[i, j, k] = 1/(2π*λ)*mfls_adiabatic_surface(tt, α, x, y, z, vt, h, D; atol =1e-9) 
+            end
         end
     end
 end

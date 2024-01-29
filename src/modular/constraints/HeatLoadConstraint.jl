@@ -4,6 +4,7 @@ end
 
 function branches_constraints_coeffs!(M, ::HeatLoadConstraint, operation)
     M .= 0
+    dropzeros!(M)
     Nb = sum([length(branch) for branch in operation.network])
     Nbr = length(operation.network)
 

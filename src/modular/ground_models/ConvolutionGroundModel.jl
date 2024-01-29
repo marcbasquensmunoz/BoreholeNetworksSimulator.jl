@@ -1,8 +1,7 @@
-
-mutable struct ConvolutionGroundModel <: GroundModel 
-    g
-    Δq
-    T0
+mutable struct ConvolutionGroundModel{T} <: GroundModel 
+    g::Array{T, 3}
+    Δq::Array{T, 2}
+    T0::T
 end
 function ConvolutionGroundModel(;T0, parameters)
     @unpack Nb, Nt, Ns = parameters
@@ -22,19 +21,19 @@ function ground_model_coeffs!(M, model::ConvolutionGroundModel, borefield::Boref
     Nb = borehole_amount(borefield)
     Ns = segment_amount(borefield)
     M[1:Ns, 3Nb+1:3Nb+Ns] = model.g[:,:,1]
-    map = segment_map(borefield)
     for i in 1:Ns
-        M[i, 2Nb + map[i]] = -1
+        bh = where_is_segment(borefield, i)
+        M[i, 2Nb + bh] = -1
     end
 end
 
 function ground_model_b!(b, model::ConvolutionGroundModel, borefield::Borefield, step)
     Ns = segment_amount(borefield)
+    b .= -model.T0 
     for i in 1:Ns
-        b[i] = -model.T0 
         for j = 1:Ns
             for k = 2:step
-                b[i] += -model.Δq[step - k + 1, j] * model.g[j, i, k]
+                b[i] -= model.Δq[step - k + 1, j] * model.g[j, i, k]
             end
         end
     end
