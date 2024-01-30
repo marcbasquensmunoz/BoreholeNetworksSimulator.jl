@@ -1,11 +1,13 @@
 using JLD2
 
-function simulate(;parameters::SimulationParameters, containers::SimulationContainers, operator, borefield::Borefield, constraint::Constraint, model::GroundModel, symtitle="simulation")
-    
+function simulate(;parameters::SimulationParameters, containers::SimulationContainers, operator, borefield::Borefield, constraint::Constraint, model::GroundModel, symtitle="simulation", precompute=true)
+
     @unpack Nb, Ns, Nt, t, Ts = parameters
     @unpack M, b, X, current_Q = containers 
     
-    precompute_auxiliaries!(model, borefield, t)
+    if precompute
+        precompute_auxiliaries!(model, borefield, t)
+    end
 
     last_operation = BoreholeOperation(nothing)
 

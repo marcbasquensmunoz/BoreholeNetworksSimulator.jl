@@ -2,7 +2,7 @@ using Parameters
 using GeometryTypes
 using BoreholeResponseFunctions
 
-@with_kw struct GroundWaterMedium <: Medium
+@with_kw struct GroundWaterMedium{T <: Real} <: Medium @deftype T
     ux_in_meterperday = 1e-2            # groundwater speed along the flow coordinate
     ux = ux_in_meterperday/(3600*24)    # groundwater speed in m/s
     λw = 0.6                            # water thermal conductivity
@@ -17,7 +17,7 @@ using BoreholeResponseFunctions
     vt = ux * Cw/C                      # porous medium darcy velocity
 end
 
-get_λ(bfp::GroundWaterMedium) = bfp.λ
+get_λ(medium::GroundWaterMedium) = medium.λ
 
 function compute_response!(g, medium::GroundWaterMedium, borefield::Borefield, t) 
     @unpack θ, λ, vt, α = medium

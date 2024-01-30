@@ -42,7 +42,7 @@ function resistance_network(params::BoreholePara, positions)
     y = [p.data[2] for p in positions]
     
     @unpack λg,λs,rb,rpo,Rp = params
-    
+
     N = length(positions)
     R = zeros(N,N)
 
@@ -53,7 +53,7 @@ function resistance_network(params::BoreholePara, positions)
             else
                 dij = sqrt( (1 - (x[i]^2+y[i]^2) / rb^2 ) * (1 - (x[j]^2+y[j]^2) / rb^2 )  + 
                             ( (x[i] - x[j])^2 + (y[i] - y[j])^2) / rb^2  )
-                R[i,j] =  -1/(2pi*λg) * (log(( (x[i] - x[j])^2 + (y[i] - y[j])^2) / rb^2  ) + (λg - λs)/(λg + λs) * dij)
+                R[i,j] =  -1/(2pi*λg) * (log(( (x[i] - x[j])^2 + (y[i] - y[j])^2) / rb^2  ) + (λg - λs)/(λg + λs) * log(dij))
             end
 
         end
@@ -101,15 +101,14 @@ Matrix A according Cimmino 2015
 """
 function coefficient_matrix(R, Cf, Vf)
 
-    S = inv(R)
-    A = zeros(size(R))
+    A = inv(R)
     N = size(R)[1]
     np = div(N,2)
     
-    for i=1:N
-        for j=1:N
-            direction = i<=np ? -1 : 1
-            A[i,j] = direction * S[i,j]/(Cf*Vf)
+    for j = 1:N
+        for i = 1:N
+            direction = i <= np ? -1 : 1
+            A[i,j] *= direction / (Cf*Vf)
         end
     end
     
@@ -128,13 +127,13 @@ function uniformTb_koeff(A,H)
     np = div(N,2)
 
     EH  = exp(A*H)
-    EoutH = EH[1:np , np+1:2np] - EH[np+1:2np,np+1:2np]
-    EinH  = EH[np+1:2np , 1:np] - EH[1:np,1:np]
+    @views EoutH = EH[1:np , np+1:2np] - EH[np+1:2np,np+1:2np]
+    @views EinH  = EH[np+1:2np , 1:np] - EH[1:np,1:np]
 
-    k_in   =  +EinH
-    k_out  =  -EoutH 
-    k_b    =  (EoutH - EinH)*ones(1,np)
+    #k_in   =  +EinH
+    #k_out  =  -EoutH 
+    #k_b    =  (EoutH - EinH)*ones(1,np)
     # return inv(EoutH)*EinH*(Tfin - Tbv) + Tbv             
     
-    return k_in, k_out,  k_b
+    return EinH, -EoutH, (EoutH - EinH)*ones(1,np)
 end

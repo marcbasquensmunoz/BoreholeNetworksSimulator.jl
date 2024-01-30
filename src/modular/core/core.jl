@@ -22,12 +22,12 @@ function SimulationContainers(parameters::SimulationParameters)
     SimulationContainers(M = spzeros(3Nb + Ns, 3Nb + Ns), b = zeros(3Nb + Ns), X = zeros(Nt, 3Nb + Ns), current_Q = zeros(Ns))
 end
           
-@with_kw struct BoreholeOperation
-    network            
-    mass_flows         # Mass flow for each branch in network
-    cpf = 4182.        # specific heat capacity
+@with_kw struct BoreholeOperation{T <: Real}
+    network::Vector{Vector{Int}}            
+    mass_flows:: Vector{T}          # Mass flow for each branch in network
+    cpf::T = 4182.                  # specific heat capacity
 end
-BoreholeOperation(::Nothing) =  BoreholeOperation(nothing, nothing, nothing)
+BoreholeOperation(::Nothing) = BoreholeOperation([[]], [0.], 0.)
 
 function branch_of_borehole(operation::BoreholeOperation, borehole)
     for (i, branch) in enumerate(operation.network)
@@ -35,6 +35,7 @@ function branch_of_borehole(operation::BoreholeOperation, borehole)
             return i
         end
     end
+    return 0
 end
 
 function heat_balance_coeffs!(M, borefield::Borefield, operation::BoreholeOperation)
@@ -42,13 +43,14 @@ function heat_balance_coeffs!(M, borefield::Borefield, operation::BoreholeOperat
     Ns = segment_amount(borefield)
 
     for i in 1:Nb
-        M[i, i*2-1:i*2] = operation.cpf .* operation.mass_flows[branch_of_borehole(operation, i)] .* [1 -1]
+        heat = operation.cpf .* operation.mass_flows[branch_of_borehole(operation, i)] 
+        M[i, i*2-1] = heat
+        M[i, i*2]  = -heat
     end
 
     for i in 1:Nb
         for j in 1:Ns
-            bh = where_is_segment(borefield, j)
-            if bh == i
+            if where_is_segment(borefield, j) == i
                 M[i, 3Nb+j] = -get_h(borefield, i)
             end
         end
@@ -65,7 +67,7 @@ end
 function solve_step!(X, A, b, step, Nb, current_Q)
     x = A\b
     X[step,:] = x
-    current_Q .+= x[3Nb+1:end]
+    current_Q .+= @views x[3Nb+1:end]
 end
 
 function compute_parameters(;borefield::Borefield, tstep, tmax)

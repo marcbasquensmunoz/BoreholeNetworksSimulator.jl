@@ -1,6 +1,6 @@
 using Parameters
 
-@with_kw struct SingleUPipeBorehole{R<:Real} <: Borehole @deftype R
+@with_kw struct SingleUPipeBorehole{T <: Real} <: Borehole @deftype T
     λg = 2.5                            # grout conductivity
     Cg = 2000. * 1550.                  # grout capacity
     αg = λg/Cg	                        # grout thermal diffusivity
@@ -10,7 +10,7 @@ using Parameters
     dpw = 0.0023                        # pipe thickness
     rpo = rp + dpw                      # equivalent pipe radius
     hp = 725.                           # heat transfer coefficient fluid to pipe ?
-    pipe_position::Vector{Point2} = Point2.([[0.03,0.0], [-0.03,.0]]) 
+    pipe_position::Vector{Point2{T}} = Point2.([[0.03,0.0], [-0.03,.0]]) 
         
     rb = 0.115/2                        # borehole radius
     H                                   # length of the borehole
@@ -19,11 +19,11 @@ using Parameters
     n_segments::Int = 1
 end
 
-get_H(bh::SingleUPipeBorehole)::Float64 = bh.H
-get_D(bh::SingleUPipeBorehole)::Float64 = bh.D
-get_h(bh::SingleUPipeBorehole)::Float64 = bh.H / bh.n_segments
-get_rb(bh::SingleUPipeBorehole)::Float64 = bh.rb
-get_n_segments(bh::SingleUPipeBorehole)::Int = bh.n_segments
+get_H(bh::SingleUPipeBorehole{T}) where {T <: Real} = bh.H
+get_D(bh::SingleUPipeBorehole{T}) where {T <: Real} = bh.D
+get_h(bh::SingleUPipeBorehole{T}) where {T <: Real} = bh.H / bh.n_segments
+get_rb(bh::SingleUPipeBorehole{T}) where {T <: Real} = bh.rb
+get_n_segments(bh::SingleUPipeBorehole) = bh.n_segments
 
 function resistance_network(borehole::SingleUPipeBorehole, λs, mass_flow)
     x = [p.data[1] for p in borehole.pipe_position]
@@ -37,8 +37,8 @@ function resistance_network(borehole::SingleUPipeBorehole, λs, mass_flow)
     N = length(borehole.pipe_position)
     R = zeros(N, N)
 
-    for i in 1:N
-        for j in 1:N
+    for j in 1:N
+        for i in 1:N
             if i == j
                 R[i,j] = 1/(2*pi*λg) * ( log(rb/rpo) - (λg - λs)/(λg + λs) * log(1 - (x[j]^2 + y[j]^2) / rb^2) ) + Rp
             else

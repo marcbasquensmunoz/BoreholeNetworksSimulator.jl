@@ -1,6 +1,6 @@
 using Parameters
 
-@with_kw struct GroundMedium <: Medium
+@with_kw struct GroundMedium{T <: Real} <: Medium @deftype T
     λ                
     C
     α = λ/C 

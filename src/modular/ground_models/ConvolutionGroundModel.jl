@@ -14,13 +14,13 @@ end
 
 function update_auxiliaries!(model::ConvolutionGroundModel, X, borefield::Borefield, step)
     Nb = borehole_amount(borefield)
-    model.Δq[step, :] = @views X[step, 3Nb+1:end] 
+    model.Δq[step, :] = @view X[step, 3Nb+1:end] 
 end
 
 function ground_model_coeffs!(M, model::ConvolutionGroundModel, borefield::Borefield)
     Nb = borehole_amount(borefield)
     Ns = segment_amount(borefield)
-    M[1:Ns, 3Nb+1:3Nb+Ns] = model.g[:,:,1]
+    M[1:Ns, 3Nb+1:3Nb+Ns] = @view model.g[:,:,1]
     for i in 1:Ns
         bh = where_is_segment(borefield, i)
         M[i, 2Nb + bh] = -1

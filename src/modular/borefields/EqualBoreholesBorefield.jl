@@ -1,18 +1,18 @@
 using Parameters
 using GeometryTypes
 
-@with_kw struct EqualBoreholesBorefield <: Borefield
-    borehole_prototype::Borehole
+@with_kw struct EqualBoreholesBorefield{T <: Borehole, R <: Medium} <: Borefield
+    borehole_prototype::T
     positions::Vector{Point2{Float64}}
-    medium::Medium
+    medium::R
 end
 
-borehole_amount(bf::EqualBoreholesBorefield)::Int = length(bf.positions)
-segment_amount(bf::EqualBoreholesBorefield)::Int = length(bf.positions)
-get_H(bf::EqualBoreholesBorefield, i)::Float64 = get_H(bf.borehole_prototype)
-get_h(bf::EqualBoreholesBorefield, i)::Float64 = get_h(bf.borehole_prototype)
-get_rb(bf::EqualBoreholesBorefield, i)::Float64 = get_rb(bf.borehole_prototype)
-where_is_segment(bf::EqualBoreholesBorefield, i)::Int = div((i-1), get_n_segments(bf.borehole_prototype)) + 1  
+borehole_amount(bf::EqualBoreholesBorefield) = length(bf.positions)
+segment_amount(bf::EqualBoreholesBorefield) = length(bf.positions)
+get_H(bf::EqualBoreholesBorefield, i) = get_H(bf.borehole_prototype)
+get_h(bf::EqualBoreholesBorefield, i) = get_h(bf.borehole_prototype)
+get_rb(bf::EqualBoreholesBorefield, i) = get_rb(bf.borehole_prototype)
+where_is_segment(bf::EqualBoreholesBorefield, i) = div((i-1), get_n_segments(bf.borehole_prototype)) + 1  
 
 function segment_coordinates(bf::EqualBoreholesBorefield, segment)::NTuple{4, Float64}
     D = get_D(bf.borehole_prototype)
