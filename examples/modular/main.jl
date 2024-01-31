@@ -4,12 +4,8 @@ using BTESGroundWaterSimulator
 
 function load_borefield_from_file(file)
     df = CSV.File(file; decimal=',', delim = ';') |> DataFrame
-    borehole_positions = [Point2(x, y) for (x,y) in zip(df.X,df.Y) ]
+    borehole_positions = [Point2(x, y) for (x,y) in zip(df.X,df.Y)]
     EqualBoreholesBorefield(borehole_prototype=SingleUPipeBorehole(H=50., D=4.), positions=borehole_positions, medium=GroundWaterMedium())
-end
-
-function operator(i, Tin, Tout, Tb, Δq, Q)
-    BoreholeOperation(networks[i%12 in 1:6 ? 2 : 1], 0.5 .* ones(8), 4182.)
 end
 
 networks = 
@@ -40,7 +36,6 @@ tstep = 8760*3600/12.
 tmax  = 8760*3600*10.
 Nt = div(tmax, tstep)
 
-constraint = InletTempConstraint([i%12 in 1:6 ? 90. : 55. for i = 1:Nt])
 cdir = @__DIR__
 borehole_positions_file = "$cdir/../example1/data/Braedstrup_borehole_coordinates.txt"
 borefield = load_borefield_from_file(borehole_positions_file)
@@ -48,11 +43,17 @@ borefield = load_borefield_from_file(borehole_positions_file)
 cache = ""
 
 parameters = compute_parameters(borefield=borefield, tstep=tstep, tmax=tmax)
-model = ConvolutionGroundModel(T0 = 10., parameters=parameters)
+constraint = InletTempConstraint([i%12 in 1:6 ? 90. : 55. for i = 1:Nt])
+method = ConvolutionMethod(T0 = 10., parameters=parameters, borefield=borefield)
 containers = SimulationContainers(parameters)
-load_cache!(containers=containers, parameters=parameters, cache=cache)
 
-@btime simulate(parameters=parameters, containers=containers, operator=operator, borefield=borefield, constraint=constraint, model=model)
+function operator(i, Tin, Tout, Tb, Δq, Q)
+    BoreholeOperation(networks[i%12 in 1:6 ? 2 : 1], 0.5 .* ones(8), 4182.)
+end
+
+#load_cache!(containers=containers, parameters=parameters, cache=cache)
+
+@btime simulate(parameters=parameters, containers=containers, operator=operator, borefield=borefield, constraint=constraint, method=method)
 
 
 cache = "$cdir/results/simulation/cache_3.1536e7.jld2"

@@ -14,7 +14,7 @@ get_h(bf::EqualBoreholesBorefield, i) = get_h(bf.borehole_prototype)
 get_rb(bf::EqualBoreholesBorefield, i) = get_rb(bf.borehole_prototype)
 where_is_segment(bf::EqualBoreholesBorefield, i) = div((i-1), get_n_segments(bf.borehole_prototype)) + 1  
 
-function segment_coordinates(bf::EqualBoreholesBorefield, segment)::NTuple{4, Float64}
+function segment_coordinates(bf::EqualBoreholesBorefield, segment)
     D = get_D(bf.borehole_prototype)
     h = get_h(bf.borehole_prototype)
 

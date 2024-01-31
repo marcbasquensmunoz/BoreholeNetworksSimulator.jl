@@ -23,7 +23,7 @@ export Borehole, SingleUPipeBorehole
 export Borefield, EqualBoreholesBorefield
 export Medium, GroundMedium, GroundWaterMedium
 export Constraint, HeatLoadConstraint, InletTempConstraint
-export GroundModel, ConvolutionGroundModel
+export Method, ConvolutionMethod
 export SimulationParameters, SimulationContainers, BoreholeOperation, compute_parameters, load_cache!, save_cache
 export simulate
 modular = get_all_julia_files_in_dir("$(pwd())/src/modular")

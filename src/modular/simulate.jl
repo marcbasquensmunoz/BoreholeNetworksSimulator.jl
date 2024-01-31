@@ -1,14 +1,10 @@
 using JLD2
 
-function simulate(;parameters::SimulationParameters, containers::SimulationContainers, operator, borefield::Borefield, constraint::Constraint, model::GroundModel, symtitle="simulation", precompute=true)
+function simulate(;operator, parameters::SimulationParameters, containers::SimulationContainers, borefield::Borefield, constraint::Constraint, method::Method)
 
-    @unpack Nb, Ns, Nt, t, Ts = parameters
+    @unpack Nb, Ns, Nt, Ts = parameters
     @unpack M, b, X, current_Q = containers 
     
-    if precompute
-        precompute_auxiliaries!(model, borefield, t)
-    end
-
     last_operation = BoreholeOperation(nothing)
 
     # Simulation loop
@@ -22,7 +18,9 @@ function simulate(;parameters::SimulationParameters, containers::SimulationConta
         if last_operation.network != operation.network
             @views branches_constraints_coeffs!(M[Nb+1:2Nb, :], constraint, operation)
         end
-        @views ground_model_coeffs!(M[2Nb+1:2Nb+Ns, :], model, borefield)
+        if i == Ts
+            @views method_coeffs!(M[2Nb+1:2Nb+Ns, :], method, borefield)
+        end
         if last_operation.mass_flows != operation.mass_flows
             @views heat_balance_coeffs!(M[2Nb+Ns+1:3Nb+Ns, :], borefield, operation)
         end
@@ -30,14 +28,14 @@ function simulate(;parameters::SimulationParameters, containers::SimulationConta
         # Update b
         @views internal_model_b!(b[1:Nb], borefield)
         @views branches_constraints_b!(b[Nb+1:2Nb], constraint, operation, i)
-        @views ground_model_b!(b[2Nb+1:2Nb+Ns], model, borefield, i)
+        @views method_b!(b[2Nb+1:2Nb+Ns], method, borefield, i)
         @views heat_balance_b!(b[2Nb+Ns+1:3Nb+Ns], borefield, current_Q)  
 
         # Solve system of equations
         solve_step!(X, M, b, i, Nb, current_Q)
 
         # Update auxiliaries
-        update_auxiliaries!(model, X, borefield, i)
+        update_auxiliaries!(method, X, borefield, i)
 
         last_operation = operation
     end
