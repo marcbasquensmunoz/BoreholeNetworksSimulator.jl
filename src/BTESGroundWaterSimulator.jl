@@ -28,7 +28,8 @@ export Constraint, HeatLoadConstraint, InletTempConstraint
 export Method, ConvolutionMethod
 export SimulationParameters, SimulationContainers, BoreholeOperation, compute_parameters, load_cache!, save_cache
 export simulate
-modular = get_all_julia_files_in_dir("$(pwd())/src/modular")
+
+modular = get_all_julia_files_in_dir("$(@__DIR__)/modular")
 sort_dependencies!(modular, ["interfaces/"])
 include.(modular)
 

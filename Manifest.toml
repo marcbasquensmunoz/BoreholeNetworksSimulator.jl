@@ -2,7 +2,7 @@
 
 julia_version = "1.9.3"
 manifest_format = "2.0"
-project_hash = "c35f85230fb400f1cfd814ae663945f481bb5f06"
+project_hash = "37c281f25c2734d452bb400f73099af885228eda"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -252,6 +252,18 @@ weakdeps = ["IntervalSets", "StaticArrays"]
 git-tree-sha1 = "d05d9e7b7aedff4e5b51a029dced05cfb6125781"
 uuid = "d38c429a-6771-53c6-b99e-75d170b6e991"
 version = "0.6.2"
+
+[[deps.CoolProp]]
+deps = ["CoolProp_jll", "Markdown", "Unitful"]
+git-tree-sha1 = "e17766ab84c180ffde975e1128109fa389fdf22c"
+uuid = "e084ae63-2819-5025-826e-f8e611a84251"
+version = "0.2.0"
+
+[[deps.CoolProp_jll]]
+deps = ["Artifacts", "JLLWrappers", "Libdl"]
+git-tree-sha1 = "f0f70a17d132d2ab5bf2b61993db36ac1099f6c7"
+uuid = "3351c21f-4feb-5f29-afb9-f4fcb0e27549"
+version = "6.6.0+0"
 
 [[deps.Crayons]]
 git-tree-sha1 = "249fe38abf76d48563e2f4556bebd215aa317e15"
@@ -1654,6 +1666,20 @@ deps = ["REPL"]
 git-tree-sha1 = "53915e50200959667e78a92a418594b428dffddf"
 uuid = "1cfade01-22cf-5700-b092-accc4b62d6e1"
 version = "0.4.1"
+
+[[deps.Unitful]]
+deps = ["Dates", "LinearAlgebra", "Random"]
+git-tree-sha1 = "3c793be6df9dd77a0cf49d80984ef9ff996948fa"
+uuid = "1986cc42-f94f-5a68-af5c-568840ba703d"
+version = "1.19.0"
+
+    [deps.Unitful.extensions]
+    ConstructionBaseUnitfulExt = "ConstructionBase"
+    InverseFunctionsUnitfulExt = "InverseFunctions"
+
+    [deps.Unitful.weakdeps]
+    ConstructionBase = "187b0558-2788-49d3-abe0-74a17ed4e7c9"
+    InverseFunctions = "3587e190-3f89-42d0-90ee-14403ec27112"
 
 [[deps.UnsafePointers]]
 git-tree-sha1 = "c81331b3b2e60a982be57c046ec91f599ede674a"
