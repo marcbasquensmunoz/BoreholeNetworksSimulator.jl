@@ -4,6 +4,7 @@ using LinearAlgebra, GeometryTypes
 using Distances
 using Parameters
 using BoreholeResponseFunctions
+using CoolProp
 
 include("utils.jl")
 
@@ -17,6 +18,7 @@ export rotation, rotation_z
 include("geometrical_transformation.jl")
 
 export BoreholePara, resistance_network, coefficient_matrix, deltacircuit, effective_borehole_resistance, uniformTb_koeff
+export heat_transfer_coefficient
 include("innerborehole_model.jl")
 
 export Borehole, SingleUPipeBorehole
