@@ -5,7 +5,7 @@ using BTESGroundWaterSimulator
 function load_borefield_from_file(file)
     df = CSV.File(file; decimal=',', delim = ';') |> DataFrame
     borehole_positions = [Point2(x, y) for (x,y) in zip(df.X,df.Y)]
-    EqualBoreholesBorefield(borehole_prototype=SingleUPipeBorehole(H=50., D=4.), positions=borehole_positions, medium=GroundWaterMedium())
+    EqualBoreholesBorefield(borehole_prototype=SingleUPipeBorehole(H=50., D=4.), positions=borehole_positions, medium=GroundWaterMedium(), T0 = 10.)
 end
 
 networks = 
@@ -44,7 +44,7 @@ cache = ""
 
 parameters = compute_parameters(borefield=borefield, tstep=tstep, tmax=tmax)
 constraint = InletTempConstraint([i%12 in 1:6 ? 90. : 55. for i = 1:Nt])
-method = ConvolutionMethod(T0 = 10., parameters=parameters, borefield=borefield)
+method = ConvolutionMethod(parameters=parameters, borefield=borefield)
 containers = SimulationContainers(parameters)
 
 function operator(i, Tin, Tout, Tb, Δq, Q)

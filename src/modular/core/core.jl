@@ -1,5 +1,6 @@
 using Parameters
 using SparseArrays
+using LinearSolve
 
 @with_kw struct SimulationParameters
     Nb
@@ -19,7 +20,7 @@ end
 end
 function SimulationContainers(parameters::SimulationParameters) 
     @unpack Nb, Ns, Nt = parameters
-    SimulationContainers(M = spzeros(3Nb + Ns, 3Nb + Ns), b = zeros(3Nb + Ns), X = zeros(Nt, 3Nb + Ns), current_Q = zeros(Ns))
+    SimulationContainers(M = spzeros(3Nb + Ns, 3Nb + Ns), b = zeros(3Nb + Ns), X = zeros(3Nb + Ns, Nt), current_Q = zeros(Ns))
 end
           
 @with_kw struct BoreholeOperation{T <: Real}
@@ -65,9 +66,14 @@ function heat_balance_b!(b, borefield, current_Q)
 end
 
 function solve_step!(X, A, b, step, Nb, current_Q)
+    #=
+    prob = LinearProblem(A, b)
+    linsolve = init(prob)
+    x = solve(linsolve).u
+    =#
     x = A\b
-    X[step,:] = x
-    current_Q .+= @views x[3Nb+1:end]
+    X[:, step] = x
+    current_Q .+= @view x[3Nb+1:end]
 end
 
 function compute_parameters(;borefield::Borefield, tstep, tmax)
@@ -79,7 +85,7 @@ function load_cache!(;containers::SimulationContainers, parameters::SimulationPa
         @unpack X, b, current_Q = containers
         data = load(cache)
         parameters.Ts = size(data["X"])[1]
-        X[1:parameters.Ts, :] = data["X"]
+        X[:, 1:parameters.Ts] = data["X"]
         b = data["b"]
         current_Q = data["current_Q"]
     end

@@ -1,11 +1,10 @@
 mutable struct ConvolutionMethod{T} <: Method 
     g::Array{T, 3}
     Δq::Array{T, 2}
-    T0::T
 end
-function ConvolutionMethod(;T0, parameters, borefield)
+function ConvolutionMethod(;parameters, borefield)
     @unpack Nb, Nt, Ns = parameters
-    model = ConvolutionMethod(zeros(Nb, Nb, Nt), zeros(Nt, Ns), T0)
+    model = ConvolutionMethod(zeros(Nb, Nb, Nt), zeros(Ns, Nt))
     precompute_auxiliaries!(model, borefield, parameters.t)
     return model
 end
@@ -16,7 +15,7 @@ end
 
 function update_auxiliaries!(method::ConvolutionMethod, X, borefield::Borefield, step)
     Nb = borehole_amount(borefield)
-    method.Δq[step, :] = @view X[step, 3Nb+1:end] 
+    method.Δq[:, step] = @view X[3Nb+1:end, step] 
 end
 
 function method_coeffs!(M, method::ConvolutionMethod, borefield::Borefield)
@@ -31,12 +30,11 @@ end
 
 function method_b!(b, method::ConvolutionMethod, borefield::Borefield, step)
     Ns = segment_amount(borefield)
-    b .= -method.T0 
-    for i in 1:Ns
-        for j = 1:Ns
-            for k = 2:step
-                b[i] -= method.Δq[step - k + 1, j] * method.g[j, i, k]
-            end
+    b .= -get_T0(borefield)
+
+    for k = 2:step
+        for i in 1:Ns
+            @views @inbounds b[i] -= dot(method.Δq[:, step - k + 1], method.g[:, i, k])
         end
     end
 end

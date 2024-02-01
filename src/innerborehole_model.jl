@@ -119,21 +119,13 @@ end
 """
 (Cimmino 2016)
 """
-function uniformTb_koeff(A,H)    
-        
-    # Tbv = fill(1,size(Tfin))*Tb
-    
+function uniformTb_koeff(A, H)        
     N = size(A)[1]
-    np = div(N,2)
+    np = div(N, 2)
 
-    EH  = exp(A*H)
+    EH = exp(A*H)
     @views EoutH = EH[1:np , np+1:2np] - EH[np+1:2np,np+1:2np]
-    @views EinH  = EH[np+1:2np , 1:np] - EH[1:np,1:np]
-
-    #k_in   =  +EinH
-    #k_out  =  -EoutH 
-    #k_b    =  (EoutH - EinH)*ones(1,np)
-    # return inv(EoutH)*EinH*(Tfin - Tbv) + Tbv             
+    @views EinH  = EH[np+1:2np , 1:np] - EH[1:np,1:np]      
     
     return EinH, -EoutH, (EoutH - EinH)*ones(1,np)
 end
@@ -161,21 +153,25 @@ function thermophysical_properties(Tref, fluidname = "INCOMP::MEA-20%")
     ρ =  PropsSI("D","T", Tref,"P",101325,fluidname)
     cp = PropsSI("C","T",Tref,"P",101325,fluidname)
     k  = PropsSI("conductivity","T",Tref,"P",101325,fluidname)	
-    return μ,ρ,cp,k
+    return μ, ρ, cp, k
 end
 ###############
 # computation #
 ###############
 
 # mass flow rate within the borehole
-function heat_transfer_coefficient(mb, Tref, params::BoreholePara, fluidname = "INCOMP::MEA-20%")
-    rp = params.rp
-    μ,ρ,cp,k = thermophysical_properties(Tref, fluidname)
-    w = mb/(ρ *π*rp^2)
-    Re = ρ * w * 2*rp/ μ
+function heat_transfer_coefficient(mb, Tref, borehole::Borehole, fluidname = "INCOMP::MEA-20%")
+    if Tref > 40 || Tref < -100
+        return get_default_hp(borehole)
+    end
+    T0 = 273.15
+    rp = get_rp(borehole)
+    μ, ρ, cp, k = thermophysical_properties(Tref + T0, fluidname)
+    w = mb/(ρ * π * rp^2)
+    Re = 2 * ρ * w * rp/ μ
     Pr = μ * cp/(2*rp)
-	Nu = evaluate_nusselt(Re,Pr)
-    h = Nu*k/(2*rp)
-    return h ,Re, Pr, Nu
+	Nu = evaluate_nusselt(Re, Pr)
+    h = Nu * k /(2*rp)
+    return h
 end
 ##

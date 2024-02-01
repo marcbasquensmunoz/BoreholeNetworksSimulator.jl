@@ -5,8 +5,14 @@ using Distances
 using Parameters
 using BoreholeResponseFunctions
 using CoolProp
+using ExponentialUtilities
+using StaticArrays
 
 include("utils.jl")
+
+modular = get_all_julia_files_in_dir("$(@__DIR__)/modular")
+sort_dependencies!(modular, ["interfaces/"])
+include.(modular)
 
 export GroundWaterFlow, evaluate_relevant_distances, map_unique_pairs
 include("mls_simmetries.jl")
@@ -28,9 +34,5 @@ export Constraint, HeatLoadConstraint, InletTempConstraint
 export Method, ConvolutionMethod
 export SimulationParameters, SimulationContainers, BoreholeOperation, compute_parameters, load_cache!, save_cache
 export simulate
-
-modular = get_all_julia_files_in_dir("$(@__DIR__)/modular")
-sort_dependencies!(modular, ["interfaces/"])
-include.(modular)
 
 end # module
