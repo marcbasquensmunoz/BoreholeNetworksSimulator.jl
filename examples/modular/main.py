@@ -4,12 +4,33 @@ from juliacall import Pkg as jlPkg
 jlPkg.activate("../../")
 jl.seval("using BTESGroundWaterSimulator")
 jl.seval("using GeometryTypes")
+jl.seval("using PythonCall")
 
 import numpy as np
 import os
 import pandas as pd
 
-networks = jl.Array(
+class BoreholeOperation:
+    network: np.array
+    mass_flows: np.array
+    cpf: float
+
+    def __init__(self, network, mass_flows, cpf):
+        self.network = network
+        self.mass_flows = mass_flows
+        self.cpf = cpf
+
+jl.seval('''
+    function convertBoreholeOperation(::Type{BoreholeOperation}, x)
+        network = pyconvert(Vector{Vector{Int}}, PyArray(x.network))
+        mass_flows = pyconvert(Vector{Float64}, PyArray(x.mass_flows))
+        cpf = pyconvert(Float64, x.cpf)
+        PythonCall.pyconvert_return(BoreholeOperation(network=network, mass_flows=mass_flows, cpf=cpf))
+    end
+''')
+jl.PythonCall.pyconvert_add_rule("__main__:BoreholeOperation", jl.BoreholeOperation, jl.convertBoreholeOperation)
+
+networks = jl.Array[jl.Array[jl.Array[jl.Int]]](
 [
     [   
         [22,30,37,29,36,35], 
@@ -40,7 +61,8 @@ tmax  = 8760*3600*10.
 Nt = int(tmax // tstep)
 
 def operator(i, Tin, Tout, Tb, Δq, Q):
-    return jl.BoreholeOperation(network=jl.Array(networks[1 if i%12 in range(6) else 0]), mass_flows=jl.Array[jl.Float64](0.5 * np.ones(8)), cpf=4182.)
+    op = jl.BoreholeOperation(network=jl.Array[jl.Array[jl.Int]](networks[1 if i%12 in range(6) else 0]), mass_flows=jl.Array[jl.Float64](0.5 * np.ones(8)), cpf=4182.)
+    return op
 
 borehole_positions_file = os.path.join(os.getcwd(), "../example1/data/Braedstrup_borehole_coordinates.txt")
 
@@ -49,14 +71,14 @@ with open(borehole_positions_file) as csv_file:
     df = pd.DataFrame(csv_reader) 
 
 borehole_positions = jl.Array([jl.Point2(x, y) for (x,y) in zip(df.X,df.Y)])
-borefield = jl.EqualBoreholesBorefield(borehole_prototype=jl.SingleUPipeBorehole(H=50., D=4.), positions=borehole_positions, medium=jl.GroundWaterMedium())
+borefield = jl.EqualBoreholesBorefield(borehole_prototype=jl.SingleUPipeBorehole(H=50., D=4.), positions=borehole_positions, medium=jl.GroundWaterMedium(), T0=10.)
 
 
 cache = ""
 
 parameters = jl.compute_parameters(borefield=borefield, tstep=tstep, tmax=tmax)
 constraint = jl.InletTempConstraint(jl.Array[jl.Float64]([90. if i%12 in range(6) else 55. for i in range(Nt)]))
-method = jl.ConvolutionMethod(T0 = 10., parameters=parameters, borefield=borefield)
+method = jl.ConvolutionMethod(parameters=parameters, borefield=borefield)
 containers = jl.SimulationContainers(parameters)
 
 jl.simulate(parameters=parameters, containers=containers, operator=operator, borefield=borefield, constraint=constraint, method=method)
