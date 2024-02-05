@@ -6,7 +6,7 @@ using DSP,Statistics
 
 using BoreholeResponseFunctions
 
-using BTESGroundWaterSimulator
+using BoreholeNetworksSimulator
 
 
 cdir = @__DIR__

@@ -1,4 +1,3 @@
-using Parameters
 
 @with_kw struct SingleUPipeBorehole{T <: Real} <: Borehole @deftype T
     λg = 2.5                            # grout conductivity

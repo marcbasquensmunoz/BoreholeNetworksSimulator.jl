@@ -1,5 +1,3 @@
-using JLD2
-using PythonCall
 
 function simulate(;operator, parameters::SimulationParameters, containers::SimulationContainers, borefield::Borefield, constraint::Constraint, method::Method)
 
@@ -11,7 +9,9 @@ function simulate(;operator, parameters::SimulationParameters, containers::Simul
     # Simulation loop
     for i = Ts:Nt
         operation = @views operator(i, X[1:2:2Nb, 1:i], X[2:2:2Nb, 1:i], X[2Nb+1:3Nb, 1:i], X[3Nb+1:end, 1:i], current_Q)
-        operation = PythonCall.pyconvert(BoreholeOperation, operation)
+        if ispy(operation)
+            operation = PythonCall.pyconvert(BoreholeOperation, operation)
+        end
 
         # Update M
         @views internal_model_coeffs!(M[1:Nb, :], borefield, operation, i == 1 ? get_T0(borefield) .* ones(2Nb) :  X[1:2Nb, i-1])

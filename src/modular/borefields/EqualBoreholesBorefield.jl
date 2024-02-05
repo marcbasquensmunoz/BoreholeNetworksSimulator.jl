@@ -1,5 +1,3 @@
-using Parameters
-using GeometryTypes
 
 @with_kw struct EqualBoreholesBorefield{T <: Borehole, R <: Medium, S <: Real} <: Borefield
     borehole_prototype::T
@@ -31,6 +29,7 @@ end
 
 function internal_model_coeffs!(M, borefield::EqualBoreholesBorefield, operation, T_fluid)
     Nb = borehole_amount(borefield)
+
     for (i, branch) in enumerate(operation.network)
         mass_flow = operation.mass_flows[i]
 

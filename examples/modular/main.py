@@ -2,7 +2,7 @@ from juliacall import Main as jl
 from juliacall import Pkg as jlPkg
 
 jlPkg.activate("../../")
-jl.seval("using BTESGroundWaterSimulator")
+jl.seval("using BoreholeNetworksSimulator")
 jl.seval("using GeometryTypes")
 jl.seval("using PythonCall")
 

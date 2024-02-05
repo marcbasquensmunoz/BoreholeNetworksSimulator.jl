@@ -1,12 +1,16 @@
-module BTESGroundWaterSimulator
+module BoreholeNetworksSimulator
 
-using LinearAlgebra, GeometryTypes
-using Distances
+using LinearAlgebra
+using GeometryTypes
 using Parameters
 using BoreholeResponseFunctions
 using CoolProp
 using ExponentialUtilities
 using StaticArrays
+using SparseArrays
+using LinearSolve
+using JLD2
+using PythonCall
 
 include("utils.jl")
 

@@ -1,3 +1,4 @@
+
 mutable struct ConvolutionMethod{T} <: Method 
     g::Array{T, 3}
     Δq::Array{T, 2}
@@ -21,7 +22,7 @@ end
 function method_coeffs!(M, method::ConvolutionMethod, borefield::Borefield)
     Nb = borehole_amount(borefield)
     Ns = segment_amount(borefield)
-    M[1:Ns, 3Nb+1:3Nb+Ns] = method.g[:,:,1]
+    M[1:Ns, 3Nb+1:3Nb+Ns] = @view method.g[:,:,1]
     for i in 1:Ns
         bh = where_is_segment(borefield, i)
         M[i, 2Nb + bh] = -1

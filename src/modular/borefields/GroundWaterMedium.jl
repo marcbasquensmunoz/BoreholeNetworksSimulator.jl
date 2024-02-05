@@ -1,6 +1,3 @@
-using Parameters
-using GeometryTypes
-using BoreholeResponseFunctions
 
 @with_kw struct GroundWaterMedium{T <: Real} <: Medium @deftype T
     ux_in_meterperday = 1e-2            # groundwater speed along the flow coordinate
@@ -28,7 +25,6 @@ function compute_response!(g, medium::GroundWaterMedium, borefield::Borefield, t
     for (k, tt) in enumerate(t)
         for j in 1:Ns
             for i in 1:Ns
-                # Return is causing allocations
                 x1, y1, zref1, _  = coords[i]
                 x2, y2, _, zeval2 = coords[j]
 

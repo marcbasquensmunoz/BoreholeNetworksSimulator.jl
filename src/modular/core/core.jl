@@ -1,6 +1,3 @@
-using Parameters
-using SparseArrays
-using LinearSolve
 
 @with_kw struct SimulationParameters
     Nb
