@@ -1,6 +1,6 @@
 using GeometryTypes: Point2
 using CSV, DataFrames, JLD2
-using BTESGroundWaterSimulator
+using BoreholeNetworksSimulator
 
 function load_borefield_from_file(file)
     df = CSV.File(file; decimal=',', delim = ';') |> DataFrame
