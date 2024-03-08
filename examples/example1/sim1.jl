@@ -6,7 +6,7 @@ using DSP,Statistics
 
 using BoreholeResponseFunctions
 
-using BTESGroundWaterSimulator
+using BoreholeNetworksSimulator
 
 
 cdir = @__DIR__
@@ -109,9 +109,9 @@ Nt = length(t) # number of time steps
 
 # 6. THERMAL RESPONSES
 # mutual response function between pairs of segments (adiabatic surface boundary condition)
-g = [[1/(2π*params.λs)*mfls_adiabatic_surface(tt, α, coord[1:3]... ,vt, h, coord[4]; atol =1e-9) for tt in t] for coord in d]
+g = [1/(2π*params.λs)*mfls_adiabatic_surface(tt, α, coord[1:3]... ,vt, h, coord[4]; atol =1e-9) for coord in d, tt in t]
 # Matrix containing response function for each pair of segments at time-step 1
-G = [g[1] for g in g]
+G = g[:, :, 1]
 
 
 # 7. LOADING CONDITION: for this particular simulation we impose temperature as boundary condition
@@ -168,7 +168,6 @@ function solve_problem!(X,M_injection,M_extraction,
                     )
     end
 end
-
 
 
 @time solve_problem!(X,M_injection,M_extraction,
@@ -379,7 +378,7 @@ Tmax = maximum(vcat(Ts_verification...) .+ T0)
 # Slider figure
 scene3 = Figure(size = (400, 400),  rowgap = 0.);
 
-sl1 = scene3[2, 1] = Slider(scene3, range = 2:2:120, startvalue = 3, tellheight = true)
+sl1 = scene3[2, 1] = Makie.Slider(scene3, range = 2:2:120, startvalue = 3, tellheight = true)
 
 month_idx = @lift("month "*string($(sl1.value)))
 Tt = @lift( [T[$(sl1.value)] .+ T0 for T in  Ts_verification] )
