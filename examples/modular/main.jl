@@ -37,11 +37,8 @@ tmax  = 8760*3600*10.
 Nt = div(tmax, tstep)
 
 cdir = @__DIR__
-borehole_positions_file = "$cdir/../example1/data/Braedstrup_borehole_coordinates.txt"
+borehole_positions_file = "$cdir/../plots/data/Braedstrup_borehole_coordinates.txt"
 borefield = load_borefield_from_file(borehole_positions_file)
-
-cache = ""
-
 parameters = compute_parameters(borefield=borefield, tstep=tstep, tmax=tmax)
 constraint = InletTempConstraint([i%12 in 1:6 ? 90. : 55. for i = 1:Nt])
 method = ConvolutionMethod(parameters=parameters, borefield=borefield)
@@ -51,12 +48,5 @@ function operator(i, Tin, Tout, Tb, Δq, Q)
     BoreholeOperation(networks[i%12 in 1:6 ? 2 : 1], 0.5 .* ones(8), 4182.)
 end
 
-#load_cache!(containers=containers, parameters=parameters, cache=cache)
-
-@btime simulate(parameters=parameters, containers=containers, operator=operator, borefield=borefield, constraint=constraint, method=method)
-
-
-cache = "$cdir/results/simulation/cache_3.1536e7.jld2"
-cache = "$cdir/results/simulation/cache_3.1536e8.jld2"
-
+simulate(parameters=parameters, containers=containers, operator=operator, borefield=borefield, constraint=constraint, method=method)
 save_cache(containers=containers, parameters=parameters, path=@__DIR__, title="test")
