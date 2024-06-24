@@ -1,9 +1,11 @@
 
 @with_kw struct GroundMedium{T <: Real} <: Medium @deftype T
-    λ                
-    C
-    α = λ/C 
+    λ = 3.               
+    α = 1e-6
+    C = λ/α
 end
-get_λ(bfp::GroundMedium) = bfp.λ
+get_λ(medium::GroundMedium) = medium.λ
+get_α(medium::GroundMedium) = medium.α
 
-function compute_response!(medium::GroundMedium, borefield::Borefield, coord_source, coord_eval, t) end
+function compute_response!(g, medium::GroundMedium, borefield::Borefield, t) 
+end

@@ -1,8 +1,18 @@
+# X contains: Tin     | Tout    | Tb        | Δq
+#             1:2:2Nb | 2:2:2Nb | 2Nb+1:3Nb | 3Nb+1:3Nb+Ns
+#-----------------------------------------------------------
+# Amount:       Nb    |   Nb    |    Nb     |    Ns
 
 function simulate(;operator, parameters::SimulationParameters, containers::SimulationContainers, borefield::Borefield, constraint::Constraint, method::Method)
 
     @unpack Nb, Ns, Nt, Ts = parameters
     @unpack M, b, X, current_Q = containers 
+
+    compatibility = check_compatibility(borefield, constraint, method)
+    if compatibility isa NotCompatible
+        println(compatibility.message)
+        return
+    end
     
     last_operation = BoreholeOperation(nothing)
 
@@ -35,7 +45,7 @@ function simulate(;operator, parameters::SimulationParameters, containers::Simul
         solve_step!(X, M, b, i, Nb, current_Q)
 
         # Update auxiliaries
-        update_auxiliaries!(method, X, borefield, i)
+        update_auxiliaries!(method, X, current_Q, borefield, i)
 
         last_operation = operation
     end

@@ -11,11 +11,16 @@ using SparseArrays
 using LinearSolve
 using JLD2
 using PythonCall
+using DataStructures
+using QuadGK
+using FastGaussQuadrature
+using LegendrePolynomials
+using Bessels
 
 include("utils.jl")
 
 modular = get_all_julia_files_in_dir("$(@__DIR__)/modular")
-sort_dependencies!(modular, ["interfaces/"])
+sort_dependencies!(modular, ["interfaces/", "core/"])
 include.(modular)
 
 export GroundWaterFlow, evaluate_relevant_distances, map_unique_pairs
@@ -35,7 +40,7 @@ export Borehole, SingleUPipeBorehole
 export Borefield, EqualBoreholesBorefield
 export Medium, GroundMedium, GroundWaterMedium
 export Constraint, HeatLoadConstraint, InletTempConstraint
-export Method, ConvolutionMethod
+export Method, ConvolutionMethod, NonHistoryMethod
 export SimulationParameters, SimulationContainers, BoreholeOperation, compute_parameters, load_cache!, save_cache
 export simulate
 

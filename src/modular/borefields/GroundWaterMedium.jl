@@ -15,6 +15,7 @@
 end
 
 get_λ(medium::GroundWaterMedium) = medium.λ
+get_α(medium::GroundWaterMedium) = medium.α
 
 function compute_response!(g, medium::GroundWaterMedium, borefield::Borefield, t) 
     @unpack θ, λ, vt, α = medium
@@ -25,8 +26,10 @@ function compute_response!(g, medium::GroundWaterMedium, borefield::Borefield, t
     for (k, tt) in enumerate(t)
         for j in 1:Ns
             for i in 1:Ns
+            
                 x1, y1, zref1, _  = coords[i]
-                x2, y2, _, zeval2 = coords[j]
+                x2, y2, zref2, H2 = coords[j]
+                zeval2 = zref2 + H2/2
 
                 x = x2 - x1
                 y = abs(y2 - y1) 

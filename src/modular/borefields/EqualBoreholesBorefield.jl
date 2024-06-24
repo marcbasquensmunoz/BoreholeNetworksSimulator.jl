@@ -24,7 +24,8 @@ function segment_coordinates(bf::EqualBoreholesBorefield, segment)
     z_eval = z_ref + h/2
 
     # (x, y, z_ref, z_eval)
-    return (position[1], position[2], z_ref, z_eval)
+    #return (position[1], position[2], z_ref, z_eval)
+    (position[1], position[2], z_ref, h)
 end
 
 function internal_model_coeffs!(M, borefield::EqualBoreholesBorefield, operation, T_fluid)

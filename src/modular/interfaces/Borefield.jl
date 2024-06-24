@@ -14,6 +14,7 @@ abstract type Borefield end
 
 """
 get_λ                                                                Get the thermal conductivity of the medium
+get_α                                                                Get the thermal diffusivity of the medium
 compute_response!(medium, borefield, coord_source, coord_eval, t)    Compute the thermal responses between segments for all times in t                                 
 """
 abstract type Medium end

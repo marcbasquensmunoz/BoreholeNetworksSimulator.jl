@@ -14,7 +14,7 @@ function precompute_auxiliaries!(method::ConvolutionMethod, borefield::Borefield
     compute_response!(method.g, borefield.medium, borefield, t)
 end
 
-function update_auxiliaries!(method::ConvolutionMethod, X, borefield::Borefield, step)
+function update_auxiliaries!(method::ConvolutionMethod, X, current_Q, borefield::Borefield, step)
     Nb = borehole_amount(borefield)
     method.Δq[:, step] = @view X[3Nb+1:end, step] 
 end
