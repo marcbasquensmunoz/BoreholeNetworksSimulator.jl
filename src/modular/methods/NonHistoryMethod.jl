@@ -47,11 +47,12 @@ function get_sts(borefield::Borefield, i, j)
     MeanSegToSegEvParams(D1=Di, H1=Hi, D2=Dj, H2=Hj, σ=σ)
 end
 
-function update_auxiliaries!(method::NonHistoryMethod, X, current_Q, borefield::Borefield, step)
+function update_auxiliaries!(method::NonHistoryMethod, X, borefield::Borefield, step)
     @unpack ζ, F, expΔt = method
+    Nb = borehole_amount(borefield)
 
-    for i in eachindex(size(F)[2])
-        @. @views F[:, i] = expΔt * F[:, i] + current_Q[step] * (1 - expΔt) / ζ
+    for i in 1:size(F)[2]
+        @. @views F[:, i] = expΔt * F[:, i] + X[3Nb+i] * (1 - expΔt) / ζ
     end
 end
 
@@ -81,11 +82,8 @@ function method_b!(b, method::NonHistoryMethod, borefield::Borefield, step, curr
     Nb = borehole_amount(borefield)
     b .= get_T0(borefield)
 
-    @show current_Q
-
     for i in eachindex(b)
         sts = get_sts(borefield, div(i-1,Nb)+1, (i-1)%Nb+1)
-        rb = get_rb(borefield, i) 
         @inbounds b[i] += C * dot(w[:, i], expΔt .* F[:, i]) + current_Q[i] * q_coef(borefield.medium, method, sts, λ, i)
     end
 end

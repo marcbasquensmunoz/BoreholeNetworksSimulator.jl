@@ -8,7 +8,7 @@ function compute_response!(g, medium::GroundMedium, borefield::Borefield, t)
     for (k, tt) in enumerate(t)
         for j in 1:Ns
             for i in 1:Ns
-                x1, y1, D1, H1  = coords[i]
+                x1, y1, D1, H1 = coords[i]
                 x2, y2, D2, H2 = coords[j]
                 rb = get_rb(borefield, i)
                 σ = i == j ? rb : sqrt((x2-x1)^2 + (y2-y1)^2)

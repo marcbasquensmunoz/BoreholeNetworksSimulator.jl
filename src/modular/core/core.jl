@@ -68,7 +68,7 @@ function heat_balance_b!(b, borefield, current_Q)
     end  
 end
 
-function solve_step!(X, A, b, step, Nb, current_Q)
+function solve_step!(X, A, b, step, Nb)
     #=
     prob = LinearProblem(A, b)
     linsolve = init(prob)
@@ -76,7 +76,6 @@ function solve_step!(X, A, b, step, Nb, current_Q)
     =#
     x = A\b
     X[:, step] = x
-    current_Q .+= @view x[3Nb+1:end]
 end
 
 function compute_parameters(;borefield::Borefield, tstep, tmax)

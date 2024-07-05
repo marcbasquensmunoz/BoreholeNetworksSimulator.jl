@@ -3,7 +3,6 @@ module BoreholeNetworksSimulator
 using LinearAlgebra
 using GeometryTypes
 using Parameters
-using BoreholeResponseFunctions
 using CoolProp
 using ExponentialUtilities
 using StaticArrays
@@ -15,7 +14,10 @@ using DataStructures
 using QuadGK
 using FastGaussQuadrature
 using LegendrePolynomials
-using Bessels
+using SpecialFunctions
+
+using BoreholeResponseFunctions
+using FiniteLineSource
 
 include("utils.jl")
 

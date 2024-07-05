@@ -5,4 +5,4 @@ struct NotCompatible <: Compatibility
     message
 end
 
-check_compatibility(borefield::Borefield, constraint::Constraint, method::Method) = Compatible()
+check_compatibility(::Borefield, ::Constraint, ::Method) = Compatible()
