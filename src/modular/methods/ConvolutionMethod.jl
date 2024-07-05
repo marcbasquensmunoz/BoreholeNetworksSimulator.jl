@@ -29,7 +29,7 @@ function method_coeffs!(M, method::ConvolutionMethod, borefield::Borefield)
     end
 end
 
-function method_b!(b, method::ConvolutionMethod, borefield::Borefield, step)
+function method_b!(b, method::ConvolutionMethod, borefield::Borefield, step, current_Q)
     Ns = segment_amount(borefield)
     b .= -get_T0(borefield)
 

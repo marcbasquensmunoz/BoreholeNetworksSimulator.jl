@@ -1,3 +1,4 @@
+import Base: reverse
 
 @with_kw struct SimulationParameters
     Nb
@@ -26,6 +27,11 @@ end
     cpf::T = 4182.                  # specific heat capacity
 end
 BoreholeOperation(::Nothing) = BoreholeOperation([[]], [0.], 0.)
+
+@with_kw struct BoreholeNetwork
+    branches::Vector
+end
+reverse(network::BoreholeNetwork) = BoreholeNetwork(branches=map(branch -> reverse(branch), network.branches))
 
 function branch_of_borehole(operation::BoreholeOperation, borehole)
     for (i, branch) in enumerate(operation.network)

@@ -7,5 +7,3 @@ end
 get_λ(medium::GroundMedium) = medium.λ
 get_α(medium::GroundMedium) = medium.α
 
-function compute_response!(g, medium::GroundMedium, borefield::Borefield, t) 
-end

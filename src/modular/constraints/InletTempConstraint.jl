@@ -19,7 +19,7 @@ end
 
 function branches_constraints_b!(b, constraint::InletTempConstraint, operation, step)
     b .= 0.
-    for branch in operation.network              
+    for branch in operation.network
         b[branch[1]] = constraint.T_in[step]
     end
 end

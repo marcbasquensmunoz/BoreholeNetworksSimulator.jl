@@ -3,6 +3,13 @@
 #-----------------------------------------------------------
 # Amount:       Nb    |   Nb    |    Nb     |    Ns
 
+########################################################
+# Equations present in the system
+#   (1)  Internal model
+#   (2)  Branch topology and temperature constraints
+#   (3)  Heat transfer model
+#   (4)  Heat balance equations
+
 function simulate(;operator, parameters::SimulationParameters, containers::SimulationContainers, borefield::Borefield, constraint::Constraint, method::Method)
 
     @unpack Nb, Ns, Nt, Ts = parameters
@@ -38,7 +45,7 @@ function simulate(;operator, parameters::SimulationParameters, containers::Simul
         # Update b
         @views internal_model_b!(b[1:Nb], borefield)
         @views branches_constraints_b!(b[Nb+1:2Nb], constraint, operation, i)
-        @views method_b!(b[2Nb+1:2Nb+Ns], method, borefield, i)
+        @views method_b!(b[2Nb+1:2Nb+Ns], method, borefield, i, current_Q)
         @views heat_balance_b!(b[2Nb+Ns+1:3Nb+Ns], borefield, current_Q)  
 
         # Solve system of equations
