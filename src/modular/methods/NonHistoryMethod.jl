@@ -93,11 +93,9 @@ end
 function q_coef(::GroundMedium, method, sts, λ, i)
     @unpack D1, H1, D2, H2, σ = sts
     @unpack expΔt, w, ζ = method
-    C = 1 / (2*λ*π^2)
 
     β(d) = sqrt(σ^2 + d^2) + d*log(sqrt(σ^2 + d^2) - d)
     constant_integral = 1/(4π*λ*H2) * (β(D1+H1-D2-H2) + β(D1-D2) - β(D1+H1-D2) - β(D1-D2-H2))
 
-    @show dot(w[:, i], expΔt ./ ζ)
     constant_integral - dot(w[:, i], expΔt ./ ζ)
 end
