@@ -1,5 +1,5 @@
 
-mutable struct ConvolutionMethod{T} <: Method 
+mutable struct ConvolutionMethod{T} <: TimeSuperpositionMethod 
     g::Array{T, 3}
     q::Array{T, 2}
 end
@@ -29,7 +29,7 @@ function method_coeffs!(M, method::ConvolutionMethod, borefield::Borefield)
     end
 end
 
-function method_b!(b, method::ConvolutionMethod, borefield::Borefield, step, current_Q)
+function method_b!(b, method::ConvolutionMethod, borefield::Borefield, step)
     Ns = segment_amount(borefield)
     b .= -get_T0(borefield)
 

@@ -71,7 +71,7 @@ with open(borehole_positions_file) as csv_file:
     df = pd.DataFrame(csv_reader) 
 
 borehole_positions = jl.Array([jl.Point2(x, y) for (x,y) in zip(df.X,df.Y)])
-borefield = jl.EqualBoreholesBorefield(borehole_prototype=jl.SingleUPipeBorehole(H=50., D=4.), positions=borehole_positions, medium=jl.GroundWaterMedium(), T0=10.)
+borefield = jl.EqualBoreholesBorefield(borehole_prototype=jl.SingleUPipeBorehole(H=50., D=4.), positions=borehole_positions, medium=jl.FlowInPorousMedium(), T0=10.)
 
 parameters = jl.compute_parameters(borefield=borefield, tstep=tstep, tmax=tmax)
 constraint = jl.InletTempConstraint(jl.Array[jl.Float64]([90. if i%12 in range(6) else 55. for i in range(Nt)]))

@@ -3,7 +3,7 @@ struct InletTempConstraint{T <: Real} <: Constraint
     T_in::Vector{T}
 end
 
-function branches_constraints_coeffs!(M, ::InletTempConstraint, operation)
+function constraints_coeffs!(M, ::InletTempConstraint, operation)
     M .= 0.
     Nb = sum([length(branch) for branch in operation.network])
 
@@ -17,7 +17,7 @@ function branches_constraints_coeffs!(M, ::InletTempConstraint, operation)
     end
 end
 
-function branches_constraints_b!(b, constraint::InletTempConstraint, operation, step)
+function constraints_b!(b, constraint::InletTempConstraint, operation, step)
     b .= 0.
     for branch in operation.network
         b[branch[1]] = constraint.T_in[step]

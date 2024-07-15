@@ -30,11 +30,14 @@ function simulate(;operator, parameters::SimulationParameters, containers::Simul
             operation = PythonCall.pyconvert(BoreholeOperation, operation)
         end
 
+        Nbr = length(operation.network)
+
         # Update M
         @views internal_model_coeffs!(M[1:Nb, :], borefield, operation, i == 1 ? get_T0(borefield) .* ones(2Nb) :  X[1:2Nb, i-1])
         if last_operation.network != operation.network
-            @views branches_constraints_coeffs!(M[Nb+1:2Nb, :], constraint, operation)
+            @views topology_coeffs!(M[Nb+1:2Nb-Nbr, :], operation)
         end
+        @views constraints_coeffs!(M[2Nb-Nbr+1:2Nb, :], constraint, operation)
         if i == Ts
             @views method_coeffs!(M[2Nb+1:2Nb+Ns, :], method, borefield)
         end
@@ -44,7 +47,7 @@ function simulate(;operator, parameters::SimulationParameters, containers::Simul
 
         # Update b
         @views internal_model_b!(b[1:Nb], borefield)
-        @views branches_constraints_b!(b[Nb+1:2Nb], constraint, operation, i)
+        @views constraints_b!(b[Nb+1:2Nb], constraint, operation, i)
         @views method_b!(b[2Nb+1:2Nb+Ns], method, borefield, i, X[3Nb+1:3Nb+Ns])
         @views heat_balance_b!(b[2Nb+Ns+1:3Nb+Ns], borefield, X[3Nb+1:3Nb+Ns])  
 

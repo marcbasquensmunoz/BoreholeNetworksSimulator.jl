@@ -1,10 +1,17 @@
-mutable struct NonHistoryMethod{T} <: Method 
+mutable struct NonHistoryMethod{T} <: TimeSuperpositionMethod 
     F::Matrix{T}
     ζ::Vector{T}
     w::Matrix{T}
     expΔt::Vector{T}
 end
-check_compatibility(borefield::Borefield, ::Constraint, ::NonHistoryMethod) = borefield.medium isa GroundWaterMedium ? NotCompatible("The non-history method is not implemented with ground water flow yet") : Compatible() 
+
+function check_compatibility(borefield::Borefield, ::Constraint, ::NonHistoryMethod) 
+    if borefield.medium isa FlowInPorousMedium 
+        NotCompatible("The non-history method is not implemented with ground water flow yet") 
+    else
+        Compatible() 
+    end
+end
 
 FiniteLineSource.SegmentToSegment(s::MeanSegToSegEvParams) = FiniteLineSource.SegmentToSegment(D1=s.D1, H1=s.H1, D2=s.D2, H2=s.H2, σ=s.σ)
 
@@ -37,7 +44,7 @@ function NonHistoryMethod(;parameters, borefield, b = 10.)
 
     perm = sortperm(ζ)
 
-    return NonHistoryMethod(zeros(n, Ns), ζ[perm], w[perm, :], expΔt[perm])
+    return NonHistoryMethod(zeros(n, Ns*Ns), ζ[perm], w[perm, :], expΔt[perm])
 end
 
 function get_sts(borefield::Borefield, i, j)
@@ -52,7 +59,7 @@ function update_auxiliaries!(method::NonHistoryMethod, X, borefield::Borefield, 
     Nb = borehole_amount(borefield)
 
     for i in 1:size(F)[2]
-        @. @views F[:, i] = expΔt * F[:, i] + X[3Nb+i] * (1 - expΔt) / ζ
+        @. @views F[:, i] = expΔt * F[:, i] + X[3Nb+(i-1)%Nb+1, step] * (1 - expΔt) / ζ
     end
 end
 
@@ -75,16 +82,13 @@ function method_coeffs!(M, method::NonHistoryMethod, borefield::Borefield)
     end
 end
 
-function method_b!(b, method::NonHistoryMethod, borefield::Borefield, step, current_Q)
+function method_b!(b, method::NonHistoryMethod, borefield::Borefield, step)
     @unpack w, expΔt, F = method
-    λ = get_λ(borefield.medium)
-    C = 1 / (2*λ^2*π^2)
-    Nb = borehole_amount(borefield)
     b .= get_T0(borefield)
+    Nb = borehole_amount(borefield)
 
     for i in eachindex(b)
-        sts = get_sts(borefield, div(i-1,Nb)+1, (i-1)%Nb+1)
-        @inbounds b[i] += C * dot(w[:, i], expΔt .* F[:, i]) + current_Q[i] * q_coef(borefield.medium, method, sts, λ, i)
+        @inbounds b[i] += sum([dot(w[:, Nb*(i-1)+j], expΔt .* F[:, Nb*(i-1)+j]) for j in 1:Nb])
     end
 end
 

@@ -1,5 +1,5 @@
 
-function compute_response!(g, medium::GroundWaterMedium, borefield::Borefield, t) 
+function compute_response!(g, medium::FlowInPorousMedium, borefield::Borefield, t) 
     @unpack θ, λ, vt, α = medium
     Ns = segment_amount(borefield)
 

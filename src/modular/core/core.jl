@@ -14,11 +14,10 @@ end
     M
     X
     b
-    current_Q
 end
 function SimulationContainers(parameters::SimulationParameters) 
     @unpack Nb, Ns, Nt = parameters
-    SimulationContainers(M = spzeros(3Nb + Ns, 3Nb + Ns), b = zeros(3Nb + Ns), X = zeros(3Nb + Ns, Nt), current_Q = zeros(Ns))
+    SimulationContainers(M = spzeros(3Nb + Ns, 3Nb + Ns), b = zeros(3Nb + Ns), X = zeros(3Nb + Ns, Nt))
 end
           
 @with_kw struct BoreholeOperation{T <: Real}
@@ -61,10 +60,19 @@ function heat_balance_coeffs!(M, borefield::Borefield, operation::BoreholeOperat
     end   
 end
 
-function heat_balance_b!(b, borefield, current_Q)
+function topology_coeffs!(M, operation::BoreholeOperation)
+    for (i, branch) in enumerate(operation.network)
+        for (out, in) in zip(branch[1:end-1], branch[2:end])
+            M[i, 2*in-1] = 1.
+            M[i, 2*out] = -1.
+        end
+    end
+end
+
+function heat_balance_b!(b, borefield, Q)
     Nb = borehole_amount(borefield)
     for i in 1:Nb
-        b[i] = current_Q[i] * get_H(borefield, i)
+        b[i] = Q[i] * get_H(borefield, i)
     end  
 end
 
@@ -84,12 +92,11 @@ end
 
 function load_cache!(;containers::SimulationContainers, parameters::SimulationParameters, cache)
     if cache != ""
-        @unpack X, b, current_Q = containers
+        @unpack X, b = containers
         data = load(cache)
         parameters.Ts = size(data["X"])[1]
         X[:, 1:parameters.Ts] = data["X"]
         b = data["b"]
-        current_Q = data["current_Q"]
     end
 end
 
@@ -101,8 +108,7 @@ function save_cache(;containers::SimulationContainers, parameters::SimulationPar
     save("$(simulation_results_directory)/cache_$(parameters.tmax).jld2" , 
         Dict( 
             "X" => containers.X,
-            "b" => containers.b,
-            "current_Q" => containers.current_Q
+            "b" => containers.b
         )
     )
 end

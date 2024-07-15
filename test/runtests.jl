@@ -8,7 +8,7 @@ const ϵ = 5*10^-14
 function initialize(data, tstep, tmax)
     df = readdlm("$(@__DIR__)/$data", ';', Float64, header=true)[1]
     borehole_positions = [Point2(df[i, 1], df[i, 2]) for i in 1:size(df)[1]]
-    borefield = EqualBoreholesBorefield(borehole_prototype=SingleUPipeBorehole(H=50., D=4.), positions=borehole_positions, medium=GroundWaterMedium(), T0 = 10.)
+    borefield = EqualBoreholesBorefield(borehole_prototype=SingleUPipeBorehole(H=50., D=4.), positions=borehole_positions, medium=FlowInPorousMedium(), T0 = 10.)
     parameters = compute_parameters(borefield=borefield, tstep=tstep, tmax=tmax)
     method = ConvolutionMethod(parameters=parameters, borefield=borefield)
     containers = SimulationContainers(parameters)

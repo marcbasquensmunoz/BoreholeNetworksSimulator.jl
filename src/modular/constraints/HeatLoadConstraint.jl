@@ -1,12 +1,16 @@
 struct HeatLoadConstraint{T} <: Constraint
-    Q_tot::T
+    Q_tot::Vector{T}
 end
 
-function branches_constraints_coeffs!(M, ::HeatLoadConstraint, operation)
+function constraints_coeffs!(M, ::HeatLoadConstraint, operation)
     M .= 0
     Nb = sum([length(branch) for branch in operation.network])
-    Nbr = length(operation.network)
 
+    for (i, branch) in enumerate(operation.network)
+        M[i, 3Nb .+ branch] .= 1.
+    end
+
+    #=
     first_branch = operation.network[1]
     for i = 1:2*Nb
         branch = branch_of_borehole(operation.network, div(i-1, 2) + 1)
@@ -24,11 +28,14 @@ function branches_constraints_coeffs!(M, ::HeatLoadConstraint, operation)
             M[branch[i], 2*branch[i-1]] = -1.
         end
     end
+    M[1, 1] = 0.
+    M[1, 2] = 0.
+    M[1, 4] = 1.
+    =#
 end
 
-function branches_constraints_b!(b, constraint::HeatLoadConstraint, operation, step)
-    first_branch = operation.network[1]
-    b[first_branch[1]] = constraint.Q_tot
+function constraints_b!(b, constraint::HeatLoadConstraint, operation, step)
+    b .= constraint.Q_tot
 end
 
 function branch_of_borehole(network, borehole)
