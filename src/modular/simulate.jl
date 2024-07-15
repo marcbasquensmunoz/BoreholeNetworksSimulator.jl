@@ -10,7 +10,7 @@
 #   (3)  Heat transfer model
 #   (4)  Heat balance equations
 
-function simulate(;operator, parameters::SimulationParameters, containers::SimulationContainers, borefield::Borefield, constraint::Constraint, method::Method)
+function simulate(;operator, parameters::SimulationParameters, containers::SimulationContainers, borefield::Borefield, constraint::Constraint, method::TimeSuperpositionMethod)
 
     @unpack Nb, Ns, Nt, Ts = parameters
     @unpack M, b, X = containers 
@@ -30,29 +30,40 @@ function simulate(;operator, parameters::SimulationParameters, containers::Simul
             operation = PythonCall.pyconvert(BoreholeOperation, operation)
         end
 
-        Nbr = length(operation.network)
+        Nbr = n_branches(operation.network)
+
+        internal_model_eqs = 1:Nb
+        topology_eqs = Nb+1:2Nb-Nbr
+        constraints_eqs = 2Nb-Nbr+1:2Nb
+        method_eqs = 2Nb+1:3Nb
+        balance_eqs = 3Nb+1:4Nb
+    
+        @show topology_eqs
+        @show constraints_eqs
 
         # Update M
-        @views internal_model_coeffs!(M[1:Nb, :], borefield, operation, i == 1 ? get_T0(borefield) .* ones(2Nb) :  X[1:2Nb, i-1])
+        @views internal_model_coeffs!(M[internal_model_eqs, :], borefield, operation, i == 1 ? get_T0(borefield) .* ones(2Nb) :  X[1:2Nb, i-1])
+        @show Nb+1:2Nb-Nbr 
         if last_operation.network != operation.network
-            @views topology_coeffs!(M[Nb+1:2Nb-Nbr, :], operation)
+            @views topology_coeffs!(M[topology_eqs, :], operation)
         end
-        @views constraints_coeffs!(M[2Nb-Nbr+1:2Nb, :], constraint, operation)
+        @show 2Nb-Nbr+1:2Nb
+        @views constraints_coeffs!(M[constraints_eqs, :], constraint, operation)
         if i == Ts
-            @views method_coeffs!(M[2Nb+1:2Nb+Ns, :], method, borefield)
+            @views method_coeffs!(M[method_eqs, :], method, borefield)
         end
         if last_operation.mass_flows != operation.mass_flows
-            @views heat_balance_coeffs!(M[2Nb+Ns+1:3Nb+Ns, :], borefield, operation)
+            @views heat_balance_coeffs!(M[balance_eqs, :], borefield, operation)
         end
 
         # Update b
-        @views internal_model_b!(b[1:Nb], borefield)
-        @views constraints_b!(b[Nb+1:2Nb], constraint, operation, i)
-        @views method_b!(b[2Nb+1:2Nb+Ns], method, borefield, i, X[3Nb+1:3Nb+Ns])
-        @views heat_balance_b!(b[2Nb+Ns+1:3Nb+Ns], borefield, X[3Nb+1:3Nb+Ns])  
+        @views internal_model_b!(b[internal_model_eqs], borefield)
+        @views constraints_b!(b[constraints_eqs], constraint, operation, i)
+        @views method_b!(b[method_eqs], method, borefield, i)
+        @views heat_balance_b!(b[balance_eqs], borefield, X[3Nb+1:4Nb])  
 
         # Solve system of equations
-        solve_step!(X, M, b, i, Nb)
+        @views solve_step!(X[:, i], M, b)
 
         # Update auxiliaries
         update_auxiliaries!(method, X, borefield, i)

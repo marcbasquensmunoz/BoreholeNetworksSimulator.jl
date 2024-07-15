@@ -6,12 +6,8 @@ end
 function ConvolutionMethod(;parameters, borefield)
     @unpack Nb, Nt, Ns = parameters
     model = ConvolutionMethod(zeros(Nb, Nb, Nt), zeros(Ns, Nt))
-    precompute_auxiliaries!(model, borefield, parameters.t)
+    compute_response!(model.g, borefield.medium, borefield, parameters.t)
     return model
-end
-
-function precompute_auxiliaries!(method::ConvolutionMethod, borefield::Borefield, t) 
-    compute_response!(method.g, borefield.medium, borefield, t)
 end
 
 function update_auxiliaries!(method::ConvolutionMethod, X, borefield::Borefield, step)

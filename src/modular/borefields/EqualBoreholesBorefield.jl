@@ -31,7 +31,7 @@ end
 function internal_model_coeffs!(M, borefield::EqualBoreholesBorefield, operation, T_fluid)
     Nb = borehole_amount(borefield)
 
-    for (i, branch) in enumerate(operation.network)
+    for (i, branch) in enumerate(operation.network.branches)
         mass_flow = operation.mass_flows[i]
 
         for j in branch

@@ -31,7 +31,7 @@ end
         ]
     ]
 
-    function operator(i, Tin, Tout, Tb, Δq, Q)
+    function operator(i, Tin, Tout, Tb, Q)
         BoreholeOperation(networks[1], 0.5 .* ones(8), 4182.)
     end
 

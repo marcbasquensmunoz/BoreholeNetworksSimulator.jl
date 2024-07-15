@@ -5,4 +5,4 @@ struct NotCompatible <: Compatibility
     message
 end
 
-check_compatibility(::Borefield, ::Constraint, ::Method) = Compatible()
+check_compatibility(::Borefield, ::Constraint, ::TimeSuperpositionMethod) = Compatible()

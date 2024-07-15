@@ -60,7 +60,7 @@ tstep = 8760*3600/12.
 tmax  = 8760*3600*10.
 Nt = int(tmax // tstep)
 
-def operator(i, Tin, Tout, Tb, Δq, Q):
+def operator(i, Tin, Tout, Tb, Q):
     op = jl.BoreholeOperation(network=jl.Array[jl.Array[jl.Int]](networks[1 if i%12 in range(6) else 0]), mass_flows=jl.Array[jl.Float64](0.5 * np.ones(8)), cpf=4182.)
     return op
 
