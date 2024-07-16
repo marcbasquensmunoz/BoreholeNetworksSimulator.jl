@@ -49,11 +49,11 @@ function solve_step!(X, A, b)
     linsolve = init(prob)
     x = solve(linsolve).u
     =#
-    X = A\b
+    X .= A\b
 end
 
 function compute_parameters(;borefield::Borefield, tstep, tmax)
-    SimulationParameters(Nb=borehole_amount(borefield), Ns=segment_amount(borefield), tstep=tstep, tmax=tmax)
+    SimulationParameters(Nb=n_boreholes(borefield), Ns=n_segments(borefield), tstep=tstep, tmax=tmax)
 end
 
 function topology_coeffs!(M, operation::BoreholeOperation)

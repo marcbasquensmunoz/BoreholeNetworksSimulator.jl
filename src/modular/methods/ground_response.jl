@@ -1,7 +1,7 @@
 
 function compute_response!(g, medium::GroundMedium, borefield::Borefield, t) 
     @unpack λ, α = medium
-    Ns = segment_amount(borefield)
+    Ns = n_segments(borefield)
 
     coords = [segment_coordinates(borefield, i) for i in 1:Ns]
     

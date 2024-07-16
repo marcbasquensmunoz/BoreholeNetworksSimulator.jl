@@ -60,7 +60,7 @@ function simulate(;operator, parameters::SimulationParameters, containers::Simul
         @views internal_model_b!(b[internal_model_eqs], borefield)
         @views constraints_b!(b[constraints_eqs], constraint, operation, i)
         @views method_b!(b[method_eqs], method, borefield, i)
-        @views heat_balance_b!(b[balance_eqs], borefield, X[3Nb+1:4Nb])  
+        @views heat_balance_b!(b[balance_eqs], borefield, X[balance_eqs])  
 
         # Solve system of equations
         @views solve_step!(X[:, i], M, b)

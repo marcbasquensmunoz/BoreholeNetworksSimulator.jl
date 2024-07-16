@@ -1,6 +1,6 @@
 
-struct InletTempConstraint{T} <: Constraint 
-    T_in::Vector{T}
+struct InletTempConstraint <: Constraint 
+    T_in
 end
 
 function constraints_coeffs!(M, ::InletTempConstraint, operation)

@@ -56,7 +56,7 @@ end
 
 function update_auxiliaries!(method::NonHistoryMethod, X, borefield::Borefield, step)
     @unpack ζ, F, expΔt = method
-    Nb = borehole_amount(borefield)
+    Nb = n_boreholes(borefield)
 
     for i in 1:size(F)[2]
         @. @views F[:, i] = expΔt * F[:, i] + X[3Nb+(i-1)%Nb+1, step] * (1 - expΔt) / ζ
@@ -64,8 +64,8 @@ function update_auxiliaries!(method::NonHistoryMethod, X, borefield::Borefield, 
 end
 
 function method_coeffs!(M, method::NonHistoryMethod, borefield::Borefield)
-    Nb = borehole_amount(borefield)
-    Ns = segment_amount(borefield)
+    Nb = n_boreholes(borefield)
+    Ns = n_segments(borefield)
     λ = get_λ(borefield.medium)
 
     for i in 1:Ns
@@ -85,7 +85,7 @@ end
 function method_b!(b, method::NonHistoryMethod, borefield::Borefield, step)
     @unpack w, expΔt, F = method
     b .= get_T0(borefield)
-    Nb = borehole_amount(borefield)
+    Nb = n_boreholes(borefield)
 
     for i in eachindex(b)
         @inbounds b[i] += sum([dot(w[:, Nb*(i-1)+j], expΔt .* F[:, Nb*(i-1)+j]) for j in 1:Nb])

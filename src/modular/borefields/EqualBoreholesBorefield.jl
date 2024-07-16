@@ -6,8 +6,8 @@
     T0::S
 end
 
-borehole_amount(bf::EqualBoreholesBorefield) = length(bf.positions)
-segment_amount(bf::EqualBoreholesBorefield) = length(bf.positions)
+n_boreholes(bf::EqualBoreholesBorefield) = length(bf.positions)
+n_segments(bf::EqualBoreholesBorefield) = length(bf.positions)
 get_H(bf::EqualBoreholesBorefield, i) = get_H(bf.borehole_prototype)
 get_h(bf::EqualBoreholesBorefield, i) = get_h(bf.borehole_prototype)
 get_rb(bf::EqualBoreholesBorefield, i) = get_rb(bf.borehole_prototype)
@@ -29,7 +29,7 @@ function segment_coordinates(bf::EqualBoreholesBorefield, segment)
 end
 
 function internal_model_coeffs!(M, borefield::EqualBoreholesBorefield, operation, T_fluid)
-    Nb = borehole_amount(borefield)
+    Nb = n_boreholes(borefield)
 
     for (i, branch) in enumerate(operation.network.branches)
         mass_flow = operation.mass_flows[i]

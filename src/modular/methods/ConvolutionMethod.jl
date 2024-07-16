@@ -11,13 +11,14 @@ function ConvolutionMethod(;parameters, borefield)
 end
 
 function update_auxiliaries!(method::ConvolutionMethod, X, borefield::Borefield, step)
-    Nb = borehole_amount(borefield)
+    Nb = n_boreholes(borefield)
+    @show X[3Nb+1:end, step] 
     method.q[:, step] = @view X[3Nb+1:end, step] 
 end
 
 function method_coeffs!(M, method::ConvolutionMethod, borefield::Borefield)
-    Nb = borehole_amount(borefield)
-    Ns = segment_amount(borefield)
+    Nb = n_boreholes(borefield)
+    Ns = n_segments(borefield)
     M[1:Ns, 3Nb+1:3Nb+Ns] = @view method.g[:,:,1]
     for i in 1:Ns
         bh = where_is_segment(borefield, i)
@@ -26,7 +27,7 @@ function method_coeffs!(M, method::ConvolutionMethod, borefield::Borefield)
 end
 
 function method_b!(b, method::ConvolutionMethod, borefield::Borefield, step)
-    Ns = segment_amount(borefield)
+    Ns = n_segments(borefield)
     b .= -get_T0(borefield)
 
     for k = 1:step-1

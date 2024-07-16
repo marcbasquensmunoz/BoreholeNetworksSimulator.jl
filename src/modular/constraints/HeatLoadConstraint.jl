@@ -4,9 +4,9 @@ end
 
 function constraints_coeffs!(M, ::HeatLoadConstraint, operation)
     M .= 0
-    Nb = sum([length(branch) for branch in operation.network])
+    Nb = sum([length(branch) for branch in operation.network.branches])
 
-    for (i, branch) in enumerate(operation.network)
+    for (i, branch) in enumerate(operation.network.branches)
         M[i, 3Nb .+ branch] .= 1.
     end
 

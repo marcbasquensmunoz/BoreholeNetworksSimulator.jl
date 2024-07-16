@@ -15,13 +15,15 @@ rb = 0.1
 
 positions = [(0., i) for i in 0:2]
 
-
-borefield = EqualBoreholesBorefield(borehole_prototype=SingleUPipeBorehole(H=10., D=0., rb=rb), positions=positions, medium=GroundMedium(α=α, λ=λ), T0 = 0.)
+T0 = 0.
+borehole = SingleUPipeBorehole(H=10., D=0., rb=rb)
+medium = GroundMedium(α=α, λ=λ)
+borefield = EqualBoreholesBorefield(borehole_prototype=borehole, positions=positions, medium=medium, T0 = T0)
 parameters = compute_parameters(borefield=borefield, tstep=tstep, tmax=tmax)
-constraint = InletTempConstraint(10*ones(Nt))
-#constraint = HeatLoadConstraint([1., 1.])
+#constraint = InletTempConstraint(10*ones(2))
+constraint = HeatLoadConstraint([1., 1.])
 function operator(i, Tin, Tout, Tb, q)
-    BoreholeOperation(network[1], 0.1 .* ones(Nbr), 4182.)
+    BoreholeOperation(network[1], 0.1 .* ones(2), 4182.)
 end
 
 
@@ -30,7 +32,7 @@ containers_c = SimulationContainers(parameters)
 @time simulate(parameters=parameters, containers=containers_c, operator=operator, borefield=borefield, constraint=constraint, method=convolution)
 X1 = containers_c.X
 
-nonhistory = NonHistoryMethod(parameters=parameters, borefield=borefield, b = 10.)
+nonhistory = NonHistoryMethod(parameters=parameters, borefield=borefield, b = 2.)
 containers_nh = SimulationContainers(parameters)
 @time simulate(parameters=parameters, containers=containers_nh, operator=operator, borefield=borefield, constraint=constraint, method=nonhistory)
 X2 = containers_nh.X

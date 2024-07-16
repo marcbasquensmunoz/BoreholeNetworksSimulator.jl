@@ -1,7 +1,7 @@
 
 function heat_balance_coeffs!(M, borefield::Borefield, operation::BoreholeOperation)
-    Nb = borehole_amount(borefield)
-    Ns = segment_amount(borefield)
+    Nb = n_boreholes(borefield)
+    Ns = n_segments(borefield)
 
     for i in 1:Nb
         heat = operation.cpf .* operation.mass_flows[branch_of_borehole(operation, i)] 
@@ -19,7 +19,7 @@ function heat_balance_coeffs!(M, borefield::Borefield, operation::BoreholeOperat
 end
 
 function heat_balance_b!(b, borefield, Q)
-    Nb = borehole_amount(borefield)
+    Nb = n_boreholes(borefield)
     for i in 1:Nb
         b[i] = Q[i] * get_H(borefield, i)
     end  

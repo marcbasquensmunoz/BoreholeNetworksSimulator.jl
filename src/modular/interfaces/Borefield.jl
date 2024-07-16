@@ -2,9 +2,9 @@
 abstract type Borefield end
 
 # Get the amount of boreholes in the borefield     
-function borehole_amount(::Borefield) end
+function n_boreholes(::Borefield) end
 # Get the total amount of segments in the borefield 
-function segment_amount(::Borefield) end
+function n_segments(::Borefield) end
 # Get the length of borehole i 
 function get_H(::Borefield, i) end
 # Get the segment length of borehole i
