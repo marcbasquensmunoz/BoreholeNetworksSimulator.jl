@@ -1,3 +1,5 @@
+[![Aqua QA](https://raw.githubusercontent.com/JuliaTesting/Aqua.jl/master/badge.svg)](https://github.com/JuliaTesting/Aqua.jl)
+
 # BoreholeNetworksSimulator
 
 This package implements a borehole network simulation tool featuring a modular architecture that allows to choose among several models, system configurations and constraints options.
