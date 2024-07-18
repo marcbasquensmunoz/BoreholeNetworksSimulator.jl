@@ -1,30 +1,15 @@
 
-@with_kw struct SimulationParameters
-    Nb
-    Ns
-    tstep
-    tmax
-    t = tstep:tstep:tmax
-    Nt = length(t)
-    Ts = 1
-end
-
-@with_kw struct SimulationContainers
-    M
-    X
-    b
-end
-function SimulationContainers(parameters::SimulationParameters) 
-    @unpack Nb, Ns, Nt = parameters
-    SimulationContainers(M = spzeros(3Nb + Ns, 3Nb + Ns), b = zeros(3Nb + Ns), X = zeros(3Nb + Ns, Nt))
-end
-          
-@with_kw struct BoreholeOperation{T}
+@with_kw struct BoreholeOperation
     network         
-    mass_flows:: Vector{T}          # Mass flow for each branch in network
-    cpf::T = 4182.                  # specific heat capacity
+    mass_flows:: Vector          # Mass flow for each branch in network
+    #cpf::T = 4182.                  # specific heat capacity
 end
-BoreholeOperation(::Nothing) = BoreholeOperation([[]], [0.], 0.)
+BoreholeOperation(::Nothing) = BoreholeOperation([[]], [0.])
+
+@with_kw struct Fluid
+    cpf
+    name
+end
 
 @with_kw struct BoreholeNetwork
     branches::Vector
@@ -32,6 +17,35 @@ end
 Base.reverse(network::BoreholeNetwork) = BoreholeNetwork(branches=map(branch -> Base.reverse(branch), network.branches))
 n_branches(network::BoreholeNetwork) = length(network.branches)
 first_boreholes(network::BoreholeNetwork) = map(first, network.branches)
+
+@with_kw struct SimulationOptions
+    method::TimeSuperpositionMethod
+    constraint::Constraint
+    borefield::Borefield
+    fluid::Fluid
+    Δt
+    Nt
+    Nb = n_boreholes(borefield)
+    Ns = n_segments(borefield)
+    Ts = 1
+    Tmax = Δt * Nt
+    t = Δt:Δt:Tmax
+end
+
+@with_kw struct SimulationContainers
+    M
+    X
+    b
+end
+
+function initialize(options::SimulationOptions) 
+    precompute_auxiliaries!(options.method, options=options)
+    SimulationContainers(options)
+end
+function SimulationContainers(options::SimulationOptions) 
+    @unpack Nb, Nt = options
+    SimulationContainers(M = spzeros(4Nb, 4Nb), b = zeros(4Nb), X = zeros(4Nb, Nt))
+end
 
 function branch_of_borehole(operation::BoreholeOperation, borehole)
     for (i, branch) in enumerate(operation.network.branches)
@@ -50,10 +64,6 @@ function solve_step!(X, A, b)
     x = solve(linsolve).u
     =#
     X .= A\b
-end
-
-function compute_parameters(;borefield::Borefield, tstep, tmax)
-    SimulationParameters(Nb=n_boreholes(borefield), Ns=n_segments(borefield), tstep=tstep, tmax=tmax)
 end
 
 function topology_coeffs!(M, operation::BoreholeOperation)

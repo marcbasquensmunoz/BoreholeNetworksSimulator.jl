@@ -1,11 +1,10 @@
 using BoreholeNetworksSimulator
 using FiniteLineSource
 
-tstep = 8760*3600/12.
-tmax  = 10*8760*3600/12.
-Nt = Int(div(tmax, tstep))
+Δt = 8760*3600/12.
+Nt = 10
 network = [
-    BoreholeNetwork([[1, 2], [3]])
+    BoreholeNetwork([[1]])
 ]
 Nbr = length(network)
 
@@ -13,28 +12,44 @@ Nbr = length(network)
 λ = 3.
 rb = 0.1
 
-positions = [(0., i) for i in 0:2]
+positions = [(0., i) for i in 0:0]
 
 T0 = 0.
-borehole = SingleUPipeBorehole(H=10., D=0., rb=rb)
+borehole = SingleUPipeBorehole(H=1., D=0., rb=rb)
 medium = GroundMedium(α=α, λ=λ)
 borefield = EqualBoreholesBorefield(borehole_prototype=borehole, positions=positions, medium=medium, T0 = T0)
-parameters = compute_parameters(borefield=borefield, tstep=tstep, tmax=tmax)
-#constraint = InletTempConstraint(10*ones(2))
-constraint = HeatLoadConstraint([1., 1.])
+constraint = InletTempConstraint(10*ones(1))
+#constraint = HeatLoadConstraint([1.])
+fluid = Fluid(cpf = 4182., name = "INCOMP::MEA-20%")
 function operator(i, Tin, Tout, Tb, q)
-    BoreholeOperation(network[1], 0.1 .* ones(2), 4182.)
+    BoreholeOperation(network[1], 0.1 .* ones(1))
 end
 
 
-convolution = ConvolutionMethod(parameters=parameters, borefield=borefield)
-containers_c = SimulationContainers(parameters)
-@time simulate(parameters=parameters, containers=containers_c, operator=operator, borefield=borefield, constraint=constraint, method=convolution)
+options_c = SimulationOptions(
+    method = ConvolutionMethod(),
+    constraint = constraint,
+    borefield = borefield,
+    fluid = fluid,
+    Δt = Δt,
+    Nt = Nt
+)
+
+containers_c = initialize(options_c)
+@time simulate(operator=operator, options=options_c, containers=containers_c)
 X1 = containers_c.X
 
-nonhistory = NonHistoryMethod(parameters=parameters, borefield=borefield, b = 2.)
-containers_nh = SimulationContainers(parameters)
-@time simulate(parameters=parameters, containers=containers_nh, operator=operator, borefield=borefield, constraint=constraint, method=nonhistory)
+
+options_nh = SimulationOptions(
+    method = NonHistoryMethod(),
+    constraint = constraint,
+    borefield = borefield,
+    fluid = fluid,
+    Δt = Δt,
+    Nt = Nt
+)
+containers_nh = initialize(options_nh)
+@time simulate(operator=operator, options=options_nh, containers=containers_nh)
 X2 = containers_nh.X
 
 X1-X2
@@ -44,27 +59,10 @@ X1-X2
 ### FLS
 q = [1 for i=1:10]
 I = zeros(length(q))
-#q = X1[4,:]
-Δt = tstep
 
-setup = FiniteLineSource.SegmentToSegment(D1=0., H1=1., D2=0., H2=1., σ=1.)
+setup = FiniteLineSource.SegmentToSegment(D1=0., H1=1., D2=0., H2=1., σ=.1)
 params = FiniteLineSource.Constants(Δt=Δt, rb=rb, b=2.)
 precomp = FiniteLineSource.precompute_parameters(setup, params=params)
 compute_integral_throught_history!(setup, I=I, q=q, precomp=precomp, params=params)
 
 BoreholeNetworksSimulator.sts(setup, params, tstep)
-
-
-function send_result_to_database(i) sleep(0.1) end
-function update_database_result_count(nresults) end
-
-function test()
-    simulation_results = collect(1:10)
-    @sync for result in simulation_results
-        Dagger.@spawn occupancy=Dict(Dagger.ThreadProc=>0.) send_result_to_database(result)
-    end
-    nresults = length(simulation_results)
-    wait(Dagger.@spawn update_database_result_count(nresults))
-    update_database_result_count(nresults)
-end
-

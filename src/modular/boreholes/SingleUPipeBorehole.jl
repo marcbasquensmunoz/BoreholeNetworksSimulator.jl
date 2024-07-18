@@ -30,12 +30,12 @@ get_default_hp(bh::SingleUPipeBorehole{T}) where {T <: Real} = bh.hp
 get_n_segments(bh::SingleUPipeBorehole) = bh.n_segments
 
 
-function uniform_Tb_coeffs(borehole::SingleUPipeBorehole, λs, mass_flow, Tref, cpf)
+function uniform_Tb_coeffs(borehole::SingleUPipeBorehole, λs, mass_flow, Tref, fluid::Fluid)
     x1, y1 = borehole.pipe_position[1]
     x2, y2 = borehole.pipe_position[2]
     @unpack λg, λp, rb, rp, rpo, dpw, H, R_cache, A = borehole
 
-    hp = heat_transfer_coefficient(mass_flow, Tref, borehole)
+    hp = heat_transfer_coefficient(mass_flow, Tref, borehole, fluid.name)
 
     if iszero(R_cache)
         Rp = 1/(2*π*λp)*log(rp/(rp-dpw))
@@ -55,7 +55,7 @@ function uniform_Tb_coeffs(borehole::SingleUPipeBorehole, λs, mass_flow, Tref, 
     R11 += Rhp
     R22 += Rhp
 
-    den = cpf * mass_flow * (R11 * R22 - R12^2)
+    den = fluid.cpf * mass_flow * (R11 * R22 - R12^2)
     A[1, 1] = - H / den * R22
     A[1, 2] = H / den * R12
     A[2, 1] = - H / den * R12

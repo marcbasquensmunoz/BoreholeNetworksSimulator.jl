@@ -4,20 +4,13 @@ mutable struct NonHistoryMethod{T} <: TimeSuperpositionMethod
     w::Matrix{T}
     expΔt::Vector{T}
 end
-
-function check_compatibility(borefield::Borefield, ::Constraint, ::NonHistoryMethod) 
-    if borefield.medium isa FlowInPorousMedium 
-        NotCompatible("The non-history method is not implemented with ground water flow yet") 
-    else
-        Compatible() 
-    end
-end
+NonHistoryMethod() = NonHistoryMethod(zeros(0, 0), zeros(0), zeros(0, 0), zeros(0))
 
 FiniteLineSource.SegmentToSegment(s::MeanSegToSegEvParams) = FiniteLineSource.SegmentToSegment(D1=s.D1, H1=s.H1, D2=s.D2, H2=s.H2, σ=s.σ)
 
-function NonHistoryMethod(;parameters, borefield, b = 10.)
-    @unpack Nb, Nt, Ns, tstep = parameters
-    Δt = tstep
+function precompute_auxiliaries!(model::NonHistoryMethod; options::SimulationOptions)
+    @unpack Nb, Nt, Ns, Δt, borefield = options
+    b = 2.
     α = get_α(borefield.medium)
     rb = get_rb(borefield, 1) 
     kg = get_λ(borefield.medium)
@@ -44,7 +37,10 @@ function NonHistoryMethod(;parameters, borefield, b = 10.)
 
     perm = sortperm(ζ)
 
-    return NonHistoryMethod(zeros(n, Ns*Ns), ζ[perm], w[perm, :], expΔt[perm])
+    model.F = zeros(n, Ns*Ns)
+    model.ζ = ζ[perm]
+    model.w = w[perm, :]
+    model.expΔt = expΔt[perm]
 end
 
 function get_sts(borefield::Borefield, i, j)

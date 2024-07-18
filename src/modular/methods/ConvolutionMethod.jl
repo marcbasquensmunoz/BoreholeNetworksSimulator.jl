@@ -3,16 +3,18 @@ mutable struct ConvolutionMethod{T} <: TimeSuperpositionMethod
     g::Array{T, 3}
     q::Array{T, 2}
 end
-function ConvolutionMethod(;parameters, borefield)
-    @unpack Nb, Nt, Ns = parameters
-    model = ConvolutionMethod(zeros(Nb, Nb, Nt), zeros(Ns, Nt))
-    compute_response!(model.g, borefield.medium, borefield, parameters.t)
+ConvolutionMethod() = ConvolutionMethod(zeros(0,0,0), zeros(0,0))
+
+function precompute_auxiliaries!(model::ConvolutionMethod; options::SimulationOptions)
+    @unpack Nb, Nt, t, borefield = options
+    model.g = zeros(Nb, Nb, Nt)
+    model.q = zeros(Nb, Nt)
+    compute_response!(model.g, borefield.medium, borefield, t)
     return model
 end
 
 function update_auxiliaries!(method::ConvolutionMethod, X, borefield::Borefield, step)
     Nb = n_boreholes(borefield)
-    @show X[3Nb+1:end, step] 
     method.q[:, step] = @view X[3Nb+1:end, step] 
 end
 
