@@ -1,5 +1,5 @@
 
-function compute_response!(g, medium::GroundMedium, borefield::Borefield, t) 
+function compute_response!(g, medium::GroundMedium, borefield::Borefield, boundary_condition::BoundaryCondition, t) 
     @unpack λ, α = medium
     Ns = n_segments(borefield)
 
@@ -13,7 +13,7 @@ function compute_response!(g, medium::GroundMedium, borefield::Borefield, t)
                 rb = get_rb(borefield, i)
                 σ = i == j ? rb : sqrt((x2-x1)^2 + (y2-y1)^2)
                 s = SegmentToSegment(D1=D1, H1=H1, D2=D2, H2=H2, σ=σ)
-                g[i, j, k] = sts(s, Constants(α=α, kg=λ, rb=rb), tt)
+                g[i, j, k] = sts(boundary_condition, s, Constants(α=α, kg=λ, rb=rb), tt)
             end
         end
     end
@@ -41,11 +41,22 @@ function fls(t, x, y, z, H, D, α, kg, atol = 1e-8)
     return fls_step_response(t, σ, z, D, D+H, α, kg, atol=atol)
 end
 
-function sts(s:: SegmentToSegment, params::Constants, t)
+function sts_response(s::SegmentToSegment, params::Constants, t)
     @unpack α, kg = params
     params = FiniteLineSource.MeanSegToSegEvParams(s)
     h_mean_sts, r_min, r_max = FiniteLineSource.mean_sts_evaluation(params)
     f(r) = h_mean_sts(r) * point_step_response(t, r, α, kg)
     x, w = FiniteLineSource.adaptive_gk(f, r_min, r_max)
     dot(f.(x), w)
+end
+
+function sts(::NoBoundary, s::SegmentToSegment, params::Constants, t)
+    sts_response(s, params, t)
+end
+
+function sts(::DirichletBoundaryCondition, s::SegmentToSegment, params::Constants, t)
+    s_image = SegmentToSegment(D1=-s.D1, H1=-s.H1, D2=s.D2, H2=s.H2, σ=s.σ)
+    Ip = sts_response(s, params, t)
+    In = sts_response(s_image, params, t)
+    Ip - In
 end

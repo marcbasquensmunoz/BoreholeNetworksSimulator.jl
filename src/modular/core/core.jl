@@ -2,7 +2,6 @@
 @with_kw struct BoreholeOperation
     network         
     mass_flows:: Vector          # Mass flow for each branch in network
-    #cpf::T = 4182.                  # specific heat capacity
 end
 BoreholeOperation(::Nothing) = BoreholeOperation([[]], [0.])
 
@@ -23,6 +22,7 @@ first_boreholes(network::BoreholeNetwork) = map(first, network.branches)
     constraint::Constraint
     borefield::Borefield
     fluid::Fluid
+    boundary_condition::BoundaryCondition = DirichletBoundaryCondition()
     Δt
     Nt
     Nb = n_boreholes(borefield)

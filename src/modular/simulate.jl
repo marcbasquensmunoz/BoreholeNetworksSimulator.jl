@@ -11,7 +11,7 @@
 #   (4)  Heat balance equations
 
 function simulate(;operator, options::SimulationOptions, containers::SimulationContainers)
-    @unpack method, constraint, borefield, fluid = options
+    @unpack method, constraint, borefield, fluid, boundary_condition = options
     @unpack Nb, Ns, Nt, Ts = options
     @unpack M, b, X = containers 
 
@@ -45,7 +45,7 @@ function simulate(;operator, options::SimulationOptions, containers::SimulationC
         end
         @views constraints_coeffs!(M[constraints_eqs, :], constraint, operation)
         if i == Ts
-            @views method_coeffs!(M[method_eqs, :], method, borefield)
+            @views method_coeffs!(M[method_eqs, :], method, borefield, boundary_condition)
         end
         if last_operation.mass_flows != operation.mass_flows
             @views heat_balance_coeffs!(M[balance_eqs, :], borefield, operation, fluid)

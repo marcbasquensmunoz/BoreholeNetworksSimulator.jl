@@ -1,3 +1,5 @@
+using .FiniteLineSource: SegmentToSegment, Constants, adaptive_gk_segments, discretization_parameters, f_guess, precompute_coefficients
+
 mutable struct NonHistoryMethod{T} <: TimeSuperpositionMethod 
     F::Matrix{T}
     ζ::Vector{T}
@@ -6,10 +8,11 @@ mutable struct NonHistoryMethod{T} <: TimeSuperpositionMethod
 end
 NonHistoryMethod() = NonHistoryMethod(zeros(0, 0), zeros(0), zeros(0, 0), zeros(0))
 
-FiniteLineSource.SegmentToSegment(s::MeanSegToSegEvParams) = FiniteLineSource.SegmentToSegment(D1=s.D1, H1=s.H1, D2=s.D2, H2=s.H2, σ=s.σ)
+SegmentToSegment(s::MeanSegToSegEvParams) = SegmentToSegment(D1=s.D1, H1=s.H1, D2=s.D2, H2=s.H2, σ=s.σ)
+image(s::SegmentToSegment) = SegmentToSegment(D1=-s.D1, H1=-s.H1, D2=s.D2, H2=s.H2, σ=s.σ)
 
 function precompute_auxiliaries!(model::NonHistoryMethod; options::SimulationOptions)
-    @unpack Nb, Nt, Ns, Δt, borefield = options
+    @unpack Nb, Nt, Ns, Δt, borefield, boundary_condition = options
     b = 2.
     α = get_α(borefield.medium)
     rb = get_rb(borefield, 1) 
@@ -18,9 +21,9 @@ function precompute_auxiliaries!(model::NonHistoryMethod; options::SimulationOpt
 
     n_segment = 20
 
-    constants = FiniteLineSource.Constants(Δt=Δt, α=α, rb=rb, kg=kg, b=b)
-    segments = FiniteLineSource.adaptive_gk_segments(FiniteLineSource.f_guess(FiniteLineSource.SegmentToSegment(get_sts(borefield, 1, 1)), constants), 0., b)
-    dps = @views [FiniteLineSource.discretization_parameters(s.a, s.b, n_segment) for s in segments]
+    constants = Constants(Δt=Δt, α=α, rb=rb, kg=kg, b=b)
+    segments = adaptive_gk_segments(f_guess(SegmentToSegment(get_sts(borefield, 1, 1)), constants), 0., b)
+    dps = @views [discretization_parameters(s.a, s.b, n_segment) for s in segments]
     ζ = reduce(vcat, (dp.x for dp in dps)) 
     expΔt = @. exp(-ζ^2 * Δt̃)
 
@@ -30,8 +33,8 @@ function precompute_auxiliaries!(model::NonHistoryMethod; options::SimulationOpt
     for i in 1:Ns
         for j in 1:Ns
             rb = get_rb(borefield, (i-1)*Ns+j) # Get the right rb
-            sts = get_sts(borefield, i, j)
-            w[:, (i-1)*Ns+j] = reduce(vcat, [FiniteLineSource.precompute_coefficients(FiniteLineSource.SegmentToSegment(sts), params=constants, dp=dp) for dp in dps])
+            sts = SegmentToSegment(get_sts(borefield, i, j))
+            w[:, (i-1)*Ns+j] = reduce(vcat, [coefficients_sts(boundary_condition, sts, constants, dp) for dp in dps])
         end
     end
 
@@ -41,6 +44,17 @@ function precompute_auxiliaries!(model::NonHistoryMethod; options::SimulationOpt
     model.ζ = ζ[perm]
     model.w = w[perm, :]
     model.expΔt = expΔt[perm]
+end
+
+function coefficients_sts(::NoBoundary, sts::SegmentToSegment, params::Constants, dp)
+    precompute_coefficients(sts, params=params, dp=dp)
+end
+
+function coefficients_sts(::DirichletBoundaryCondition, sts::SegmentToSegment, params::Constants, dp)
+    image_sts = image(sts)
+    w1 = precompute_coefficients(sts, params=params, dp=dp)
+    w2 = precompute_coefficients(image_sts, params=params, dp=dp)
+    w1 - w2
 end
 
 function get_sts(borefield::Borefield, i, j)
@@ -59,16 +73,15 @@ function update_auxiliaries!(method::NonHistoryMethod, X, borefield::Borefield, 
     end
 end
 
-function method_coeffs!(M, method::NonHistoryMethod, borefield::Borefield)
+function method_coeffs!(M, method::NonHistoryMethod, borefield::Borefield, boundary_condition::BoundaryCondition)
     Nb = n_boreholes(borefield)
     Ns = n_segments(borefield)
     λ = get_λ(borefield.medium)
 
     for i in 1:Ns
         for j in 1:Ns
-            sts = get_sts(borefield, i, j)
-            rb = get_rb(borefield, i) 
-            M[i, 3Nb+j] = - q_coef(borefield.medium, method, sts, λ, (i-1)*Ns+j)
+            sts = SegmentToSegment(get_sts(borefield, i, j))
+            M[i, 3Nb+j] = - q_coef(boundary_condition, borefield.medium, method, sts, λ, (i-1)*Ns+j) 
         end
     end
 
@@ -86,6 +99,14 @@ function method_b!(b, method::NonHistoryMethod, borefield::Borefield, step)
     for i in eachindex(b)
         @inbounds b[i] += sum([dot(w[:, Nb*(i-1)+j], expΔt .* F[:, Nb*(i-1)+j]) for j in 1:Nb])
     end
+end
+
+function q_coef(::NoBoundary, medium, method, sts, λ, i)
+    q_coef(medium, method, sts, λ, i)
+end
+
+function q_coef(::DirichletBoundaryCondition, medium, method, sts, λ, i)
+    q_coef(medium, method, sts, λ, i) - q_coef(medium, method, image(sts), λ, i)
 end
 
 function q_coef(::GroundMedium, method, sts, λ, i)

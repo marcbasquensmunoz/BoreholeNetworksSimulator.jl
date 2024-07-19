@@ -1,0 +1,1 @@
+struct NoBoundary <: BoundaryCondition end

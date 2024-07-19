@@ -1,0 +1,1 @@
+struct DirichletBoundaryCondition <: BoundaryCondition end

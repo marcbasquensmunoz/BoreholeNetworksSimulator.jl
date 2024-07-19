@@ -1,5 +1,5 @@
 
-function compute_response!(g, medium::FlowInPorousMedium, borefield::Borefield, t) 
+function compute_response!(g, medium::FlowInPorousMedium, borefield::Borefield, boundary_condition::BoundaryCondition, t) 
     @unpack θ, λ, vt, α = medium
     Ns = segment_amount(borefield)
 

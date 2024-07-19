@@ -30,6 +30,7 @@ export Borefield, EqualBoreholesBorefield
 export Medium, GroundMedium, FlowInPorousMedium
 export Constraint, HeatLoadConstraint, InletTempConstraint
 export TimeSuperpositionMethod, ConvolutionMethod, NonHistoryMethod
+export BoundaryCondition, NoBoundary, DirichletBoundaryCondition
 export SimulationOptions, SimulationContainers, BoreholeOperation, BoreholeNetwork, Fluid
 export simulate, compute_parameters, load_cache!, save_cache, initialize
 
