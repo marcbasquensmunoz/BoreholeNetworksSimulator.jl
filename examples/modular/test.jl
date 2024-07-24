@@ -14,12 +14,12 @@ rb = 0.1
 D = 0.
 H = 1.
 
-positions = [(0., i) for i in 0:0]
+positions = [(0., 0.) for i in 0:0]
 
 T0 = 0.
 borehole = SingleUPipeBorehole(H=H, D=D, rb=rb)
 medium = GroundMedium(α=α, λ=λ)
-borefield = EqualBoreholesBorefield(borehole_prototype=borehole, positions=positions, medium=medium, T0 = T0)
+borefield = EqualBoreholesBorefield(borehole_prototype=borehole, positions=positions, T0 = T0)
 #constraint = InletTempConstraint(10*ones(1))
 constraint = HeatLoadConstraint([1.])
 fluid = Fluid(cpf = 4182., name = "INCOMP::MEA-20%")
@@ -33,13 +33,14 @@ options_c = SimulationOptions(
     constraint = constraint,
     borefield = borefield,
     fluid = fluid,
+    medium = medium,
    #boundary_condition=NoBoundary(),
     Δt = Δt,
     Nt = Nt
 )
 
 containers_c = initialize(options_c)
-@time simulate(operator=operator, options=options_c, containers=containers_c)
+@time simulate!(operator=operator, options=options_c, containers=containers_c)
 X1 = containers_c.X
 
 
@@ -53,7 +54,7 @@ options_nh = SimulationOptions(
     Nt = Nt
 )
 containers_nh = initialize(options_nh)
-@time simulate(operator=operator, options=options_nh, containers=containers_nh)
+@time simulate!(operator=operator, options=options_nh, containers=containers_nh)
 X2 = containers_nh.X
 
 X1-X2

@@ -1,4 +1,8 @@
+"""
+    abstract type Borehole
 
+Common interface for boreholes
+"""
 abstract type Borehole end
 
 #  Get the length of the borehole

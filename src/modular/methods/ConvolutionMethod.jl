@@ -1,4 +1,13 @@
+"""
+    ConvolutionMethod{T} <: TimeSuperpositionMethod 
+    ConvolutionMethod()
 
+Use the naïve convolution to compute the thermal response between boreholes. 
+It should be initialized without arguments, but it contains the variables:
+- `g` stores the unit response between each pair of boreholes evaluated at each time of the simulation. 
+It should be precomputed with [`initialize`](@ref).
+- `q` stores the heat extraction in each borehole at each time step. It is filled as the simulation runs. 
+"""
 mutable struct ConvolutionMethod{T} <: TimeSuperpositionMethod 
     g::Array{T, 3}
     q::Array{T, 2}
@@ -6,10 +15,10 @@ end
 ConvolutionMethod() = ConvolutionMethod(zeros(0,0,0), zeros(0,0))
 
 function precompute_auxiliaries!(model::ConvolutionMethod; options::SimulationOptions)
-    @unpack Nb, Nt, t, borefield, boundary_condition = options
+    @unpack Nb, Nt, t, borefield, medium, boundary_condition = options
     model.g = zeros(Nb, Nb, Nt)
     model.q = zeros(Nb, Nt)
-    compute_response!(model.g, borefield.medium, borefield, boundary_condition, t)
+    compute_response!(model.g, medium, borefield, boundary_condition, t)
     return model
 end
 
@@ -18,7 +27,7 @@ function update_auxiliaries!(method::ConvolutionMethod, X, borefield::Borefield,
     method.q[:, step] = @view X[3Nb+1:end, step] 
 end
 
-function method_coeffs!(M, method::ConvolutionMethod, borefield::Borefield, ::BoundaryCondition)
+function method_coeffs!(M, method::ConvolutionMethod, borefield::Borefield, ::Medium, ::BoundaryCondition)
     Nb = n_boreholes(borefield)
     Ns = n_segments(borefield)
     M[1:Ns, 3Nb+1:3Nb+Ns] = @view method.g[:,:,1]
@@ -28,9 +37,9 @@ function method_coeffs!(M, method::ConvolutionMethod, borefield::Borefield, ::Bo
     end
 end
 
-function method_b!(b, method::ConvolutionMethod, borefield::Borefield, step)
+function method_b!(b, method::ConvolutionMethod, borefield::Borefield, medium::Medium, step)
     Ns = n_segments(borefield)
-    b .= -get_T0(borefield)
+    b .= -get_T0(medium)
 
     for k = 1:step-1
         for i in 1:Ns

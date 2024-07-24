@@ -5,10 +5,10 @@ struct NotCompatible <: Compatibility
     message
 end
 
-check_compatibility(::Borefield, ::Constraint, ::TimeSuperpositionMethod) = Compatible()
+check_compatibility(::Medium, ::Constraint, ::TimeSuperpositionMethod) = Compatible()
 
-function check_compatibility(borefield::Borefield, ::Constraint, ::NonHistoryMethod) 
-    if borefield.medium isa FlowInPorousMedium 
+function check_compatibility(medium::Medium, ::Constraint, ::NonHistoryMethod) 
+    if medium isa FlowInPorousMedium 
         NotCompatible("The non-history method is not implemented with ground water flow yet") 
     else
         Compatible() 

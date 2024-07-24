@@ -1,11 +1,28 @@
+"""
+    SingleUPipeBorehole{T <: Real} <: Borehole @deftype T
+    SingleUPipeBorehole(H, D)
 
+Model a borehole with a single U-pipe with burial depth `D` and length `H`.
+
+# Arguments
+- `λg = 2.5`: grout conductivity
+- `Cg = 2000. * 1550.`: grout capacity
+- `αg = λg/Cg`: grout thermal diffusivity
+- `rp = 0.02`: pipe radius
+- `λp = 0.42`: pipe material conductivity
+- `dpw = 0.0023`: pipe thickness
+- `rpo = rp + dpw `: equivalent pipe radius
+- `hp = 725.`: heat transfer coefficient fluid to pipe
+- `pipe_position::NTuple{2, Point2{T}} = (Point2(0.03, 0.0), Point2(-0.03, 0.0))`: positions of the downward and upward branches of the pipe
+- `rb = 0.115/2`: borehole radius
+"""
 @with_kw struct SingleUPipeBorehole{T <: Real} <: Borehole @deftype T
     λg = 2.5                            # grout conductivity
     Cg = 2000. * 1550.                  # grout capacity
     αg = λg/Cg	                        # grout thermal diffusivity
 
-    rp = 0.02                           # equivalent pipe radius
-    λp = 0.42                           # p - pipe material
+    rp = 0.02                           # pipe radius
+    λp = 0.42                           # pipe material conductivity
     dpw = 0.0023                        # pipe thickness
     rpo = rp + dpw                      # equivalent pipe radius
     hp = 725.                           # heat transfer coefficient fluid to pipe ?

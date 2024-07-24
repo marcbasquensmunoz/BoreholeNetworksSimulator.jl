@@ -1,4 +1,9 @@
+"""
+    InletTempConstraint(T_in) <: Constraint
 
+Constrain to `T_in` the inlet temperature of the first borehole in each branch.
+Note that `T_in` must have length equal to the amount of branches specified in [`BoreholeNetwork`](@ref).
+"""
 struct InletTempConstraint <: Constraint 
     T_in
 end

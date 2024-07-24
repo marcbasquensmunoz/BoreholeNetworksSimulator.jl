@@ -1,15 +1,11 @@
 
-@with_kw struct BoreholeOperation
-    network         
-    mass_flows:: Vector          # Mass flow for each branch in network
-end
-BoreholeOperation(::Nothing) = BoreholeOperation([[]], [0.])
+"""
+    BoreholeNetwork(branches::Vector)
 
-@with_kw struct Fluid
-    cpf
-    name
-end
-
+Representation of the hydraulic connections of the boreholes in the network.
+Each element in `branches` should be a vector representing a branch of boreholes connected in series, specified by their identifiers.
+The first borehole of each branch is assumed to be connected in parallel. 
+"""
 @with_kw struct BoreholeNetwork
     branches::Vector
 end
@@ -17,11 +13,48 @@ Base.reverse(network::BoreholeNetwork) = BoreholeNetwork(branches=map(branch -> 
 n_branches(network::BoreholeNetwork) = length(network.branches)
 first_boreholes(network::BoreholeNetwork) = map(first, network.branches)
 
+"""
+    BoreholeOperation(network::BoreholeNetwork, mass_flows:: Vector)
+
+Represents a operation state of the network, with `network` representing the hydraulic configuration and `mass_flows` a `Vector` containing the mass flow rate of each branch.
+"""
+@with_kw struct BoreholeOperation
+    network::BoreholeNetwork         
+    mass_flows::Vector
+end
+BoreholeOperation(::Nothing) = BoreholeOperation(BoreholeNetwork([]), [0.])
+
+"""
+    Fluid(cpf, name)
+
+Represents the fluid flowing through the hydraulic circuit.
+`cpf` is the specific heat of the fluid and `name` is the code used in CoolProp
+"""
+@with_kw struct Fluid
+    cpf
+    name
+end
+
+"""
+    SimulationOptions(
+        method::TimeSuperpositionMethod, 
+        constraint::Constraint, 
+        borefield::Borefield, 
+        medium::Medium,
+        Δt, 
+        Nt, 
+        boundary_condition::BoundaryCondition = DirichletBoundaryCondition(),
+        fluid::Fluid = Fluid(cpf=4182., name="INCOMP::MEA-20%")
+    )
+
+Specifies all the options for the simulation.
+"""
 @with_kw struct SimulationOptions
     method::TimeSuperpositionMethod
     constraint::Constraint
     borefield::Borefield
-    fluid::Fluid
+    medium::Medium
+    fluid::Fluid = Fluid(cpf=4182., name="INCOMP::MEA-20%")
     boundary_condition::BoundaryCondition = DirichletBoundaryCondition()
     Δt
     Nt
@@ -32,12 +65,23 @@ first_boreholes(network::BoreholeNetwork) = map(first, network.branches)
     t = Δt:Δt:Tmax
 end
 
+"""
+    SimulationContainers(M, X, b)
+
+Contains the matrix `M`, the independent vector `b` defining the problem. Both `M` and `b` change through time.
+Each column of `X` contains the solution of `M X = b` for each time step of the simulation. 
+"""
 @with_kw struct SimulationContainers
     M
     X
     b
 end
 
+"""
+    initialize(options::SimulationOptions) 
+
+Precompute the objects of each `TimeSuperpositionMethod` that can be computed ahead of time and return the `SimulationContainers` of the required size.
+"""
 function initialize(options::SimulationOptions) 
     precompute_auxiliaries!(options.method, options=options)
     SimulationContainers(options)

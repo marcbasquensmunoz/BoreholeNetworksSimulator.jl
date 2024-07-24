@@ -1,5 +1,17 @@
 using .FiniteLineSource: SegmentToSegment, Constants, adaptive_gk_segments, discretization_parameters, f_guess, precompute_coefficients
 
+"""
+    NonHistoryMethod{T} <: TimeSuperpositionMethod 
+    NonHistoryMethod()
+
+Use the non-history method to compute the thermal response between boreholes. 
+See _A non-history dependent temporal superposition algorithm for the finite line source solution_.
+It should be initialized without arguments, but it contains the variables:
+- `F::Matrix{T}`: each column contains the `F` function (encoding the load history) for each borehole. It is initially 0.
+- `ζ::Vector{T}`: discretization nodes of the integration interval. Shared for all boreholes. Precomputed in [`initialize`](@ref).
+- `w::Matrix{T}`: weights of the ζ integration for each pair of boreholes. Precomputed in [`initialize`](@ref).
+- `expΔt::Vector{T}`: exp(-ζ^2*Δt). Precomputed in [`initialize`](@ref).
+"""
 mutable struct NonHistoryMethod{T} <: TimeSuperpositionMethod 
     F::Matrix{T}
     ζ::Vector{T}
@@ -12,11 +24,11 @@ SegmentToSegment(s::MeanSegToSegEvParams) = SegmentToSegment(D1=s.D1, H1=s.H1, D
 image(s::SegmentToSegment) = SegmentToSegment(D1=-s.D1, H1=-s.H1, D2=s.D2, H2=s.H2, σ=s.σ)
 
 function precompute_auxiliaries!(model::NonHistoryMethod; options::SimulationOptions)
-    @unpack Nb, Nt, Ns, Δt, borefield, boundary_condition = options
+    @unpack Nb, Nt, Ns, Δt, borefield, medium, boundary_condition = options
     b = 2.
-    α = get_α(borefield.medium)
+    α = get_α(medium)
     rb = get_rb(borefield, 1) 
-    kg = get_λ(borefield.medium)
+    kg = get_λ(medium)
     Δt̃ = α*Δt/rb^2
 
     n_segment = 20
@@ -73,15 +85,15 @@ function update_auxiliaries!(method::NonHistoryMethod, X, borefield::Borefield, 
     end
 end
 
-function method_coeffs!(M, method::NonHistoryMethod, borefield::Borefield, boundary_condition::BoundaryCondition)
+function method_coeffs!(M, method::NonHistoryMethod, borefield::Borefield, medium::Medium, boundary_condition::BoundaryCondition)
     Nb = n_boreholes(borefield)
     Ns = n_segments(borefield)
-    λ = get_λ(borefield.medium)
+    λ = get_λ(medium)
 
     for i in 1:Ns
         for j in 1:Ns
             sts = SegmentToSegment(get_sts(borefield, i, j))
-            M[i, 3Nb+j] = - q_coef(boundary_condition, borefield.medium, method, sts, λ, (i-1)*Ns+j) 
+            M[i, 3Nb+j] = - q_coef(boundary_condition, medium, method, sts, λ, (i-1)*Ns+j) 
         end
     end
 
@@ -91,9 +103,9 @@ function method_coeffs!(M, method::NonHistoryMethod, borefield::Borefield, bound
     end
 end
 
-function method_b!(b, method::NonHistoryMethod, borefield::Borefield, step)
+function method_b!(b, method::NonHistoryMethod, borefield::Borefield, medium::Medium, step)
     @unpack w, expΔt, F = method
-    b .= get_T0(borefield)
+    b .= get_T0(medium)
     Nb = n_boreholes(borefield)
 
     for i in eachindex(b)

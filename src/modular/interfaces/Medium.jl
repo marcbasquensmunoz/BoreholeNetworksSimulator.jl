@@ -1,4 +1,9 @@
 
+"""
+    abstract type Medium
+
+Common interface for mediums
+"""
 abstract type Medium end
 
 # Get the thermal conductivity of the medium

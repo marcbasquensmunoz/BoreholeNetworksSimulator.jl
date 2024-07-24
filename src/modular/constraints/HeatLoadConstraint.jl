@@ -1,5 +1,11 @@
-struct HeatLoadConstraint{T} <: Constraint
-    Q_tot::Vector{T}
+"""
+    HeatLoadConstraint(Q_tot::Vector) <: Constraint
+
+Constrain to `Q_tot` the heat extracted per branch.
+Note that `Q_tot` must have length equal to the amount of branches specified in [`BoreholeNetwork`](@ref).
+"""
+struct HeatLoadConstraint <: Constraint
+    Q_tot::Vector
 end
 
 function constraints_coeffs!(M, ::HeatLoadConstraint, operation)

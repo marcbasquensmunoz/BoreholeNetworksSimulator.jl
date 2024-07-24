@@ -1,4 +1,8 @@
+"""
+    abstract type Borefield
 
+Common interface for borefields
+"""
 abstract type Borefield end
 
 # Get the amount of boreholes in the borefield     
@@ -16,6 +20,6 @@ function segment_map(::Borefield) end
 # Get a vector with the coordinates of each segment  
 function segment_coordinates(::Borefield) end
 # Compute the coefficient matrix of the internal model equations
-function internal_model_coeffs!(M, ::Borefield, operation, cpf) end
+function internal_model_coeffs!(M, ::Borefield, medium, operation, cpf) end
 # Compute the independent vector of the internal model equations
 function internal_model_b!(b, ::Borefield) end

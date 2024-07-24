@@ -10,12 +10,25 @@
 #   (3)  Heat transfer model
 #   (4)  Heat balance equations
 
-function simulate(;operator, options::SimulationOptions, containers::SimulationContainers)
-    @unpack method, constraint, borefield, fluid, boundary_condition = options
+"""
+    simulate!(;options::SimulationOptions, operator, containers::SimulationContainers)
+
+Run the simulation defined by `options`. 
+At the end of simulation, `containers.X` will contain the results. `containers` should be the output of [`initialize`](@ref).
+
+`operator` should be a function that returns a `BoreholeOperation` and with signature `operator(i, Tin, Tout, Tb, q)`:
+- `i::Int` is the time step
+- `Tin` is a vector containing the inlet temperature of each borehole
+- `Tout` is a vector containing the outlet temperature of each borehole
+- `Tb` is a vector containing the borehole wall temperature of each borehole
+- `q` is a vector containing the heat exchanged by each borehole
+"""
+function simulate!(;operator, options::SimulationOptions, containers::SimulationContainers)
+    @unpack method, constraint, borefield, medium, fluid, boundary_condition = options
     @unpack Nb, Ns, Nt, Ts = options
     @unpack M, b, X = containers 
 
-    compatibility = check_compatibility(borefield, constraint, method)
+    compatibility = check_compatibility(medium, constraint, method)
     if compatibility isa NotCompatible
         println(compatibility.message)
         return
@@ -39,13 +52,13 @@ function simulate(;operator, options::SimulationOptions, containers::SimulationC
         balance_eqs = 3Nb+1:4Nb
 
         # Update M
-        @views internal_model_coeffs!(M[internal_model_eqs, :], borefield, operation, i == 1 ? get_T0(borefield) .* ones(2Nb) :  X[1:2Nb, i-1], fluid)
+        @views internal_model_coeffs!(M[internal_model_eqs, :], borefield, medium, operation, i == 1 ? get_T0(medium) .* ones(2Nb) :  X[1:2Nb, i-1], fluid)
         if last_operation.network != operation.network
             @views topology_coeffs!(M[topology_eqs, :], operation)
         end
         @views constraints_coeffs!(M[constraints_eqs, :], constraint, operation)
         if i == Ts
-            @views method_coeffs!(M[method_eqs, :], method, borefield, boundary_condition)
+            @views method_coeffs!(M[method_eqs, :], method, borefield, medium, boundary_condition)
         end
         if last_operation.mass_flows != operation.mass_flows
             @views heat_balance_coeffs!(M[balance_eqs, :], borefield, operation, fluid)
@@ -54,7 +67,7 @@ function simulate(;operator, options::SimulationOptions, containers::SimulationC
         # Update b
         @views internal_model_b!(b[internal_model_eqs], borefield)
         @views constraints_b!(b[constraints_eqs], constraint, operation, i)
-        @views method_b!(b[method_eqs], method, borefield, i)
+        @views method_b!(b[method_eqs], method, borefield, medium, i)
         @views heat_balance_b!(b[balance_eqs], borefield, X[balance_eqs])  
 
         # Solve system of equations

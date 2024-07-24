@@ -1,4 +1,8 @@
+"""
+    abstract type TimeSuperpositionMethod
 
+Common interface for time superposition methods
+"""
 abstract type TimeSuperpositionMethod end
 
 # Compute the coefficient matrix of the ground model equations

@@ -2,3 +2,4 @@
 .vscode
 .CondaPkg
 .pb.gz
+/docs/build/*

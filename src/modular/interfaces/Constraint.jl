@@ -1,4 +1,9 @@
 
+"""
+    abstract type Constraint
+
+Common interface for constraints
+"""
 abstract type Constraint end
 
 # Compute the coefficient matrix of the constraint equations
