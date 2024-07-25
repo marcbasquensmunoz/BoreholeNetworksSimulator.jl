@@ -33,7 +33,7 @@ function segment_coordinates(bf::EqualBoreholesBorefield, segment)
     (position[1], position[2], z_ref, h)
 end
 
-function internal_model_coeffs!(M, borefield::EqualBoreholesBorefield, medium::Medium, operation, T_fluid, fluid)
+function internal_model_coeffs!(M, borefield::EqualBoreholesBorefield, medium, operation, T_fluid, fluid)
     Nb = n_boreholes(borefield)
 
     for (i, branch) in enumerate(operation.network.branches)

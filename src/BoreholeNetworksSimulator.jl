@@ -15,6 +15,7 @@ using QuadGK
 using FastGaussQuadrature
 using LegendrePolynomials
 using SpecialFunctions
+using RequiredInterfaces
 
 using BoreholeResponseFunctions
 using FiniteLineSource

@@ -6,9 +6,11 @@ pages = [
     "API" => "api.md"
 ]
 
-Literate.markdown("./src/tutorial.jl", "./src")
+dir = @__DIR__
+Literate.markdown("$dir/src/tutorial.jl", "$dir/src")
 makedocs(
     pages=pages,
     sitename="BoreholeNetworksSimulator.jl",
+    #repo=Remotes.GitHub("marcbasquensmunoz", "BoreholeNetworksSimulator.jl")
     repo=Remotes.GitLab("alblaz", "BoreholeNetworksSimulator")
     )

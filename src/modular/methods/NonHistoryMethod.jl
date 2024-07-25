@@ -23,7 +23,7 @@ NonHistoryMethod() = NonHistoryMethod(zeros(0, 0), zeros(0), zeros(0, 0), zeros(
 SegmentToSegment(s::MeanSegToSegEvParams) = SegmentToSegment(D1=s.D1, H1=s.H1, D2=s.D2, H2=s.H2, σ=s.σ)
 image(s::SegmentToSegment) = SegmentToSegment(D1=-s.D1, H1=-s.H1, D2=s.D2, H2=s.H2, σ=s.σ)
 
-function precompute_auxiliaries!(model::NonHistoryMethod; options::SimulationOptions)
+function precompute_auxiliaries!(method::NonHistoryMethod, options)
     @unpack Nb, Nt, Ns, Δt, borefield, medium, boundary_condition = options
     b = 2.
     α = get_α(medium)
@@ -52,10 +52,10 @@ function precompute_auxiliaries!(model::NonHistoryMethod; options::SimulationOpt
 
     perm = sortperm(ζ)
 
-    model.F = zeros(n, Ns*Ns)
-    model.ζ = ζ[perm]
-    model.w = w[perm, :]
-    model.expΔt = expΔt[perm]
+    method.F = zeros(n, Ns*Ns)
+    method.ζ = ζ[perm]
+    method.w = w[perm, :]
+    method.expΔt = expΔt[perm]
 end
 
 function coefficients_sts(::NoBoundary, sts::SegmentToSegment, params::Constants, dp)
@@ -76,7 +76,7 @@ function get_sts(borefield::Borefield, i, j)
     MeanSegToSegEvParams(D1=Di, H1=Hi, D2=Dj, H2=Hj, σ=σ)
 end
 
-function update_auxiliaries!(method::NonHistoryMethod, X, borefield::Borefield, step)
+function update_auxiliaries!(method::NonHistoryMethod, X, borefield, step)
     @unpack ζ, F, expΔt = method
     Nb = n_boreholes(borefield)
 
@@ -85,7 +85,7 @@ function update_auxiliaries!(method::NonHistoryMethod, X, borefield::Borefield, 
     end
 end
 
-function method_coeffs!(M, method::NonHistoryMethod, borefield::Borefield, medium::Medium, boundary_condition::BoundaryCondition)
+function method_coeffs!(M, method::NonHistoryMethod, borefield, medium, boundary_condition)
     Nb = n_boreholes(borefield)
     Ns = n_segments(borefield)
     λ = get_λ(medium)
@@ -103,7 +103,7 @@ function method_coeffs!(M, method::NonHistoryMethod, borefield::Borefield, mediu
     end
 end
 
-function method_b!(b, method::NonHistoryMethod, borefield::Borefield, medium::Medium, step)
+function method_b!(b, method::NonHistoryMethod, borefield, medium, step)
     @unpack w, expΔt, F = method
     b .= get_T0(medium)
     Nb = n_boreholes(borefield)

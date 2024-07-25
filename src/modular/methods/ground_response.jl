@@ -1,5 +1,5 @@
 
-function compute_response!(g, medium::GroundMedium, borefield::Borefield, boundary_condition::BoundaryCondition, t) 
+function compute_response!(g, medium::GroundMedium, borefield, boundary_condition, t) 
     @unpack λ, α = medium
     Ns = n_segments(borefield)
 

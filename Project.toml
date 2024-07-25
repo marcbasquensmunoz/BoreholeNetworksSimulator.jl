@@ -1,6 +1,6 @@
 name = "BoreholeNetworksSimulator"
 uuid = "b11dda51-a240-44f0-a43d-fea4e1309b86"
-authors = ["Alberto Lazzarotto <alberto.lazzarotto84@gmail.com>"]
+authors = ["Marc Basquens <marc5@kth.se>", "Alberto Lazzarotto <alberto.lazzarotto84@gmail.com>"]
 version = "0.1.0"
 
 [deps]
@@ -20,6 +20,7 @@ LinearSolve = "7ed4a6bd-45f5-4d41-b270-4a48e9bafcae"
 Parameters = "d96e819e-fc66-5662-9728-84c9c7592b0a"
 PythonCall = "6099a3de-0909-46bc-b1f4-468b9a2dfc0d"
 QuadGK = "1fd47b50-473d-5c70-9696-f719f8f3bcdc"
+RequiredInterfaces = "97f35ef4-7bc5-4ec1-a41a-dcc69c7308c6"
 SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
 SpecialFunctions = "276daf66-3868-5448-9aa4-cd146d93841b"
 StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"

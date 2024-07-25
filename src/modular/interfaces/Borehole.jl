@@ -1,15 +1,17 @@
 """
     abstract type Borehole
 
-Common interface for boreholes
+Interface for boreholes.
+
+Required functions:
+- `get_H(::Borehole)`: Return the length of the borehole.
+- `get_D(::Borehole)`: Return the burial depth of the borehole.
+- `get_rb(::Borehole)`: Return the radius of the borehole.
 """
 abstract type Borehole end
 
-#  Get the length of the borehole
-function get_H(::Borehole) end
-# Get the burial depth of the borehole
-function get_D(::Borehole) end
-# Get the segment length of the borehole
-function get_h(::Borehole) end
-# Get the radius of the borehole
-function get_rb(::Borehole) end
+@required Borehole begin
+    get_H(::Borehole)
+    get_D(::Borehole)
+    get_rb(::Borehole)
+end

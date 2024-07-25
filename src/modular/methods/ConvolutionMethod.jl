@@ -14,7 +14,7 @@ mutable struct ConvolutionMethod{T} <: TimeSuperpositionMethod
 end
 ConvolutionMethod() = ConvolutionMethod(zeros(0,0,0), zeros(0,0))
 
-function precompute_auxiliaries!(model::ConvolutionMethod; options::SimulationOptions)
+function precompute_auxiliaries!(model::ConvolutionMethod, options)
     @unpack Nb, Nt, t, borefield, medium, boundary_condition = options
     model.g = zeros(Nb, Nb, Nt)
     model.q = zeros(Nb, Nt)
@@ -22,12 +22,12 @@ function precompute_auxiliaries!(model::ConvolutionMethod; options::SimulationOp
     return model
 end
 
-function update_auxiliaries!(method::ConvolutionMethod, X, borefield::Borefield, step)
+function update_auxiliaries!(method::ConvolutionMethod, X, borefield, step)
     Nb = n_boreholes(borefield)
     method.q[:, step] = @view X[3Nb+1:end, step] 
 end
 
-function method_coeffs!(M, method::ConvolutionMethod, borefield::Borefield, ::Medium, ::BoundaryCondition)
+function method_coeffs!(M, method::ConvolutionMethod, borefield, medium, boundary_condition)
     Nb = n_boreholes(borefield)
     Ns = n_segments(borefield)
     M[1:Ns, 3Nb+1:3Nb+Ns] = @view method.g[:,:,1]
@@ -37,7 +37,7 @@ function method_coeffs!(M, method::ConvolutionMethod, borefield::Borefield, ::Me
     end
 end
 
-function method_b!(b, method::ConvolutionMethod, borefield::Borefield, medium::Medium, step)
+function method_b!(b, method::ConvolutionMethod, borefield, medium, step)
     Ns = n_segments(borefield)
     b .= -get_T0(medium)
 

@@ -1,6 +1,6 @@
-using BoreholeNetworksSimulator
-using Test
+using BoreholeNetworksSimulator, Test
 
-@testset "test" begin
-
-end
+dir = @__DIR__
+include("test_interfaces.jl")
+include("mediums/test_GroundMedium.jl")
+include("mediums/test_FlowInPorousMedium.jl")

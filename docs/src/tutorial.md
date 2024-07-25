@@ -125,7 +125,7 @@ Before simulating, we first need to call [`initialize`](@ref) to run some precom
 that will be used throught the simulation and to instantiate containers where the result will be written.
 
 ````@example tutorial
-@time containers = initialize(options)
+containers = initialize(options)
 ````
 
 And finally, we can start the simulation.

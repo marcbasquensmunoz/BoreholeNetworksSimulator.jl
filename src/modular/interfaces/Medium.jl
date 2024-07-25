@@ -2,13 +2,21 @@
 """
     abstract type Medium
 
-Common interface for mediums
+Interface for mediums.
+
+Required functions:
+- `get_λ(::Medium)`: Return the thermal conductivity of the medium.
+- `get_α(::Medium)`: Return the thermal diffusivity of the medium.
+- `get_T0(::Medium)`: Return the initial temperature of the medium.
+- `compute_response!(g, ::Medium, borefield::Borefield, boundary_condition::BoundaryCondition, t)`: 
+    Compute inplace in `g` the thermal responses between boreholes in `borefield`, 
+    imposing the boundary condition `boundary_condition`, for all times in `t`.
 """
 abstract type Medium end
 
-# Get the thermal conductivity of the medium
-function get_λ(::Medium) end
-# Get the thermal diffusivity of the medium
-function get_α(::Medium) end
-# Compute the thermal responses between segments for all times in t 
-function compute_response!(::Medium, borefield, coord_source, coord_eval, t) end
+@required Medium begin
+    get_λ(::Medium)
+    get_α(::Medium)
+    get_T0(::Medium)
+    compute_response!(g, ::Medium, borefield, boundary_condition, t) 
+end
