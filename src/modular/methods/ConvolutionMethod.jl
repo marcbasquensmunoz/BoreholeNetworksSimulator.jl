@@ -14,12 +14,12 @@ mutable struct ConvolutionMethod{T} <: TimeSuperpositionMethod
 end
 ConvolutionMethod() = ConvolutionMethod(zeros(0,0,0), zeros(0,0))
 
-function precompute_auxiliaries!(model::ConvolutionMethod, options)
+function precompute_auxiliaries!(method::ConvolutionMethod, options)
     @unpack Nb, Nt, t, borefield, medium, boundary_condition = options
-    model.g = zeros(Nb, Nb, Nt)
-    model.q = zeros(Nb, Nt)
-    compute_response!(model.g, medium, borefield, boundary_condition, t)
-    return model
+    method.g = zeros(Nb, Nb, Nt)
+    method.q = zeros(Nb, Nt)
+    compute_response!(method.g, medium, borefield, boundary_condition, t)
+    return method
 end
 
 function update_auxiliaries!(method::ConvolutionMethod, X, borefield, step)

@@ -49,18 +49,24 @@ end
 
 Specifies all the options for the simulation.
 """
-@with_kw struct SimulationOptions
-    method::TimeSuperpositionMethod
-    constraint::Constraint
-    borefield::Borefield
-    medium::Medium
+@with_kw struct SimulationOptions{
+                    TSM <: TimeSuperpositionMethod,
+                    C <: Constraint,
+                    B <: Borefield, 
+                    M <: Medium, 
+                    BC <: BoundaryCondition
+                }
+    method::TSM
+    constraint::C
+    borefield::B
+    medium::M
     fluid::Fluid = Fluid(cpf=4182., name="INCOMP::MEA-20%")
-    boundary_condition::BoundaryCondition = DirichletBoundaryCondition()
+    boundary_condition::BC = DirichletBoundaryCondition()
     Δt
-    Nt
-    Nb = n_boreholes(borefield)
-    Ns = n_segments(borefield)
-    Ts = 1
+    Nt::Int
+    Nb::Int = n_boreholes(borefield)
+    Ns::Int = n_segments(borefield)
+    Ts::Int = 1
     Tmax = Δt * Nt
     t = Δt:Δt:Tmax
 end
