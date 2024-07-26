@@ -45,7 +45,7 @@ end
 end
 
 #=
-@testset "test_GroundMedium_response_Dirichlet" begin
+@testset "test_FlowInPorousMedium_response_Dirichlet" begin
     λw = 0.6
     λs = 2.
     Cw = 4.18*1e6

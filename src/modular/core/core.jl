@@ -18,9 +18,9 @@ first_boreholes(network::BoreholeNetwork) = map(first, network.branches)
 
 Represents a operation state of the network, with `network` representing the hydraulic configuration and `mass_flows` a `Vector` containing the mass flow rate of each branch.
 """
-@with_kw struct BoreholeOperation
+@with_kw struct BoreholeOperation{T <: Number}
     network::BoreholeNetwork         
-    mass_flows::Vector
+    mass_flows::Vector{T}
 end
 BoreholeOperation(::Nothing) = BoreholeOperation(BoreholeNetwork([]), [0.])
 
@@ -32,7 +32,7 @@ Represents the fluid flowing through the hydraulic circuit.
 """
 @with_kw struct Fluid
     cpf
-    name
+    name = "INCOMP::MEA-20%"
 end
 
 """

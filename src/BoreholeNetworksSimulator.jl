@@ -29,7 +29,7 @@ include.(modular)
 export Borehole, SingleUPipeBorehole
 export Borefield, EqualBoreholesBorefield
 export Medium, GroundMedium, FlowInPorousMedium
-export Constraint, HeatLoadConstraint, InletTempConstraint
+export Constraint, HeatLoadConstraint, InletTempConstraint, constant_HeatLoadConstraint, constant_InletTempConstraint
 export TimeSuperpositionMethod, ConvolutionMethod, NonHistoryMethod
 export BoundaryCondition, NoBoundary, DirichletBoundaryCondition
 export SimulationOptions, SimulationContainers, BoreholeOperation, BoreholeNetwork, Fluid

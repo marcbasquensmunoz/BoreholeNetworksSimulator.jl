@@ -47,7 +47,7 @@ get_default_hp(bh::SingleUPipeBorehole{T}) where {T <: Real} = bh.hp
 get_n_segments(bh::SingleUPipeBorehole) = bh.n_segments
 
 
-function uniform_Tb_coeffs(borehole::SingleUPipeBorehole, λs, mass_flow, Tref, fluid::Fluid)
+function uniform_Tb_coeffs(borehole::SingleUPipeBorehole, λ, mass_flow, Tref, fluid)
     x1, y1 = borehole.pipe_position[1]
     x2, y2 = borehole.pipe_position[2]
     @unpack λg, λp, rb, rp, rpo, dpw, H, R_cache, A = borehole
@@ -58,9 +58,9 @@ function uniform_Tb_coeffs(borehole::SingleUPipeBorehole, λs, mass_flow, Tref, 
         Rp = 1/(2*π*λp)*log(rp/(rp-dpw))
         d12 = sqrt( (1 - (x1^2+y1^2) / rb^2) * (1 - (x2^2+y2^2) / rb^2) + ( (x1 - x2)^2 + (y1 - y2)^2) / rb^2 )
 
-        R11 =  1/(2*π*λg) * ( log(rb/rpo) - (λg - λs)/(λg + λs) * log(1 - (x1^2 + y1^2) / rb^2) ) + Rp
-        R12 = -1/(2*π*λg) * (log(( (x1 - x2)^2 + (y1 - y2)^2) / rb^2 ) + (λg - λs)/(λg + λs) * log(d12))
-        R22 =  1/(2*π*λg) * ( log(rb/rpo) - (λg - λs)/(λg + λs) * log(1 - (x2^2 + y2^2) / rb^2) ) + Rp
+        R11 =  1/(2*π*λg) * ( log(rb/rpo) - (λg - λ)/(λg + λ) * log(1 - (x1^2 + y1^2) / rb^2) ) + Rp
+        R12 = -1/(2*π*λg) * (log(( (x1 - x2)^2 + (y1 - y2)^2) / rb^2 ) + (λg - λ)/(λg + λ) * log(d12))
+        R22 =  1/(2*π*λg) * ( log(rb/rpo) - (λg - λ)/(λg + λ) * log(1 - (x2^2 + y2^2) / rb^2) ) + Rp
         R_cache = @SMatrix [R11 R12; R12 R22]
     else
         R11 = R_cache[1, 1]
