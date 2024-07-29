@@ -1,3 +1,4 @@
+using CSV
 
 function test_sparse_matrix(M, expected)
     positions = map(x -> (x[1], x[2]), expected)
@@ -13,4 +14,13 @@ function test_sparse_matrix(M, expected)
         end
     end 
     return true
+end
+
+function load_data(file)
+    data = CSV.read(file, values, header=false)
+    reduce(hcat, data)
+end
+
+function write_data(file, data)
+    CSV.write(file, Tables.table(data), writeheader=false)
 end

@@ -14,3 +14,6 @@ include("constraints/test_InletTempConstraint.jl")
 include("borefields/test_EqualBoreholesBorefield.jl")
 
 include("boreholes/test_SingleUPipeBorehole.jl")
+
+include("methods/test_ConvolutionMethod.jl")
+include("methods/test_NonHistoryMethod.jl")

@@ -35,7 +35,7 @@ end
     borefield = EqualBoreholesBorefield(borehole_prototype=borehole, positions=positions)
 
     medium = MediumMock()
-    fluid = Fluid(cpf=1000.)
+    fluid = Fluid(cpf=1000., name="")
     T_fluid = 10 * ones(2*Nb)
 
     network = BoreholeNetwork([[1], [2], [3]])

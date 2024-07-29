@@ -14,7 +14,7 @@ n_branches(network::BoreholeNetwork) = length(network.branches)
 first_boreholes(network::BoreholeNetwork) = map(first, network.branches)
 
 """
-    BoreholeOperation(network::BoreholeNetwork, mass_flows:: Vector)
+    BoreholeOperation{T <: Number}(network::BoreholeNetwork, mass_flows:: Vector{T})
 
 Represents a operation state of the network, with `network` representing the hydraulic configuration and `mass_flows` a `Vector` containing the mass flow rate of each branch.
 """
@@ -32,17 +32,23 @@ Represents the fluid flowing through the hydraulic circuit.
 """
 @with_kw struct Fluid
     cpf
-    name = "INCOMP::MEA-20%"
+    name
 end
 
 """
-    SimulationOptions(
-        method::TimeSuperpositionMethod, 
-        constraint::Constraint, 
-        borefield::Borefield, 
-        medium::Medium,
+    struct SimulationOptions{
+                    TSM <: TimeSuperpositionMethod,
+                    C <: Constraint,
+                    B <: Borefield, 
+                    M <: Medium, 
+                    BC <: BoundaryCondition
+                }(
+        method::TSM
+        constraint::C
+        borefield::B
+        medium::M
         Δt, 
-        Nt, 
+        Nt::Int,
         boundary_condition::BoundaryCondition = DirichletBoundaryCondition(),
         fluid::Fluid = Fluid(cpf=4182., name="INCOMP::MEA-20%")
     )

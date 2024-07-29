@@ -26,3 +26,27 @@ abstract type Borefield end
     internal_model_coeffs!(M, ::Borefield, medium, operation, T_fluid, fluid)
     internal_model_b!(b, ::Borefield)
 end
+
+n_segments(bf::Borefield) = n_boreholes(bf)
+where_is_segment(::Borefield, i) = i
+
+
+"""
+    BorefieldMock <: Borefield 
+
+Mock for testing purposes.
+"""
+@with_kw struct BorefieldMock <: Borefield 
+    Nb = 1
+    H = []
+    rb = []
+    coordinates = []
+    M = []
+    b = []
+end
+n_boreholes(bf::BorefieldMock) = bf.Nb
+get_H(bf::BorefieldMock, i) = bf.H[i]
+get_rb(bf::BorefieldMock, i) = bf.rb[i]
+segment_coordinates(bf::BorefieldMock, segment) = bf.coordinates[segment]
+internal_model_coeffs!(M, bf::BorefieldMock, medium, operation, T_fluid, fluid) = bf.M .= M
+internal_model_b!(b, bf::BorefieldMock) = bf.b .= b

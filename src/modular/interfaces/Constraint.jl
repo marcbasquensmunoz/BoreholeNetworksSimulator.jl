@@ -19,3 +19,16 @@ abstract type Constraint end
     constraints_coeffs!(M, ::Constraint, operation)
     constraints_b!(b, ::Constraint, operation, step)
 end
+
+
+"""
+    ConstraintMock <: Constraint 
+
+Mock for testing purposes.
+"""
+@with_kw struct ConstraintMock <: Constraint 
+    M = []
+    b = []
+end
+constraints_coeffs!(M, c::Constraint, operation) = c.M .= M
+constraints_b!(b, c::Constraint, operation, step) = c.b .= b

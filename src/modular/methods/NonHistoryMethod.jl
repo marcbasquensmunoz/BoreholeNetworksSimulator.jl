@@ -17,25 +17,25 @@ mutable struct NonHistoryMethod{T} <: TimeSuperpositionMethod
     ζ::Vector{T}
     w::Matrix{T}
     expΔt::Vector{T}
+    n_disc
 end
-NonHistoryMethod() = NonHistoryMethod(zeros(0, 0), zeros(0), zeros(0, 0), zeros(0))
+NonHistoryMethod(;n_disc=20) = NonHistoryMethod(zeros(0, 0), zeros(0), zeros(0, 0), zeros(0), n_disc)
 
 SegmentToSegment(s::MeanSegToSegEvParams) = SegmentToSegment(D1=s.D1, H1=s.H1, D2=s.D2, H2=s.H2, σ=s.σ)
 image(s::SegmentToSegment) = SegmentToSegment(D1=-s.D1, H1=-s.H1, D2=s.D2, H2=s.H2, σ=s.σ)
 
 function precompute_auxiliaries!(method::NonHistoryMethod, options)
     @unpack Nb, Nt, Ns, Δt, borefield, medium, boundary_condition = options
+    @unpack n_disc = method
     b = 2.
     α = get_α(medium)
     rb = get_rb(borefield, 1) 
     kg = get_λ(medium)
     Δt̃ = α*Δt/rb^2
 
-    n_segment = 20
-
     constants = Constants(Δt=Δt, α=α, rb=rb, kg=kg, b=b)
     segments = adaptive_gk_segments(f_guess(SegmentToSegment(get_sts(borefield, 1, 1)), constants), 0., b)
-    dps = @views [discretization_parameters(s.a, s.b, n_segment) for s in segments]
+    dps = @views [discretization_parameters(s.a, s.b, n_disc) for s in segments]
     ζ = reduce(vcat, (dp.x for dp in dps)) 
     expΔt = @. exp(-ζ^2 * Δt̃)
 
@@ -44,7 +44,7 @@ function precompute_auxiliaries!(method::NonHistoryMethod, options)
 
     for i in 1:Ns
         for j in 1:Ns
-            rb = get_rb(borefield, (i-1)*Ns+j) # Get the right rb
+            rb = get_rb(borefield, div(i-1, Ns)+1) # Get the right rb
             sts = SegmentToSegment(get_sts(borefield, i, j))
             w[:, (i-1)*Ns+j] = reduce(vcat, [coefficients_sts(boundary_condition, sts, constants, dp) for dp in dps])
         end
