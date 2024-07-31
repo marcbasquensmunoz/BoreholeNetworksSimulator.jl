@@ -11,13 +11,34 @@ struct InletTempConstraint{T <: Number} <: Constraint
     T_in::Matrix{T}
 end
 
+"""
+    constant_InletTempConstraint(T_in::Vector{N}, Nt) where {N <: Number}
+
+Convenience initializer for `InletTempConstraint`. It creates a constant inlet temperature constraint through all the `Nt` time steps,
+where `T_in` are the inlet temperatures for each branch.
+"""
 function constant_InletTempConstraint(T_in::Vector{N}, Nt) where {N <: Number}
     Nbr = length(T_in)
     T = zeros(Nbr, Nt)
     for i in 1:Nt
         T[:, i] .= T_in
     end
-    HeatLoadConstraint(T)
+    InletTempConstraint(T)
+end
+
+"""
+    uniform_InletTempConstraint(T_in::Vector{N}, Nbr) where {N <: Number}
+
+Convenience initializer for `InletTempConstraint`. It creates a uniform inlet temperature constraint along all branches,
+where `T_in` are the inlet temperatures for each time step.
+"""
+function uniform_InletTempConstraint(T_in::Vector{N}, Nbr) where {N <: Number}
+    Nt = length(T_in)
+    T = zeros(Nbr, Nt)
+    for i in 1:Nbr
+        T[i, :] .= T_in
+    end
+    InletTempConstraint(T)
 end
 
 function constraints_coeffs!(M, ::InletTempConstraint, operation)

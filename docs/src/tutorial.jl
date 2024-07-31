@@ -1,4 +1,4 @@
-# # Tutorial
+# # Basic tutorial
 # In this tutorial we will learn how to simulate the expected temperature and heat extraction in a borehole 
 # field.
 # 
@@ -6,7 +6,15 @@
 # This is done through a [`SimulationOptions`](@ref) object. Its variables are modular components 
 # with which we can describe many scenarios by leveraging Julia's multiple dispatch. 
 # Let us see the components one by one with an example.
-# 
+#
+# We start by specifying the simulation time step and the simulation duration. For our example, 
+# we will take monthly time steps during 10 years:
+
+using BoreholeNetworksSimulator
+
+Δt = 8760*3600/12.
+Nt = 10*12
+
 # Suppose the ground we are interested in simulating is made of solid rock. This means the heat
 # transfer will occur by pure conduction. Assume that the thermal diffusivity of the rock is ``α = 10^{-6} \frac{m^2}{s}``
 # and its thermal conductivity is ``λ = 3 \frac{W}{m \ K}``. 
@@ -14,12 +22,15 @@
 # We model the ground with a subtype of [`Medium`](@ref), in 
 # our case, as per our assumptions, we are particularly interested in [`GroundMedium`](@ref):
 
-using BoreholeNetworksSimulator
-
 α = 1e-6
 λ = 3.
 T0 = 10.
 medium = GroundMedium(α=α, λ=λ, T0=T0)
+
+
+D = 10.
+H = 100.
+borehole = SingleUPipeBorehole(H=H, D=D)
 
 # Next, we need to know how and where the boreholes in our system are. Suppose we are interested
 # in simulating the evolution of two identical vertical boreholes of length ``H=100m`` and 
@@ -61,22 +72,17 @@ borefield = EqualBoreholesBorefield(borehole_prototype=borehole, positions=posit
 # In our example, we want to simulate two independent boreholes, so each of them must be in a separate branch.
 # Also, for the moment, we are only interested in this configuration, so we define:
 
-configuration = BoreholeNetwork([[1], [2]])
+configurations = [BoreholeNetwork([[1], [2]])]
 
-# Even with all this specifications, the evolution of the system is still not fully determined.
+# Even with all these specifications, the evolution of the system is still not fully determined.
 # The missing conditions are referred to as constraints, and are modeled by subtypes of [`Constraint`](@ref).
 # For instance, if we would like the two boreholes to be connected in parallel, we would still need to 
-# impose that their inlet temperatures be equal. In our example, since we want them to be independent, 
-# we will impose the total amount of heat that we want to extract from each borehole. This is specified by
+# impose that their inlet temperatures be equal. In our example, since we want out boreholes to be independent, 
+# we will impose the total amount of heat that we want to extract from each borehole. We will impose a constant
+# load, equal for both boreholes. This is specified by
 q1 = 5.
 q2 = 5.
-constraint = HeatLoadConstraint([q1, q2])
-
-# All that is left is to decide the simulation time step and the simulation duration. For our example, 
-# we will take monthly time steps during 10 years:
-
-Δt = 8760*3600/12.
-Nt = 10*12
+constraint = constant_HeatLoadConstraint([q1, q2], Nt)
 
 # We can finally create the object with all the options:
 
@@ -86,7 +92,8 @@ options = SimulationOptions(
     borefield = borefield,
     medium = medium,
     Δt = Δt,
-    Nt = Nt
+    Nt = Nt,
+    configurations = configurations
 )
 
 # As we have mentioned, the simulation is designed to allow for a controllable opeartion during its duration.
@@ -96,8 +103,8 @@ options = SimulationOptions(
 # The second specifies the mass flow rate through each branch of the selected configuration, provided as 
 # a vector. In our example, we will keep this constant through the simulation:
 
-function operator(i, Tin, Tout, Tb, q)
-    BoreholeOperation(configuration, 2 .* ones(2))
+function operator(i, Tin, Tout, Tb, q, configurations)
+    BoreholeOperation(configurations[1], 2 .* ones(2))
 end
 
 # Before simulating, we first need to call [`initialize`](@ref) to run some precomputations

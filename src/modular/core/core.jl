@@ -47,13 +47,24 @@ end
         constraint::C
         borefield::B
         medium::M
-        Δt, 
-        Nt::Int,
-        boundary_condition::BoundaryCondition = DirichletBoundaryCondition(),
+        boundary_condition::BoundaryCondition = DirichletBoundaryCondition()
         fluid::Fluid = Fluid(cpf=4182., name="INCOMP::MEA-20%")
+        configurations::Vector{BoreholeNetwork}
+        Δt
+        Nt::Int
     )
 
 Specifies all the options for the simulation.
+
+- `method`: time superposition method used to compute the response. Available options: `ConvolutionMethod`, `NonHistoryMethod`.
+- `constraint`: constraint that the system must satisfy. Can be variable with time. Available options: `HeatLoadConstraint`, `InletTempConstraint`.
+- `borefield`: describes the geometrical properties and the boreholes of the borefield on which the simulation will be performed. Available options: `EqualBoreholesBorefield`.
+- `medium`: properties of the ground where the `borefield` is places. Available options: `GroundMedium`, `FlowInPorousMedium`.
+- `boundary_condition`: boundary condition of the domain where the simulation is performed. Available options: `NoBoundary`, `DirichletBoundaryCondition`.
+- `fluid`: properties of the fluid flowing through the hydraulic system.
+- `configurations`: possible hydraulic topologies possible in the system, including reverse flow.
+- `Δt`: time step used in the simulation.
+- `Nt`: total amount of time steps of the simulation.
 """
 @with_kw struct SimulationOptions{
                     TSM <: TimeSuperpositionMethod,
@@ -61,6 +72,7 @@ Specifies all the options for the simulation.
                     B <: Borefield, 
                     M <: Medium, 
                     BC <: BoundaryCondition
+                    #A <: Approximation
                 }
     method::TSM
     constraint::C
@@ -68,6 +80,7 @@ Specifies all the options for the simulation.
     medium::M
     fluid::Fluid = Fluid(cpf=4182., name="INCOMP::MEA-20%")
     boundary_condition::BC = DirichletBoundaryCondition()
+    #approximation::A = MeanApproximation()
     Δt
     Nt::Int
     Nb::Int = n_boreholes(borefield)
@@ -75,6 +88,7 @@ Specifies all the options for the simulation.
     Ts::Int = 1
     Tmax = Δt * Nt
     t = Δt:Δt:Tmax
+    configurations::Vector{BoreholeNetwork}
 end
 
 """
@@ -123,10 +137,13 @@ function solve_step!(X, A, b)
 end
 
 function topology_coeffs!(M, operation::BoreholeOperation)
-    for (i, branch) in enumerate(operation.network.branches)
+    M .= 0
+    i = 1
+    for branch in operation.network.branches
         for (out, in) in zip(branch[1:end-1], branch[2:end])
             M[i, 2*in-1] = 1.
             M[i, 2*out] = -1.
+            i += 1
         end
     end
 end

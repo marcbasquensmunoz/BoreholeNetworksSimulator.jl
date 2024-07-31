@@ -11,11 +11,33 @@ struct HeatLoadConstraint{T <: Number} <: Constraint
     Q_tot::Matrix{T}
 end
 
+"""
+    constant_HeatLoadConstraint(Q_tot::Vector{T}, Nt) where {T <: Number}
+
+Convenience initializer for `HeatLoadConstraint`. It creates a constant heat load constraint through all the `Nt` time steps,
+where `Q_tot` are the heat load for each branch.
+"""
 function constant_HeatLoadConstraint(Q_tot::Vector{T}, Nt) where {T <: Number}
     Nbr = length(Q_tot)
     Q = zeros(Nbr, Nt)
     for i in 1:Nt
         Q[:, i] .= Q_tot
+    end
+    HeatLoadConstraint(Q)
+end
+
+
+"""
+    uniform_HeatLoadConstraint(Q_tot::Vector{T}, Nbr) where {T <: Number}
+
+Convenience initializer for `HeatLoadConstraint`. It creates a uniform heat load constraint along all branches,
+where `T_in` are the heat load for each time step.
+"""
+function uniform_HeatLoadConstraint(Q_tot::Vector{T}, Nbr) where {T <: Number}
+    Nt = length(T_in)
+    Q = zeros(Nbr, Nt)
+    for i in 1:Nbr
+        Q[i, :] .= Q_tot
     end
     HeatLoadConstraint(Q)
 end

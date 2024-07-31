@@ -13,7 +13,7 @@ Model a borehole with a single U-pipe with burial depth `D` and length `H`.
 - `dpw = 0.0023`: pipe thickness
 - `rpo = rp + dpw `: equivalent pipe radius
 - `hp = 725.`: heat transfer coefficient fluid to pipe
-- `pipe_position::NTuple{2, Point2{T}} = (Point2(0.03, 0.0), Point2(-0.03, 0.0))`: positions of the downward and upward branches of the pipe
+- `pipe_position::NTuple{2, Tuple{T, T}} = [(0.03, 0.0), (-0.03, 0.0)]`: positions of the downward and upward branches of the pipe. (0, 0) represents the center of the borehole.
 - `rb = 0.115/2`: borehole radius
 """
 @with_kw struct SingleUPipeBorehole{T <: Real} <: Borehole @deftype T
@@ -26,7 +26,7 @@ Model a borehole with a single U-pipe with burial depth `D` and length `H`.
     dpw = 0.0023                        # pipe thickness
     rpo = rp + dpw                      # equivalent pipe radius
     hp = 725.                           # heat transfer coefficient fluid to pipe ?
-    pipe_position::NTuple{2, Point2{T}} = (Point2(0.03, 0.0), Point2(-0.03, 0.0))
+    pipe_position::NTuple{2, Tuple{T, T}} = ((0.03, 0.0), (-0.03, 0.0))
         
     rb = 0.115/2                        # borehole radius
     H                                   # length of the borehole

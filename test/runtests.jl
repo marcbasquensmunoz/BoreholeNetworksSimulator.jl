@@ -2,9 +2,10 @@ using BoreholeNetworksSimulator, Test
 
 include("utils.jl")
 
-dir = @__DIR__
+# Check interface implementations
 include("test_interfaces.jl")
 
+# Run unit tests
 include("mediums/test_GroundMedium.jl")
 include("mediums/test_FlowInPorousMedium.jl")
 
@@ -17,3 +18,10 @@ include("boreholes/test_SingleUPipeBorehole.jl")
 
 include("methods/test_ConvolutionMethod.jl")
 include("methods/test_NonHistoryMethod.jl")
+
+# Run examples
+include("$(dirname(pwd()))/examples/complex_borefield.jl")
+
+# Run tutorials
+include("$(dirname(pwd()))/docs/src/tutorial.jl")
+include("$(dirname(pwd()))/docs/src/nonhistory.jl")

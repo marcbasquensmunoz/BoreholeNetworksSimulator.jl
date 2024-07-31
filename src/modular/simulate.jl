@@ -16,15 +16,16 @@
 Run the simulation defined by `options`. 
 At the end of simulation, `containers.X` will contain the results. `containers` should be the output of [`initialize`](@ref).
 
-`operator` should be a function that returns a `BoreholeOperation` and with signature `operator(i, Tin, Tout, Tb, q)`:
+`operator` should be a function that returns a `BoreholeOperation` and with signature `operator(i, Tin, Tout, Tb, q, configurations)`:
 - `i::Int` is the time step
 - `Tin` is a vector containing the inlet temperature of each borehole
 - `Tout` is a vector containing the outlet temperature of each borehole
 - `Tb` is a vector containing the borehole wall temperature of each borehole
 - `q` is a vector containing the heat exchanged by each borehole
+- `configurations`: is the list of possible hydraulic configurations of the borefield.
 """
 function simulate!(;operator, options::SimulationOptions, containers::SimulationContainers)
-    @unpack method, constraint, borefield, medium, fluid, boundary_condition = options
+    @unpack configurations, method, constraint, borefield, medium, fluid, boundary_condition = options
     @unpack Nb, Ns, Nt, Ts = options
     @unpack M, b, X = containers 
 
@@ -38,7 +39,7 @@ function simulate!(;operator, options::SimulationOptions, containers::Simulation
 
     # Simulation loop
     for i = Ts:Nt
-        operation = @views operator(i, X[1:2:2Nb, 1:i], X[2:2:2Nb, 1:i], X[2Nb+1:3Nb, 1:i], X[3Nb+1:end, 1:i])
+        operation = @views operator(i, X[1:2:2Nb, 1:i], X[2:2:2Nb, 1:i], X[2Nb+1:3Nb, 1:i], X[3Nb+1:end, 1:i], configurations)
         if ispy(operation)
             operation = PythonCall.pyconvert(BoreholeOperation, operation)
         end

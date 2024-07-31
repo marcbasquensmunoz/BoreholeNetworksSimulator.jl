@@ -15,7 +15,8 @@ import BoreholeNetworksSimulator: MediumMock, BorefieldMock, ConstraintMock, Bou
         borefield=borefield,
         medium=medium,
         Δt=3600*24*30.,
-        Nt=Nt 
+        Nt=Nt,
+        configurations=[]
     )
     precompute_auxiliaries!(method, options)
 
@@ -50,7 +51,8 @@ end
         medium=medium,
         boundary_condition=boundary_condition,
         Δt=3600*24*30.,
-        Nt=Nt 
+        Nt=Nt,
+        configurations=[]
     )
     precompute_auxiliaries!(method, options)
 
@@ -86,7 +88,8 @@ end
         medium=medium,
         boundary_condition=boundary_condition,
         Δt=3600*24*30.,
-        Nt=Nt 
+        Nt=Nt,
+        configurations=[]
     )
     precompute_auxiliaries!(method, options)
     method.q = ones(Nb, Nt)
