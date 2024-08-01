@@ -104,7 +104,8 @@ options = SimulationOptions(
 # a vector. In our example, we will keep this constant through the simulation:
 
 function operator(i, Tin, Tout, Tb, q, configurations)
-    BoreholeOperation(configurations[1], 2 .* ones(2))
+    network = configurations[1]
+    BoreholeOperation(network, 2 .* ones(n_branches(network)))
 end
 
 # Before simulating, we first need to call [`initialize`](@ref) to run some precomputations

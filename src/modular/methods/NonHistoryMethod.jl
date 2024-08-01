@@ -21,17 +21,18 @@ mutable struct NonHistoryMethod{T} <: TimeSuperpositionMethod
 end
 NonHistoryMethod(;n_disc=20) = NonHistoryMethod(zeros(0, 0), zeros(0), zeros(0, 0), zeros(0), n_disc)
 
-SegmentToSegment(s::MeanSegToSegEvParams) = SegmentToSegment(D1=s.D1, H1=s.H1, D2=s.D2, H2=s.H2, σ=s.σ)
+FiniteLineSource.SegmentToSegment(s::MeanSegToSegEvParams) = SegmentToSegment(D1=s.D1, H1=s.H1, D2=s.D2, H2=s.H2, σ=s.σ)
 image(s::SegmentToSegment) = SegmentToSegment(D1=-s.D1, H1=-s.H1, D2=s.D2, H2=s.H2, σ=s.σ)
 
 function precompute_auxiliaries!(method::NonHistoryMethod, options)
     @unpack Nb, Nt, Ns, Δt, borefield, medium, boundary_condition = options
     @unpack n_disc = method
-    b = 2.
     α = get_α(medium)
     rb = get_rb(borefield, 1) 
     kg = get_λ(medium)
     Δt̃ = α*Δt/rb^2
+    ϵ = 10^-18
+    b = ceil(erfcinv(ϵ / sqrt(π/Δt̃)) / sqrt(Δt̃))
 
     constants = Constants(Δt=Δt, α=α, rb=rb, kg=kg, b=b)
     segments = adaptive_gk_segments(f_guess(SegmentToSegment(get_sts(borefield, 1, 1)), constants), 0., b)
@@ -93,40 +94,46 @@ function method_coeffs!(M, method::NonHistoryMethod, borefield, medium, boundary
     for i in 1:Ns
         for j in 1:Ns
             sts = SegmentToSegment(get_sts(borefield, i, j))
-            M[i, 3Nb+j] = - q_coef(boundary_condition, medium, method, sts, λ, (i-1)*Ns+j) 
+            M[i, 3Nb+j] = q_coef(boundary_condition, medium, method, sts, λ, (i-1)*Ns+j) 
         end
     end
 
     for i in 1:Ns
         bh = where_is_segment(borefield, i)
-        M[i, 2Nb + bh] = 1
+        M[i, 2Nb + bh] = -1
     end
 end
 
 function method_b!(b, method::NonHistoryMethod, borefield, medium, step)
     @unpack w, expΔt, F = method
-    b .= get_T0(medium)
+    b .= -get_T0(medium)
     Nb = n_boreholes(borefield)
 
     for i in eachindex(b)
-        @inbounds b[i] += sum([dot(w[:, Nb*(i-1)+j], expΔt .* F[:, Nb*(i-1)+j]) for j in 1:Nb])
+        @inbounds b[i] -= sum([dot(w[:, Nb*(i-1)+j], expΔt .* F[:, Nb*(i-1)+j]) for j in 1:Nb])
     end
 end
 
 function q_coef(::NoBoundary, medium, method, sts, λ, i)
-    q_coef(medium, method, sts, λ, i)
+    constant_integral(medium, method, sts, λ, i) + constant_coef(method, i)
 end
 
 function q_coef(::DirichletBoundaryCondition, medium, method, sts, λ, i)
-    q_coef(medium, method, sts, λ, i) - q_coef(medium, method, image(sts), λ, i)
+    @unpack expΔt, w, ζ = method
+    constant_integral(medium, method, sts, λ, i) - constant_integral(medium, method, image(sts), λ, i) + constant_coef(method, i)
 end
 
-function q_coef(::GroundMedium, method, sts, λ, i)
+function constant_coef(method::NonHistoryMethod, i)
+    @unpack expΔt, w, ζ = method
+    -dot(w[:, i], expΔt ./ ζ)
+end
+
+function constant_integral(::GroundMedium, method, sts, λ, i)
     @unpack D1, H1, D2, H2, σ = sts
     @unpack expΔt, w, ζ = method
 
     β(d) = sqrt(σ^2 + d^2) + d*log(sqrt(σ^2 + d^2) - d)
     constant_integral = 1/(4π*λ*H2) * (β(D1+H1-D2-H2) + β(D1-D2) - β(D1+H1-D2) - β(D1-D2-H2))
 
-    constant_integral - dot(w[:, i], expΔt ./ ζ)
+    constant_integral #- dot(w[:, i], expΔt ./ ζ)
 end

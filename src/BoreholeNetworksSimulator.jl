@@ -34,5 +34,6 @@ export TimeSuperpositionMethod, ConvolutionMethod, NonHistoryMethod
 export BoundaryCondition, NoBoundary, DirichletBoundaryCondition
 export SimulationOptions, SimulationContainers, BoreholeOperation, BoreholeNetwork, Fluid
 export simulate!, compute_parameters, load_cache!, save_cache, initialize
+export n_branches
 
 end # module

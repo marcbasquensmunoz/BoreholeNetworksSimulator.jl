@@ -109,6 +109,7 @@ end
 Precompute the objects of each `TimeSuperpositionMethod` that can be computed ahead of time and return the `SimulationContainers` of the required size.
 """
 function initialize(options::SimulationOptions) 
+    # TODO: detect overlapping boreholes
     precompute_auxiliaries!(options.method, options)
     SimulationContainers(options)
 end

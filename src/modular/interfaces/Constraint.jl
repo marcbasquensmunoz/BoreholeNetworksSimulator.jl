@@ -30,5 +30,5 @@ Mock for testing purposes.
     M = []
     b = []
 end
-constraints_coeffs!(M, c::Constraint, operation) = c.M .= M
-constraints_b!(b, c::Constraint, operation, step) = c.b .= b
+constraints_coeffs!(M, c::ConstraintMock, operation) = c.M .= M
+constraints_b!(b, c::ConstraintMock, operation, step) = c.b .= b

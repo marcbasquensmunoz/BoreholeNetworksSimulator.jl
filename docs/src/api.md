@@ -2,6 +2,13 @@
 
 ## General 
 
+```@docs
+initialize
+```
+
+```@docs
+simulate!
+```
 
 ```@docs
 BoreholeNetwork
@@ -11,13 +18,6 @@ BoreholeNetwork
 BoreholeOperation
 ```
 
-```@docs
-simulate!
-```
-
-```@docs
-initialize
-```
 
 ## Simulation Options
 
@@ -30,6 +30,8 @@ SimulationOptions
 ```@docs
 Medium
 ```
+
+#### Options
 
 ```@docs
 GroundMedium
@@ -45,6 +47,8 @@ FlowInPorousMedium
 Borefield
 ```
 
+#### Options
+
 ```@docs
 EqualBoreholesBorefield
 ```
@@ -55,6 +59,8 @@ EqualBoreholesBorefield
 Borehole
 ```
 
+#### Options
+
 ```@docs
 SingleUPipeBorehole
 ```
@@ -64,6 +70,8 @@ SingleUPipeBorehole
 ```@docs
 Constraint
 ```
+
+#### Options
 
 ```@docs
 HeatLoadConstraint
@@ -77,6 +85,8 @@ InletTempConstraint
 ```@docs
 TimeSuperpositionMethod
 ```
+
+#### Options
 
 ```@docs
 ConvolutionMethod
@@ -92,6 +102,7 @@ NonHistoryMethod
 BoundaryCondition
 ```
 
+#### Options
 ```@docs
 NoBoundary
 ```
