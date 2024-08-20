@@ -6,23 +6,25 @@
 # via the Fast Fourier Transform, yields a computational complexity of ``\mathcal{O}\left( N_t \log{N_t} \right)``.
 # This means that using the non-history method in simulations allows for finer time steps.
 
-# To show this, let us run a simulation with hourly time steps, with a duration of 20 years (so `175200` time steps),
+# To show this, let us run a simulation with hourly time steps, with a duration of 1 year (so ``8760`` time steps),
 # with both the convolution and the non-history time superposition methods.
 # Let us define an example, very similar to 
 using BoreholeNetworksSimulator
 
-Δt = 8760*3600/12.     # Hourly time step
-Nt = 2
+Δt = 3600.#8760*3600/12.
+Nt = 8760
 
 medium = GroundMedium(α=1e-6, λ=3., T0=10.)
+borehole = SingleUPipeBorehole(H=10., D=10.)
 positions = [(0., 0.), (0., 5.)]
-borehole = SingleUPipeBorehole(H=100., D=10.)
 borefield = EqualBoreholesBorefield(borehole_prototype=borehole, positions=positions)
-configurations = [BoreholeNetwork([[1], [2]])]
 constraint = constant_HeatLoadConstraint(5 .* ones(BoreholeNetworksSimulator.n_boreholes(borefield)), Nt)
 
+configurations = [BoreholeNetwork([[1], [2]])]
+
 function operator(i, Tin, Tout, Tb, q, configurations)
-    BoreholeOperation(configurations[1], 2 .* ones(2))
+    network = configurations[1]
+    BoreholeOperation(network, 2 .* ones(n_branches(network)))
 end
 
 # Now, we define two different options using different `method` parameters, 
@@ -56,7 +58,8 @@ containers_convolution = @time initialize(options_convolution)
 containers_nonhistory = @time initialize(options_nonhistory)
 @time simulate!(operator=operator, options=options_nonhistory, containers=containers_nonhistory)
 
-sum(abs.(containers_convolution.X - containers_nonhistory.X))
+
+abs.(containers_convolution.X - containers_nonhistory.X)
 
 # ## References
 # [1] [Lazzarotto, Alberto; Basquens, Marc; Cimmino, Massimo; 
