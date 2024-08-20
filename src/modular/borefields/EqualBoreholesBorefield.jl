@@ -1,17 +1,22 @@
 
-@with_kw struct EqualBoreholesBorefield{T <: Borehole, R <: Medium, S <: Real} <: Borefield
+"""
+    EqualBoreholesBorefield{T <: Borehole, R <: Medium, S <: Real} <: Borefield
+    EqualBoreholesBorefield(borehole_prototype::T, positions::Vector{Point2{S}}), medium::R)
+
+Model a borefield with boreholes all identical to the prototype `borehole_prototype`, placed at `positions`.
+Note that the length of `positions` determines the amount of boreholes in the field.
+`medium` contains the properties of the ground.
+"""
+@with_kw struct EqualBoreholesBorefield{T <: Borehole, S <: Real} <: Borefield
     borehole_prototype::T
-    positions::Vector{Point2{Float64}}
-    medium::R
-    T0::S
+    positions::Vector{Tuple{S, S}}
 end
 
-borehole_amount(bf::EqualBoreholesBorefield) = length(bf.positions)
-segment_amount(bf::EqualBoreholesBorefield) = length(bf.positions)
+n_boreholes(bf::EqualBoreholesBorefield) = length(bf.positions)
+n_segments(bf::EqualBoreholesBorefield) = length(bf.positions)
 get_H(bf::EqualBoreholesBorefield, i) = get_H(bf.borehole_prototype)
 get_h(bf::EqualBoreholesBorefield, i) = get_h(bf.borehole_prototype)
 get_rb(bf::EqualBoreholesBorefield, i) = get_rb(bf.borehole_prototype)
-get_T0(bf::EqualBoreholesBorefield) = bf.T0
 where_is_segment(bf::EqualBoreholesBorefield, i) = div((i-1), get_n_segments(bf.borehole_prototype)) + 1  
 
 function segment_coordinates(bf::EqualBoreholesBorefield, segment)
@@ -24,19 +29,20 @@ function segment_coordinates(bf::EqualBoreholesBorefield, segment)
     z_eval = z_ref + h/2
 
     # (x, y, z_ref, z_eval)
-    return (position[1], position[2], z_ref, z_eval)
+    #return (position[1], position[2], z_ref, z_eval)
+    (position[1], position[2], z_ref, h)
 end
 
-function internal_model_coeffs!(M, borefield::EqualBoreholesBorefield, operation, T_fluid)
-    Nb = borehole_amount(borefield)
+function internal_model_coeffs!(M, borefield::EqualBoreholesBorefield, medium, operation, T_fluid, fluid)
+    Nb = n_boreholes(borefield)
 
-    for (i, branch) in enumerate(operation.network)
+    for (i, branch) in enumerate(operation.network.branches)
         mass_flow = operation.mass_flows[i]
 
         for j in branch
             Tref = (T_fluid[2*j - 1] + T_fluid[2*j]) / 2
 
-            k_in, k_out, k_b = uniform_Tb_coeffs(borefield.borehole_prototype, get_λ(borefield.medium), mass_flow, Tref, operation.cpf)
+            k_in, k_out, k_b = uniform_Tb_coeffs(borefield.borehole_prototype, get_λ(medium), mass_flow, Tref, fluid)
 
             M[j, j*2 - 1]  = k_in
             M[j, j*2]      = k_out
@@ -45,4 +51,4 @@ function internal_model_coeffs!(M, borefield::EqualBoreholesBorefield, operation
     end
 end
 
-function internal_model_b!(b, borefield::EqualBoreholesBorefield) end
+function internal_model_b!(b, ::EqualBoreholesBorefield) end
