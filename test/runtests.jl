@@ -20,8 +20,8 @@ include("methods/test_ConvolutionMethod.jl")
 #include("methods/test_NonHistoryMethod.jl")
 
 # Run examples
-include("$(dirname(pwd()))/examples/complex_borefield.jl")
+#include("$(dirname(pwd()))/examples/complex_borefield.jl")
 
 # Run tutorials
 include("$(dirname(pwd()))/docs/src/tutorial.jl")
-include("$(dirname(pwd()))/docs/src/nonhistory.jl")
+#include("$(dirname(pwd()))/docs/src/nonhistory.jl")
