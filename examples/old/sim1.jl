@@ -9,6 +9,11 @@ using BoreholeResponseFunctions
 using BoreholeNetworksSimulator
 
 
+include("model_builder.jl")
+include("mls_simmetries.jl")
+include("innerborehole_model.jl")
+include("geometrical_transformation.jl")
+
 cdir = @__DIR__
 
 # 0. NAMES OF FOLDER FOR SAVING RESULTS FILES

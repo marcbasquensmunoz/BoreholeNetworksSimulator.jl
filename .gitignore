@@ -1,3 +1,5 @@
-Manifest.toml
+**/Manifest.toml
 .vscode
 .CondaPkg
+.pb.gz
+/docs/build/*

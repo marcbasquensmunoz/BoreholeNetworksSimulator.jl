@@ -1,15 +1,32 @@
+"""
+    SingleUPipeBorehole{T <: Real} <: Borehole @deftype T
+    SingleUPipeBorehole(H, D)
 
+Model a borehole with a single U-pipe with burial depth `D` and length `H`.
+
+# Arguments
+- `λg = 2.5`: grout conductivity
+- `Cg = 2000. * 1550.`: grout capacity
+- `αg = λg/Cg`: grout thermal diffusivity
+- `rp = 0.02`: pipe radius
+- `λp = 0.42`: pipe material conductivity
+- `dpw = 0.0023`: pipe thickness
+- `rpo = rp + dpw `: equivalent pipe radius
+- `hp = 725.`: heat transfer coefficient fluid to pipe
+- `pipe_position::NTuple{2, Tuple{T, T}} = [(0.03, 0.0), (-0.03, 0.0)]`: positions of the downward and upward branches of the pipe. (0, 0) represents the center of the borehole.
+- `rb = 0.115/2`: borehole radius
+"""
 @with_kw struct SingleUPipeBorehole{T <: Real} <: Borehole @deftype T
     λg = 2.5                            # grout conductivity
     Cg = 2000. * 1550.                  # grout capacity
     αg = λg/Cg	                        # grout thermal diffusivity
 
-    rp = 0.02                           # equivalent pipe radius
-    λp = 0.42                           # p - pipe material
+    rp = 0.02                           # pipe radius
+    λp = 0.42                           # pipe material conductivity
     dpw = 0.0023                        # pipe thickness
     rpo = rp + dpw                      # equivalent pipe radius
     hp = 725.                           # heat transfer coefficient fluid to pipe ?
-    pipe_position::NTuple{2, Point2{T}} = (Point2(0.03, 0.0), Point2(-0.03, 0.0))
+    pipe_position::NTuple{2, Tuple{T, T}} = ((0.03, 0.0), (-0.03, 0.0))
         
     rb = 0.115/2                        # borehole radius
     H                                   # length of the borehole
@@ -30,20 +47,20 @@ get_default_hp(bh::SingleUPipeBorehole{T}) where {T <: Real} = bh.hp
 get_n_segments(bh::SingleUPipeBorehole) = bh.n_segments
 
 
-function uniform_Tb_coeffs(borehole::SingleUPipeBorehole, λs, mass_flow, Tref, cpf)
+function uniform_Tb_coeffs(borehole::SingleUPipeBorehole, λ, mass_flow, Tref, fluid)
     x1, y1 = borehole.pipe_position[1]
     x2, y2 = borehole.pipe_position[2]
     @unpack λg, λp, rb, rp, rpo, dpw, H, R_cache, A = borehole
 
-    hp = heat_transfer_coefficient(mass_flow, Tref, borehole)
+    hp = heat_transfer_coefficient(mass_flow, Tref, borehole, fluid.name)
 
     if iszero(R_cache)
         Rp = 1/(2*π*λp)*log(rp/(rp-dpw))
         d12 = sqrt( (1 - (x1^2+y1^2) / rb^2) * (1 - (x2^2+y2^2) / rb^2) + ( (x1 - x2)^2 + (y1 - y2)^2) / rb^2 )
 
-        R11 =  1/(2*π*λg) * ( log(rb/rpo) - (λg - λs)/(λg + λs) * log(1 - (x1^2 + y1^2) / rb^2) ) + Rp
-        R12 = -1/(2*π*λg) * (log(( (x1 - x2)^2 + (y1 - y2)^2) / rb^2 ) + (λg - λs)/(λg + λs) * log(d12))
-        R22 =  1/(2*π*λg) * ( log(rb/rpo) - (λg - λs)/(λg + λs) * log(1 - (x2^2 + y2^2) / rb^2) ) + Rp
+        R11 =  1/(2*π*λg) * ( log(rb/rpo) - (λg - λ)/(λg + λ) * log(1 - (x1^2 + y1^2) / rb^2) ) + Rp
+        R12 = -1/(2*π*λg) * (log(( (x1 - x2)^2 + (y1 - y2)^2) / rb^2 ) + (λg - λ)/(λg + λ) * log(d12))
+        R22 =  1/(2*π*λg) * ( log(rb/rpo) - (λg - λ)/(λg + λ) * log(1 - (x2^2 + y2^2) / rb^2) ) + Rp
         R_cache = @SMatrix [R11 R12; R12 R22]
     else
         R11 = R_cache[1, 1]
@@ -55,7 +72,7 @@ function uniform_Tb_coeffs(borehole::SingleUPipeBorehole, λs, mass_flow, Tref, 
     R11 += Rhp
     R22 += Rhp
 
-    den = cpf * mass_flow * (R11 * R22 - R12^2)
+    den = fluid.cpf * mass_flow * (R11 * R22 - R12^2)
     A[1, 1] = - H / den * R22
     A[1, 2] = H / den * R12
     A[2, 1] = - H / den * R12
