@@ -1,3 +1,4 @@
+
 # Below is the template to run your tests in Julia
 .test_template: &test_definition
   # Uncomment below if you would like to run the tests on specific references
@@ -8,12 +9,12 @@
   script:
     # Let's run the tests. Substitute `coverage = false` below, if you do not
     # want coverage results.
-    - julia -e 'using Pkg; Pkg.clone(pwd()); Pkg.build("BoreholeNetworksSimulator"); Pkg.test("BoreholeNetworksSimulator"; coverage = true)'
+    - julia -e 'using Pkg; Pkg.add(pwd()); Pkg.build("BoreholeNetworksSimulator"); Pkg.test("BoreholeNetworksSimulator"; coverage = false)'
     # Comment out below if you do not want coverage results.
-    - julia -e 'using Pkg; Pkg.add("Coverage"); 
-      import BoreholeNetworksSimulator; cd(joinpath(dirname(pathof(BoreholeNetworksSimulator)), ".."));
-      using Coverage; cl, tl = get_summary(process_folder());
-      println("(", cl/tl*100, "%) covered")'
+    #- julia -e 'using Pkg; Pkg.add("Coverage"); 
+    #  import BoreholeNetworksSimulator; cd(joinpath(dirname(pathof(BoreholeNetworksSimulator)), ".."));
+    #  using Coverage; cl, tl = get_summary(process_folder());
+    #  println("(", cl/tl*100, "%) covered")'
 
 
 test:1.10:
@@ -33,12 +34,12 @@ pages:
   stage: deploy
   script:
     - apt-get update -qq && apt-get install -y git # needed by Documenter
-    - julia -e 'using Pkg; Pkg.clone(pwd()); Pkg.build("BoreholeNetworksSimulator");' # rebuild Julia (can be put somewhere else I'm sure
+    - julia -e 'using Pkg; Pkg.add(pwd()); Pkg.build("BoreholeNetworksSimulator");' # rebuild Julia (can be put somewhere else I'm sure
     - julia -e 'using Pkg; import BoreholeNetworksSimulator; Pkg.add("Documenter")' # install Documenter
     - julia --color=yes docs/make.jl # make documentation
     - mv docs/build public # move to the directory picked up by Gitlab pages
   artifacts:
     paths:
       - public
-  only:
-  - master
+  #only:
+  #- master
