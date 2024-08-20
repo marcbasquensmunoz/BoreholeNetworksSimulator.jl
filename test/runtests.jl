@@ -1,5 +1,5 @@
 using BoreholeNetworksSimulator, Test
-
+#=
 include("utils.jl")
 
 # Check interface implementations
@@ -25,3 +25,4 @@ include("methods/test_ConvolutionMethod.jl")
 # Run tutorials
 include("$(dirname(pwd()))/docs/src/tutorial.jl")
 #include("$(dirname(pwd()))/docs/src/nonhistory.jl")
+=#

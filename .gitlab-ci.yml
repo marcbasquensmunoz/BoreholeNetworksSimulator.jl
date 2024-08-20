@@ -1,15 +1,15 @@
 
 # Below is the template to run your tests in Julia
-#.test_template: &test_definition
+.test_template: &test_definition
   # Uncomment below if you would like to run the tests on specific references
   # only, such as the branches `master`, `development`, etc.
   # only:
   #   - master
   #   - development
- # script:
+  script:
     # Let's run the tests. Substitute `coverage = false` below, if you do not
     # want coverage results.
-  #  - julia -e 'using Pkg; Pkg.add(url="https://gitlab.com/alblaz/BoreholeResponseFunctions.git"); Pkg.add(url="https://github.com/marcbasquensmunoz/FiniteLineSource"); Pkg.add(path=pwd()); Pkg.build("BoreholeNetworksSimulator"); Pkg.test("BoreholeNetworksSimulator"; coverage = false)'
+    - julia -e 'using Pkg; Pkg.add(url="https://gitlab.com/alblaz/BoreholeResponseFunctions.git"); Pkg.add(url="https://github.com/marcbasquensmunoz/FiniteLineSource"); Pkg.add(path=pwd()); Pkg.build("BoreholeNetworksSimulator"); Pkg.test("BoreholeNetworksSimulator"; coverage = false)'
     # Comment out below if you do not want coverage results.
     #- julia -e 'using Pkg; Pkg.add("Coverage"); 
     #  import BoreholeNetworksSimulator; cd(joinpath(dirname(pathof(BoreholeNetworksSimulator)), ".."));
