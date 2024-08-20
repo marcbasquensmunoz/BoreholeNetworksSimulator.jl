@@ -14,8 +14,8 @@ dir = @__DIR__
 Literate.markdown("$dir/src/tutorial.jl", "$dir/src")
 Literate.markdown("$dir/src/nonhistory.jl", "$dir/src")
 makedocs(
+    format=:html,
     pages=pages,
     sitename="BoreholeNetworksSimulator.jl",
-    #repo=Remotes.GitHub("marcbasquensmunoz", "BoreholeNetworksSimulator.jl")
     repo=Remotes.GitLab("alblaz", "BoreholeNetworksSimulator")
     )
