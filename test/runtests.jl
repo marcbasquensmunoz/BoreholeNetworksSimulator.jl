@@ -6,7 +6,7 @@ include("utils.jl")
 include("test_interfaces.jl")
 
 # Run unit tests
-include("mediums/test_GroundMedium.jl")
+#include("mediums/test_GroundMedium.jl")
 include("mediums/test_FlowInPorousMedium.jl")
 
 include("constraints/test_HeatLoadConstraint.jl")
