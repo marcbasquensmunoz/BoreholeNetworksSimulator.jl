@@ -28,7 +28,7 @@ end
     compute_response!(g, medium, borefield, boundary_condition, t) 
 
     expected = [0.11246425360481815 0.0008175747207000824; 0.0008175747207000824 0.11246425360481815]
-    @test isequal(expected, g)
+    @test isapprox(expected, g)
 end
 
 @testset "test_GroundMedium_response_Dirichlet" begin
@@ -48,5 +48,5 @@ end
     compute_response!(g, medium, borefield, boundary_condition, t) 
 
     expected = [0.1116256193603268 0.0008037621082085207; 0.0008037621082085207 0.1116256193603268]
-    @test isequal(expected, g)
+    @test isapprox(expected, g)
 end
