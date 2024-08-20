@@ -1,0 +1,72 @@
+# Running BoreholeNetworksSimulator from Python
+
+It is also possible to run BoreholeNetworksSimulator from Python by using its Julia interoperability (achieved with the package `PythonCall.jl` and the module `juliacall`) while keeping roughly the same syntax. For a more detailed explanation of how this works, please visit the [PythonCall.jl documentation](https://juliapy.github.io/PythonCall.jl/stable/).
+This requires to have installed in your python environment the modules `juliacall` and `numpy`.
+
+BoreholeNetworksSimulator contains a python script `python/adapter.py` that runs the necessary bridging code.
+You should start your python program by importing this module. Assuming that the package directory is added to the `sys.path`, this should work:
+````
+import python.adapter
+````
+The script takes care of activating the Julia package `BoreholeNetworksSimulator` to make it accessible, as well as defining conversions from python objects to their Julia counterpart. 
+Next, we need to import juliacall to be able to reference objects and funcions from `BoreholeNetworksSimulator`. It is useful to give it an alias for conciseness.
+````
+from juliacall import Main as jl
+````
+Now, the python variable `jl` represents the `Main` module in Julia, and it has as methods all the Julia functions available in it. Since we activated `BoreholeNetworksSimulator`, this also includes its objects and functions.
+
+We will repeat the example in the first tutorial to show how to run the simulation.
+````
+Δt = 8760*3600/12.
+Nt = 10*12
+
+α = 1e-6
+λ = 3.
+T0 = 10.
+medium = jl.GroundMedium(α=α, λ=λ, T0=T0)
+
+D = 10.
+H = 100.
+
+borehole = jl.SingleUPipeBorehole(H=H, D=D)
+
+σ = 5.
+positions = jl.Array[jl.Tuple[jl.Float64, jl.Float64]]([(0., 0.), (0., σ)])
+borefield = jl.EqualBoreholesBorefield(borehole_prototype=borehole, positions=positions)
+
+configurations = [jl.BoreholeNetwork([[1], [2]])]
+
+q1 = 5.
+q2 = 5.
+loads = jl.Array[jl.Float64]([q1, q2])
+constraint = jl.constant_HeatLoadConstraint(loads, Nt)
+
+options = jl.SimulationOptions(
+    method = jl.ConvolutionMethod(),
+    constraint = constraint,
+    borefield = borefield,
+    medium = medium,
+    Δt = Δt,
+    Nt = Nt,
+    configurations = configurations
+)
+````
+The code itself is not very different from its Julia version, but there are two remarks worth making. First, we need to call any object defined in Julia by typing `jl.` in front. This creates a python object with the same fields that `juliacall` knows how to convert back into a Julia object.
+Second, note that we have defined the arrays by explicitly declaring their generic type. If we don't do this, they will be converted into `Vector{Any}` in the Julia code, which is not desirable.
+
+Another difference is the definition of our `operator` object. Since we are writing python, it should now be a python function, however, since the Julia code is expecting an object of type `BoreholeOperation`, its return type must be `jl.BoreholeOperation`, that `PythonCall.jl` knows how to convert. 
+````
+def operator(i, Tin, Tout, Tb, q, configurations):
+    jl.BoreholeOperation(configurations[0], jl.Array[jl.Float64]([2., 2.]))
+````
+
+Finally we can run the simulation
+````
+containers = jl.initialize(options)
+jl.simulate_b(operator=operator, options=options, containers=containers)
+````
+Note that the bang in `simulate!` is replaced by a `_b` in the juliacall version of the function. 
+````
+containers.X
+````
+Now, one can compare this result with its Julia version. If everything went right, they should agree!

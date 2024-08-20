@@ -1,19 +1,52 @@
 """
-borehole_amount                                                      Get the amount of boreholes in the borefield                
-segment_amount                                                       Get the total amount of segments in the borefield 
-get_H(i)                                                             Get the length of borehole i 
-get_h(i)                                                             Get the segment length of borehole i
-get_rb(i)                                                            Get the radius of borehole i
-segment_map                                                          Get a vector containing to which borehole each segment belongs
-segment_coordinates                                                  Get a vector with the coordinates of each segment    
+    abstract type Borefield
 
-internal_model_coeffs!(M, borefield, operation, cpf)                 Compute the coefficient matrix of the internal model equations
-internal_model_b!(b, borefield)                                      Compute the independent vector of the internal model equations
+Interface for borefields.
+
+Required functions
+- `n_boreholes(::Borefield)`: Return the amount of boreholes present in the borefield.
+- `get_H(::Borefield, i)`: Return the length of borehole `i`.
+- `get_rb(::Borefield, i)`: Return the radius of borehole `i`.
+- `segment_coordinates(::Borefield)`: Return a vector with the coordinates of each segment.  
+- `internal_model_coeffs!(M, ::Borefield, medium, operation, fluid)`: Compute inplace in `M`
+    the coefficients corresponding to the internal model equations, given the `medium`, `fluid` and
+    `operation` in use in the system.
+    Note that `M` is only a slice of `Nb` (number of boreholes) rows, provided as a `view`.
+- `internal_model_b!(b, ::Borefield)`: Compute inplace in `b`
+    the independent terms corresponding to the internal model equations.
+    Note that `b` is only a vector of length `Nb` (number of boreholes) rows, provided as a `view`.
 """
 abstract type Borefield end
 
+@required Borefield begin
+    n_boreholes(::Borefield)
+    get_H(::Borefield, i)
+    get_rb(::Borefield, i)
+    segment_coordinates(::Borefield, segment)
+    internal_model_coeffs!(M, ::Borefield, medium, operation, T_fluid, fluid)
+    internal_model_b!(b, ::Borefield)
+end
+
+n_segments(bf::Borefield) = n_boreholes(bf)
+where_is_segment(::Borefield, i) = i
+
+
 """
-get_λ                                                                Get the thermal conductivity of the medium
-compute_response!(medium, borefield, coord_source, coord_eval, t)    Compute the thermal responses between segments for all times in t                                 
+    BorefieldMock <: Borefield 
+
+Mock for testing purposes.
 """
-abstract type Medium end
+@with_kw struct BorefieldMock <: Borefield 
+    Nb = 1
+    H = []
+    rb = []
+    coordinates = []
+    M = []
+    b = []
+end
+n_boreholes(bf::BorefieldMock) = bf.Nb
+get_H(bf::BorefieldMock, i) = bf.H[i]
+get_rb(bf::BorefieldMock, i) = bf.rb[i]
+segment_coordinates(bf::BorefieldMock, segment) = bf.coordinates[segment]
+internal_model_coeffs!(M, bf::BorefieldMock, medium, operation, T_fluid, fluid) = bf.M .= M
+internal_model_b!(b, bf::BorefieldMock) = bf.b .= b

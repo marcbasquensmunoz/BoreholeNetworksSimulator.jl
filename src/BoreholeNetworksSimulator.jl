@@ -3,7 +3,6 @@ module BoreholeNetworksSimulator
 using LinearAlgebra
 using GeometryTypes
 using Parameters
-using BoreholeResponseFunctions
 using CoolProp
 using ExponentialUtilities
 using StaticArrays
@@ -11,32 +10,30 @@ using SparseArrays
 using LinearSolve
 using JLD2
 using PythonCall
+using DataStructures
+using QuadGK
+using FastGaussQuadrature
+using LegendrePolynomials
+using SpecialFunctions
+using RequiredInterfaces
+
+using BoreholeResponseFunctions
+using FiniteLineSource
 
 include("utils.jl")
 
 modular = get_all_julia_files_in_dir("$(@__DIR__)/modular")
-sort_dependencies!(modular, ["interfaces/"])
+sort_dependencies!(modular, ["interfaces/", "core/"])
 include.(modular)
-
-export GroundWaterFlow, evaluate_relevant_distances, map_unique_pairs
-include("mls_simmetries.jl")
-
-export build_matrix!, build_giventerm!, update_b!, solve_full_convolution_step!
-include("model_builder.jl")
-
-export rotation, rotation_z
-include("geometrical_transformation.jl")
-
-export BoreholePara, resistance_network, coefficient_matrix, deltacircuit, effective_borehole_resistance, uniformTb_koeff
-export heat_transfer_coefficient
-include("innerborehole_model.jl")
 
 export Borehole, SingleUPipeBorehole
 export Borefield, EqualBoreholesBorefield
-export Medium, GroundMedium, GroundWaterMedium
-export Constraint, HeatLoadConstraint, InletTempConstraint
-export Method, ConvolutionMethod
-export SimulationParameters, SimulationContainers, BoreholeOperation, compute_parameters, load_cache!, save_cache
-export simulate
+export Medium, GroundMedium, FlowInPorousMedium
+export Constraint, HeatLoadConstraint, InletTempConstraint, constant_HeatLoadConstraint, uniform_HeatLoadConstraint, constant_InletTempConstraint, uniform_InletTempConstraint
+export TimeSuperpositionMethod, ConvolutionMethod, NonHistoryMethod
+export BoundaryCondition, NoBoundary, DirichletBoundaryCondition
+export SimulationOptions, SimulationContainers, BoreholeOperation, BoreholeNetwork, Fluid
+export simulate!, compute_parameters, load_cache!, save_cache, initialize
+export n_branches
 
 end # module

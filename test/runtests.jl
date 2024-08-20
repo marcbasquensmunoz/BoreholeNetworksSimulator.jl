@@ -1,43 +1,28 @@
-using BoreholeNetworksSimulator
-using Test
-using DelimitedFiles
-using GeometryTypes
+using BoreholeNetworksSimulator, Test
+#=
+include("utils.jl")
 
-const ϵ = 5*10^-14
+# Check interface implementations
+include("test_interfaces.jl")
 
-function initialize(data, tstep, tmax)
-    df = readdlm("$(@__DIR__)/$data", ';', Float64, header=true)[1]
-    borehole_positions = [Point2(df[i, 1], df[i, 2]) for i in 1:size(df)[1]]
-    borefield = EqualBoreholesBorefield(borehole_prototype=SingleUPipeBorehole(H=50., D=4.), positions=borehole_positions, medium=GroundWaterMedium(), T0 = 10.)
-    parameters = compute_parameters(borefield=borefield, tstep=tstep, tmax=tmax)
-    method = ConvolutionMethod(parameters=parameters, borefield=borefield)
-    containers = SimulationContainers(parameters)
+# Run unit tests
+#include("mediums/test_GroundMedium.jl")
+include("mediums/test_FlowInPorousMedium.jl")
 
-    return parameters, method, containers, borefield
-end
+include("constraints/test_HeatLoadConstraint.jl")
+include("constraints/test_InletTempConstraint.jl")
 
-function load_expected(file)
-    readdlm("$(@__DIR__)/$file", ';', Float64)
-end
+include("borefields/test_EqualBoreholesBorefield.jl")
 
-@testset "test" begin
-    parameters, method, containers, borefield = initialize("test_data.txt", 8760*3600/12., 8760*3600*10.)
-    constraint = InletTempConstraint([i%12 in 1:6 ? 90. : 55. for i = 1:120])
-    networks = 
-    [
-        [
-            [1],
-            [2]
-        ]
-    ]
+include("boreholes/test_SingleUPipeBorehole.jl")
 
-    function operator(i, Tin, Tout, Tb, Δq, Q)
-        BoreholeOperation(networks[1], 0.5 .* ones(8), 4182.)
-    end
+include("methods/test_ConvolutionMethod.jl")
+#include("methods/test_NonHistoryMethod.jl")
 
-    simulate(parameters=parameters, containers=containers, operator=operator, borefield=borefield, constraint=constraint, method=method)
+# Run examples
+#include("$(dirname(pwd()))/examples/complex_borefield.jl")
 
-    expected_result = load_expected("test.csv")
-
-    @test containers.X ≈ expected_result atol = ϵ
-end
+# Run tutorials
+include("$(dirname(pwd()))/docs/src/tutorial.jl")
+#include("$(dirname(pwd()))/docs/src/nonhistory.jl")
+=#

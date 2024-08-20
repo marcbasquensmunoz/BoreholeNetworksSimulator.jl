@@ -1,27 +1,35 @@
+"""
+    ConvolutionMethod{T} <: TimeSuperpositionMethod 
+    ConvolutionMethod()
 
-mutable struct ConvolutionMethod{T} <: Method 
+Use the naïve convolution to compute the thermal response between boreholes. 
+It should be initialized without arguments, but it contains the variables:
+- `g` stores the unit response between each pair of boreholes evaluated at each time of the simulation. 
+It should be precomputed with [`initialize`](@ref).
+- `q` stores the heat extraction in each borehole at each time step. It is filled as the simulation runs. 
+"""
+mutable struct ConvolutionMethod{T} <: TimeSuperpositionMethod 
     g::Array{T, 3}
-    Δq::Array{T, 2}
+    q::Array{T, 2}
 end
-function ConvolutionMethod(;parameters, borefield)
-    @unpack Nb, Nt, Ns = parameters
-    model = ConvolutionMethod(zeros(Nb, Nb, Nt), zeros(Ns, Nt))
-    precompute_auxiliaries!(model, borefield, parameters.t)
-    return model
+ConvolutionMethod() = ConvolutionMethod(zeros(0,0,0), zeros(0,0))
+
+function precompute_auxiliaries!(method::ConvolutionMethod, options)
+    @unpack Nb, Nt, t, borefield, medium, boundary_condition = options
+    method.g = zeros(Nb, Nb, Nt)
+    method.q = zeros(Nb, Nt)
+    compute_response!(method.g, medium, borefield, boundary_condition, t)
+    return method
 end
 
-function precompute_auxiliaries!(method::ConvolutionMethod, borefield::Borefield, t) 
-    compute_response!(method.g, borefield.medium, borefield, t)
+function update_auxiliaries!(method::ConvolutionMethod, X, borefield, step)
+    Nb = n_boreholes(borefield)
+    method.q[:, step] = @view X[3Nb+1:end, step] 
 end
 
-function update_auxiliaries!(method::ConvolutionMethod, X, borefield::Borefield, step)
-    Nb = borehole_amount(borefield)
-    method.Δq[:, step] = @view X[3Nb+1:end, step] 
-end
-
-function method_coeffs!(M, method::ConvolutionMethod, borefield::Borefield)
-    Nb = borehole_amount(borefield)
-    Ns = segment_amount(borefield)
+function method_coeffs!(M, method::ConvolutionMethod, borefield, medium, boundary_condition)
+    Nb = n_boreholes(borefield)
+    Ns = n_segments(borefield)
     M[1:Ns, 3Nb+1:3Nb+Ns] = @view method.g[:,:,1]
     for i in 1:Ns
         bh = where_is_segment(borefield, i)
@@ -29,13 +37,13 @@ function method_coeffs!(M, method::ConvolutionMethod, borefield::Borefield)
     end
 end
 
-function method_b!(b, method::ConvolutionMethod, borefield::Borefield, step)
-    Ns = segment_amount(borefield)
-    b .= -get_T0(borefield)
+function method_b!(b, method::ConvolutionMethod, borefield, medium, step)
+    Ns = n_segments(borefield)
+    b .= -get_T0(medium)
 
-    for k = 2:step
+    for k = 1:step-1
         for i in 1:Ns
-            @views @inbounds b[i] -= dot(method.Δq[:, step - k + 1], method.g[:, i, k])
+            @views @inbounds b[i] -= dot(method.q[:, k], method.g[:, i, step - k + 1] - method.g[:, i, step - k])
         end
     end
 end
