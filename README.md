@@ -1,4 +1,6 @@
 [![Aqua QA](https://raw.githubusercontent.com/JuliaTesting/Aqua.jl/master/badge.svg)](https://github.com/JuliaTesting/Aqua.jl)
+[![documentation (placeholder)](https://img.shields.io/badge/docs-latest-blue.svg)](https://alblaz.gitlab.io/BoreholeNetworksSimulator/)
+
 
 # BoreholeNetworksSimulator
 
