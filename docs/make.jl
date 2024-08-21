@@ -1,13 +1,13 @@
 using Documenter, Literate, BoreholeNetworksSimulator
 
 pages = [
-    "Introduction" => "index.md"
+    "Introduction" => "index.md",
     #="Tutorial" => [
         "Basic tutorial" => "tutorial.md",
         "Non-history method" => "nonhistory.md",
         "Running from python" => "python.md"
-    ],
-    "API" => "api.md"=#
+    ],=#
+    "API" => "api.md"
 ]
 
 dir = @__DIR__
@@ -16,7 +16,6 @@ dir = @__DIR__
 makedocs(
     pages = pages,
     sitename = "BoreholeNetworksSimulator.jl"
-    #repo = Remotes.GitHub("marcbasquensmunoz", "BoreholeNetworksSimulator.jl")
 )
 deploydocs(
     repo = "github.com/marcbasquensmunoz/BoreholeNetworksSimulator.jl.git"

@@ -22,7 +22,7 @@ jobs:
           version: '1.10'
       - uses: julia-actions/cache@v1
       - name: Install dependencies
-        run: julia -e 'using Pkg; Pkg.develop(url="https://gitlab.com/alblaz/BoreholeResponseFunctions.git"); Pkg.develop(url="https://github.com/marcbasquensmunoz/FiniteLineSource"); Pkg.develop(path=pwd()); Pkg.add("Documenter"); Pkg.add("Literate"); Pkg.build("BoreholeNetworksSimulator"); Pkg.instantiate()'
+        run: julia -e 'using Pkg; Pkg.add(url="https://gitlab.com/alblaz/BoreholeResponseFunctions.git"); Pkg.add(url="https://github.com/marcbasquensmunoz/FiniteLineSource"); Pkg.develop(path=pwd()); Pkg.add("Documenter"); Pkg.add("Literate"); Pkg.build("BoreholeNetworksSimulator"); Pkg.instantiate()'
       - name: Build and deploy
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
