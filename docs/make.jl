@@ -2,11 +2,12 @@ using Documenter, Literate, BoreholeNetworksSimulator
 
 pages = [
     "Introduction" => "index.md",
-    "Tutorial" => [
+    #="Tutorial" => [
         "Basic tutorial" => "tutorial.md",
         "Non-history method" => "nonhistory.md",
         "Running from python" => "python.md"
-    ],
+    ],=#
+    "Tutorial" => "python.md",
     "API" => "api.md"
 ]
 
