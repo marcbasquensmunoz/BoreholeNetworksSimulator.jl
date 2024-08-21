@@ -16,5 +16,5 @@ Literate.markdown("$dir/src/nonhistory.jl", "$dir/src")
 makedocs(
     pages=pages,
     sitename="BoreholeNetworksSimulator.jl",
-    repo=Remotes.GitLab("alblaz", "BoreholeNetworksSimulator")
+    repo="github.com/marcbasquensmunoz/BoreholeNetworksSimulator.jl.git"
     )
