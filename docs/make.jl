@@ -19,5 +19,5 @@ makedocs(
     #repo = Remotes.GitHub("marcbasquensmunoz", "BoreholeNetworksSimulator.jl")
 )
 deploydocs(
-    repo = Remotes.GitHub("marcbasquensmunoz", "BoreholeNetworksSimulator.jl")
+    repo = "github.com/marcbasquensmunoz/BoreholeNetworksSimulator.jl.git"
 )
