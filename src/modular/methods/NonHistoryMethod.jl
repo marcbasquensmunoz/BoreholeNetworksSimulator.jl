@@ -11,6 +11,8 @@ It should be initialized without arguments, but it contains the variables:
 - `ζ::Vector{T}`: discretization nodes of the integration interval. Shared for all boreholes. Precomputed in [`initialize`](@ref).
 - `w::Matrix{T}`: weights of the ζ integration for each pair of boreholes. Precomputed in [`initialize`](@ref).
 - `expΔt::Vector{T}`: exp(-ζ^2*Δt). Precomputed in [`initialize`](@ref).
+
+This feature is experimental and might not work as expected in some cases. 
 """
 mutable struct NonHistoryMethod{T} <: TimeSuperpositionMethod 
     F::Matrix{T}
