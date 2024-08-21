@@ -39,6 +39,8 @@ shared-runner-stats:
 pages:
   image: julia:1.10
   stage: deploy
+  tags:
+    - gitlab-org
   script:
     - apt-get update -qq && apt-get install -y git # needed by Documenter
     - julia -e 'using Pkg; Pkg.add(url="https://gitlab.com/alblaz/BoreholeResponseFunctions.git"); Pkg.add(url="https://github.com/marcbasquensmunoz/FiniteLineSource"); Pkg.add(path=pwd()); Pkg.build("BoreholeNetworksSimulator");' # rebuild Julia (can be put somewhere else I'm sure
