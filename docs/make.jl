@@ -15,6 +15,6 @@ dir = @__DIR__
 #Literate.markdown("$dir/src/nonhistory.jl", "$dir/src")
 makedocs(
     pages = pages,
-    sitename = "BoreholeNetworksSimulator.jl",
-    repo = Remotes.GitHub("marcbasquensmunoz", "BoreholeNetworksSimulator.jl")
+    sitename = "BoreholeNetworksSimulator.jl"
+    #repo = Remotes.GitHub("marcbasquensmunoz", "BoreholeNetworksSimulator.jl")
 )
