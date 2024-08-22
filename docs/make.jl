@@ -12,8 +12,8 @@ pages = [
 ]
 
 dir = @__DIR__
-Literate.markdown("$dir/src/tutorial.jl", "$dir/src")
-Literate.markdown("$dir/src/nonhistory.jl", "$dir/src")
+#Literate.markdown("$dir/src/tutorial.jl", "$dir/src")
+#Literate.markdown("$dir/src/nonhistory.jl", "$dir/src")
 makedocs(
     pages = pages,
     sitename = "BoreholeNetworksSimulator.jl"
