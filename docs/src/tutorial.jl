@@ -24,7 +24,6 @@ Nt = 10*12
 # We model the ground with a subtype of [`Medium`](@ref), in 
 # our case, as per our assumptions, we are particularly interested in [`GroundMedium`](@ref):
 
-@show GroundMedium()
 α = 1e-6
 λ = 3.
 T0 = 10.

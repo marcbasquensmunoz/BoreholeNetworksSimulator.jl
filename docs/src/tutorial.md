@@ -14,11 +14,11 @@ Let us see the components one by one with an example.
 We start by specifying the simulation time step and the simulation duration. For our example,
 we will take monthly time steps during 10 years:
 
-````@example tutorial
+````
 using BoreholeNetworksSimulator
 ````
 
-````@example tutorial
+````
 Δt = 8760*3600/12.
 Nt = 10*12
 ````
@@ -30,8 +30,7 @@ The undisturbed temperature of the ground is ``T_0=10 \ ^{\circ}C``.
 We model the ground with a subtype of [`Medium`](@ref), in
 our case, as per our assumptions, we are particularly interested in [`GroundMedium`](@ref):
 
-````@example tutorial
-@show GroundMedium()
+````
 α = 1e-6
 λ = 3.
 T0 = 10.
@@ -52,7 +51,7 @@ we can use [`EqualBoreholesBorefield`](@ref), which instantiates several identic
 from a prototype. The prototype is specified by a subtype of [`Borehole`](@ref).
 In our case, we can use [`SingleUPipeBorehole`](@ref) to model a borehole with a single U-pipe.
 
-````@example tutorial
+````
 D = 10.
 H = 100.
 
@@ -64,7 +63,7 @@ pipe resistance, etc., but for the moment we will use their default values.
 
 Next, we need to specify where the borehole are located.
 
-````@example tutorial
+````
 σ = 5.
 positions = [(0., 0.), (0., σ)]
 borefield = EqualBoreholesBorefield(borehole_prototype=borehole, positions=positions)
@@ -87,7 +86,7 @@ of the boreholes present in that branch. Each identifier `i::Int` refers to the 
 In our example, we want to simulate two independent boreholes, so each of them must be in a separate branch.
 Also, for the moment, we are only interested in this configuration, so we define:
 
-````@example tutorial
+````
 configurations = [BoreholeNetwork([[1], [2]])]
 ````
 
@@ -98,7 +97,7 @@ impose that their inlet temperatures be equal. In our example, since we want out
 we will impose the total amount of heat that we want to extract from each borehole. We will impose a constant
 load, equal for both boreholes. This is specified by
 
-````@example tutorial
+````
 q1 = 5.
 q2 = 5.
 constraint = constant_HeatLoadConstraint([q1, q2], Nt)
@@ -106,7 +105,7 @@ constraint = constant_HeatLoadConstraint([q1, q2], Nt)
 
 We can finally create the object with all the options:
 
-````@example tutorial
+````
 options = SimulationOptions(
     method = ConvolutionMethod(),
     constraint = constraint,
@@ -125,7 +124,7 @@ configuration will be used for the next time step. In our case, we only want a s
 The second specifies the mass flow rate through each branch of the selected configuration, provided as
 a vector. In our example, we will keep this constant through the simulation:
 
-````@example tutorial
+````
 function operator(i, Tin, Tout, Tb, q, configurations)
     network = configurations[1]
     BoreholeOperation(network, 2 .* ones(n_branches(network)))
@@ -135,13 +134,13 @@ end
 Before simulating, we first need to call [`initialize`](@ref) to run some precomputations
 that will be used throught the simulation and to instantiate containers where the result will be written.
 
-````@example tutorial
+````
 containers = initialize(options)
 ````
 
 And finally, we can start the simulation.
 
-````@example tutorial
+````
 @time simulate!(operator=operator, options=options, containers=containers)
 ````
 
@@ -151,11 +150,6 @@ strategies.
 
 The result is saved in
 
-````@example tutorial
+````
 containers.X
 ````
-
----
-
-*This page was generated using [Literate.jl](https://github.com/fredrikekre/Literate.jl).*
-

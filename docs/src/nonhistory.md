@@ -14,11 +14,11 @@ To show this, let us run a simulation with hourly time steps, with a duration of
 with both the convolution and the non-history time superposition methods.
 Let us define an example, very similar to [Basic tutorial](@ref)
 
-````@example nonhistory
+````
 using BoreholeNetworksSimulator
 ````
 
-````@example nonhistory
+````
 Δt = 3600.#8760*3600/12.
 Nt = 8760
 
@@ -40,7 +40,7 @@ Now, we define two different options using different `method` parameters,
 one with `ConvolutionMethod` corresponding to the convolution,
 and the other with `NonHistoryMethod`, corresponding with the non-history method.
 
-````@example nonhistory
+````
 options_convolution = SimulationOptions(
     method = ConvolutionMethod(),
     constraint = constraint,
@@ -64,14 +64,14 @@ options_nonhistory = SimulationOptions(
 
 Let us run the convolution
 
-````@example nonhistory
+````
 containers_convolution = @time initialize(options_convolution)
 @time simulate!(operator=operator, options=options_convolution, containers=containers_convolution)
 ````
 
 And now let us run the non-history
 
-````@example nonhistory
+````
 containers_nonhistory = @time initialize(options_nonhistory)
 @time simulate!(operator=operator, options=options_nonhistory, containers=containers_nonhistory)
 
@@ -83,8 +83,3 @@ abs.(containers_convolution.X - containers_nonhistory.X)
 [1] [Lazzarotto, Alberto; Basquens, Marc; Cimmino, Massimo;
 _Non-history dependent temporal superposition algorithm for the pint source solution_,
 Research Conference Proceedings of the IGSHPA (2024).](https://doi.org/10.22488/okstate.24.000021)
-
----
-
-*This page was generated using [Literate.jl](https://github.com/fredrikekre/Literate.jl).*
-
