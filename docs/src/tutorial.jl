@@ -123,3 +123,10 @@ containers = initialize(options)
 #
 # The result is saved in
 containers.X
+
+# Each column in `containers.X` contains the results for a time step.
+# In each column, the first ``2 N_b`` correspond to the fluid temperatures. In particular,  
+# the odd entries `containers.X[1:2:2Nb, :]` are the inlet temperatures, while the even entries `containers.X[2:2:2Nb, :]`   
+# are the outlet temperatures of each borehole.
+# The next ``Nb`` values `containers.X[2Nb+1:3Nb, :]` are the borehole wall temperatures.
+# The last ``Nb`` values `containers.X[3Nb+1:4Nb, :]` are the heat extraction of each borehole.
