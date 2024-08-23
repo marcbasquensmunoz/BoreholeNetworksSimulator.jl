@@ -22,12 +22,12 @@ jobs:
           version: '1.10'
       - uses: julia-actions/cache@v1
       - name: Install dependencies
-        run: julia -e 'using Pkg; Pkg.Registry.add(RegistrySpec(url="https://github.com/marcbasquensmunoz/geothermal_registry")); Pkg.Registry.add("General"); Pkg.activate(joinpath(pwd(), "docs")); Pkg.resolve()'
+        run: julia -e 'using Pkg; Pkg.Registry.add(RegistrySpec(url="https://github.com/marcbasquensmunoz/geothermal_registry")); Pkg.Registry.add("General"); Pkg.add("Documenter"); Pkg.activate(joinpath(pwd(), "docs")); Pkg.resolve()'
         #run: julia -e 'using Pkg; Pkg.add(url="https://gitlab.com/alblaz/BoreholeResponseFunctions.git"); Pkg.add(url="https://github.com/marcbasquensmunoz/FiniteLineSource"); Pkg.develop(path=pwd()); Pkg.add("Documenter"); Pkg.add("Literate"); Pkg.build("BoreholeNetworksSimulator"); Pkg.instantiate()'
       - name: Build and deploy
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
-        run: julia --color=yes docs/make.jl 
+        run: julia --color=yes docs/make.jl
 
     #Pkg.add(url="https://gitlab.com/alblaz/BoreholeResponseFunctions.git"); Pkg.add(url="https://github.com/marcbasquensmunoz/FiniteLineSource");
     #Pkg.Registry.add(RegistrySpec(url="https://github.com/marcbasquensmunoz/geothermal_registry")); Pkg.Registry.add("General"); Pkg.add("FiniteLineSource"); Pkg.add("BoreholeResponseFunctions");

@@ -1,4 +1,4 @@
-using Documenter, Literate, BoreholeNetworksSimulator
+using Documenter, #=Literate,=# BoreholeNetworksSimulator
 
 pages = [
     "Introduction" => "index.md",
