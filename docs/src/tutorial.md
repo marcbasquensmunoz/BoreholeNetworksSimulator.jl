@@ -16,7 +16,9 @@ we will take monthly time steps during 10 years:
 
 ````@example tutorial
 using BoreholeNetworksSimulator
+````
 
+````@example tutorial
 Δt = 8760*3600/12.
 Nt = 10*12
 ````
@@ -29,6 +31,7 @@ We model the ground with a subtype of [`Medium`](@ref), in
 our case, as per our assumptions, we are particularly interested in [`GroundMedium`](@ref):
 
 ````@example tutorial
+@show GroundMedium()
 α = 1e-6
 λ = 3.
 T0 = 10.
@@ -124,7 +127,8 @@ a vector. In our example, we will keep this constant through the simulation:
 
 ````@example tutorial
 function operator(i, Tin, Tout, Tb, q, configurations)
-    BoreholeOperation(configurations[1], 2 .* ones(2))
+    network = configurations[1]
+    BoreholeOperation(network, 2 .* ones(n_branches(network)))
 end
 ````
 
