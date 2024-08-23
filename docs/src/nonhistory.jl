@@ -8,7 +8,11 @@
 
 # To show this, let us run a simulation with hourly time steps, with a duration of 1 year (so ``8760`` time steps),
 # with both the convolution and the non-history time superposition methods.
-# Let us define an example, very similar to 
+# Let us define an example, very similar to [Basic tutorial](@ref)
+
+using BoreholeNetworksSimulator
+
+#
 
 Δt = 3600.#8760*3600/12.
 Nt = 8760

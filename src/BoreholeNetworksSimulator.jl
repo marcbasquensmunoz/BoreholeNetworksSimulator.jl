@@ -22,8 +22,8 @@ using FiniteLineSource
 
 include("utils.jl")
 
-modular = get_all_julia_files_in_dir("$(@__DIR__)/modular")
-sort_dependencies!(modular, ["interfaces/", "core/"])
+modular = get_all_julia_files_in_dir(joinpath(@__DIR__, "modular"))
+sort_dependencies!(modular, ["interfaces", "core"])
 include.(modular)
 
 export Borehole, SingleUPipeBorehole

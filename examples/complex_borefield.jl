@@ -1,5 +1,4 @@
 using BoreholeNetworksSimulator
-import BoreholeNetworksSimulator: n_branches
 using CSV
 
 function load_borefield_from_file(file)
