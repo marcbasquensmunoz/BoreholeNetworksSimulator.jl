@@ -97,7 +97,23 @@ HeatLoadConstraint
 ```
 
 ```@docs
+constant_HeatLoadConstraint
+```
+
+```@docs
+uniform_HeatLoadConstraint
+```
+
+```@docs
 InletTempConstraint
+```
+
+```@docs
+constant_InletTempConstraint
+```
+
+```@docs
+uniform_InletTempConstraint
 ```
 
 ### Time Superposition Method
