@@ -7,7 +7,6 @@ pages = [
         "Non-history method" => "nonhistory.md",
         "Running from python" => "python.md"
     ],
-    "Tutorial" => "python.md",
     "API" => "api.md"
 ]
 
