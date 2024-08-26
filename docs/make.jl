@@ -19,7 +19,7 @@ dir = @__DIR__
 makedocs(
     pages = pages,
     sitename = "BoreholeNetworksSimulator.jl"
-)#=
+)
 deploydocs(
     repo = "github.com/marcbasquensmunoz/BoreholeNetworksSimulator.jl.git"
-)=#
+)
