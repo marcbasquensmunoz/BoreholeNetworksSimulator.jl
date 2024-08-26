@@ -10,6 +10,7 @@ Features:
 - Supports many different configurations and settings by being highly modular: boreholes, hydraulic configurations, ground properties, load demand or temperature  constraints, ground boundary conditions can be seamlessly used with minimal effort. 
 - Allows for design of operation strategies via an operator callback at each time step.
 - Implements the "non-history" time superposition method, reducing the computational complexity in the number of time steps to linear. This allows for simulations with fine time steps.
+- Python interoperability.
 
 More information and an extensive list of features can be found in the [documentation](https://marcbasquensmunoz.github.io/BoreholeNetworksSimulator.jl/dev/).
 
