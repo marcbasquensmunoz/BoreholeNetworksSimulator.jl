@@ -3,19 +3,23 @@
 It is also possible to run BoreholeNetworksSimulator from Python by using its Julia interoperability (achieved with the package `PythonCall.jl` and the module `juliacall`) while keeping roughly the same syntax. For a more detailed explanation of how this works, please visit the [PythonCall.jl documentation](https://juliapy.github.io/PythonCall.jl/stable/).
 This requires to have installed in your python environment the modules `juliacall` and `numpy`.
 
-BoreholeNetworksSimulator contains a python script `python/adapter.py` that runs the necessary bridging code.
+BoreholeNetworksSimulator.jl contains a second Julia module called `BNSPythonAdapter` whose purpose is to make the necessary conversions between Python and Julia. This module is not intended to be used from Julia, but from within Python.
+In this tutorial, we will repeat the example in [Basic tutorial](@ref) but run from Python to show how it works. The full example as a Python script in at `BNSPythonAdapter/example.py`.
+
+BNSPythonAdapter contains a python script `src/adapter.py` that executes the necessary bridging code.
 You should start your python program by importing this module. Assuming that the package directory is added to the `sys.path`, this should work:
 ````
-import python.adapter
+import src.adapter
 ````
-The script takes care of activating the Julia package `BoreholeNetworksSimulator` to make it accessible, as well as defining conversions from python objects to their Julia counterpart. 
-Next, we need to import juliacall to be able to reference objects and funcions from `BoreholeNetworksSimulator`. It is useful to give it an alias for conciseness.
+The script takes care of activating the Julia package `BNSPythonAdapter` which has `BoreholeNetworksSimulator` as a dependency, and loads both namespaces for later use.
+It also defines conversions from Python objects to their Julia counterparts. 
+Next, we need to import `juliacall` to be able to reference objects and funcions from `BoreholeNetworksSimulator`. It is useful to give it an alias for conciseness.
 ````
 from juliacall import Main as jl
 ````
-Now, the python variable `jl` represents the `Main` module in Julia, and it has as methods all the Julia functions available in it. Since we activated `BoreholeNetworksSimulator`, this also includes its objects and functions.
+Now, the python variable `jl` represents the `Main` module in Julia, and it has as methods all the Julia functions available in it. Since we imported the namespace `BoreholeNetworksSimulator`, this also includes its objects and functions.
 
-We will repeat the example in the first tutorial to show how to run the simulation.
+Then, we define the same variables as in [Basic tutorial](@ref):
 ````
 Δt = 8760*3600/12.
 Nt = 10*12
@@ -51,13 +55,13 @@ options = jl.SimulationOptions(
     configurations = configurations
 )
 ````
-The code itself is not very different from its Julia version, but there are two remarks worth making. First, we need to call any object defined in Julia by typing `jl.` in front. This creates a python object with the same fields that `juliacall` knows how to convert back into a Julia object.
+Note that the code itself is not very different from its Julia version, but there are two remarks worth making. First, we need to call any object defined in Julia by typing `jl.` in front. This creates a python object with the same fields that `PythonCall.jl` knows how to convert back into a Julia object.
 Second, note that we have defined the arrays by explicitly declaring their generic type. If we don't do this, they will be converted into `Vector{Any}` in the Julia code, which is not desirable.
 
 Another difference is the definition of our `operator` object. Since we are writing python, it should now be a python function, however, since the Julia code is expecting an object of type `BoreholeOperation`, its return type must be `jl.BoreholeOperation`, that `PythonCall.jl` knows how to convert. 
 ````
 def operator(i, Tin, Tout, Tb, q, configurations):
-    jl.BoreholeOperation(configurations[0], jl.Array[jl.Float64]([2., 2.]))
+    return jl.BoreholeOperation(configurations[0], jl.Array[jl.Float64]([2., 2.]))
 ````
 
 Finally we can run the simulation

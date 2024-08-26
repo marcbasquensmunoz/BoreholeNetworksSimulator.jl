@@ -7,6 +7,7 @@ Features:
 - Supports many different configurations and settings by being highly modular: boreholes, hydraulic configurations, ground properties, load demand or temperature  constraints, ground boundary conditions can be seamlessly used with minimal effort. 
 - Allows for design of operation strategies via an operator callback at each time step.
 - Implements the "non-history" time superposition method, reducing the computational complexity in the number of time steps to linear. This allows for simulations with fine time steps.
+- Python interoperability.
 
 # Getting started
 
@@ -18,6 +19,8 @@ using Pkg; pkg"registry add https://github.com/marcbasquensmunoz/geothermal_regi
 ````
 
 In order to learn how to use this package, please visit [Basic tutorial](@ref) first.
+
+For users interested in running BoreholeNetworksSimulator.jl from Python, see also [Running from python](@ref).
 
 # Design philosophy
 
