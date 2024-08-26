@@ -1,4 +1,4 @@
-using Documenter, Literate, BoreholeNetworksSimulator
+using Documenter, #=Literate,=# BoreholeNetworksSimulator
 
 pages = [
     "Introduction" => "index.md",
@@ -14,12 +14,12 @@ pages = [
 ]
 
 dir = @__DIR__
-Literate.markdown("$dir/src/tutorial.jl", "$dir/src")
-Literate.markdown("$dir/src/nonhistory.jl", "$dir/src")
+#Literate.markdown("$dir/src/tutorial.jl", "$dir/src")
+#Literate.markdown("$dir/src/nonhistory.jl", "$dir/src")
 makedocs(
     pages = pages,
     sitename = "BoreholeNetworksSimulator.jl"
-)
+)#=
 deploydocs(
     repo = "github.com/marcbasquensmunoz/BoreholeNetworksSimulator.jl.git"
-)
+)=#

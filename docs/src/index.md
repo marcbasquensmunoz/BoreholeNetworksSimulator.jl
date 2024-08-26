@@ -20,7 +20,7 @@ using Pkg; pkg"registry add https://github.com/marcbasquensmunoz/geothermal_regi
 
 In order to learn how to use this package, please visit [Basic tutorial](@ref) first.
 
-For users interested in running BoreholeNetworksSimulator.jl from Python, see also [Running from python](@ref).
+For users interested in running BoreholeNetworksSimulator.jl from Python, see also [Running BoreholeNetworksSimulator from Python](@ref).
 
 # Design philosophy
 
@@ -28,4 +28,4 @@ The driving motivation when developing BoreholeNetworksSimulator.jl was to creat
 
 This goal has been accomplished by leveraging Julia's Multiple Dispatch. Through a simple, common interface, the user can run a plethora of different simulations by modularly specifying options.
 Some options have physical meaning or interpretation, while others are purely algorithmic, yet they can all be seamlessly changed by changing a parameter.
-Please, refer to [API](@ref) for the full list of options offered by this package.
+Please, refer to [Public API](@ref) for the full list of options offered by this package.
