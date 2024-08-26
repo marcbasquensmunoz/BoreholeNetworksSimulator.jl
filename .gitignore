@@ -3,3 +3,4 @@
 .CondaPkg
 .pb.gz
 /docs/build/*
+__pycache__/
