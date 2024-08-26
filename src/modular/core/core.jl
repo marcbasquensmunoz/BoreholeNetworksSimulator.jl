@@ -148,3 +148,5 @@ function topology_coeffs!(M, operation::BoreholeOperation)
         end
     end
 end
+
+unwrap(x::Any) = x

@@ -9,7 +9,6 @@ using StaticArrays
 using SparseArrays
 using LinearSolve
 using JLD2
-using PythonCall
 using DataStructures
 using QuadGK
 using FastGaussQuadrature
