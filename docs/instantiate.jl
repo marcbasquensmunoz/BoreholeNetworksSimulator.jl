@@ -8,7 +8,7 @@ documenter_directory = isempty(ARGS) ? @__DIR__() : joinpath(pwd(), ARGS[1])
 cd(project_directory) do
     Pkg.Registry.add(RegistrySpec(url = geothermal_registry))
     Pkg.Registry.add("General")
-    Pkg.activate(project_directory)
-    Pkg.develop(PackageSpec(path = documenter_directory))
+    Pkg.activate(documenter_directory)
+    Pkg.develop(PackageSpec(path = project_directory))
     Pkg.instantiate()
 end
