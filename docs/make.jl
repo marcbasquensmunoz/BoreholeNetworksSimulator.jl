@@ -8,7 +8,7 @@ pages = [
         "Running from python" => "python.md"
     ],
     "Examples" => [
-        "Braedsturp" => "Braedsturp.md" 
+        "Braedsturp borefield" => "Braedsturp.md" 
     ],
     "API" => "api.md"
 ]

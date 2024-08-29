@@ -17,7 +17,7 @@ end
 
 # evaluate fluid propert at a given absolute temperature. 
 # default mixture is water&Ethanol with 20% concentration of Ethanol
-function thermophysical_properties(Tref, fluidname = "INCOMP::MEA-20%")
+function thermophysical_properties(Tref, fluidname)
     μ =  PropsSI("viscosity","T",Tref,"P",101325,fluidname)
     ρ =  PropsSI("D","T", Tref,"P",101325,fluidname)
     cp = PropsSI("C","T",Tref,"P",101325,fluidname)
@@ -25,19 +25,18 @@ function thermophysical_properties(Tref, fluidname = "INCOMP::MEA-20%")
     return μ, ρ, cp, k
 end
 
-# mass flow rate within the borehole
-function heat_transfer_coefficient(mb, Tref, borehole::Borehole, fluidname = "INCOMP::MEA-20%")
+# Evaluate the heat transfer coefficient 
+function heat_transfer_coefficient(mf, Tref, borehole::Borehole, fluidname)
     if Tref > 40 || Tref < -100
         return get_default_hp(borehole)
     end
     T0 = 273.15
     rp = get_rp(borehole)
     μ, ρ, cp, k = thermophysical_properties(Tref + T0, fluidname)
-    w = mb/(ρ * π * rp^2)
+    w = mf/(ρ * π * rp^2)
     Re = 2 * ρ * w * rp/ μ
     Pr = μ * cp/(2*rp)
 	Nu = evaluate_nusselt(Re, Pr)
     h = Nu * k /(2*rp)
     return h
 end
-##

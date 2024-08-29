@@ -11,6 +11,7 @@ The first borehole of each branch is assumed to be connected in parallel.
 end
 Base.reverse(network::BoreholeNetwork) = BoreholeNetwork(branches=map(branch -> Base.reverse(branch), network.branches))
 n_branches(network::BoreholeNetwork) = length(network.branches)
+n_boreholes(network::BoreholeNetwork) = sum([length(branch) for branch in network.branches])
 first_boreholes(network::BoreholeNetwork) = map(first, network.branches)
 
 """
