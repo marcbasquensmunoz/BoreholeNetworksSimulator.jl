@@ -7,7 +7,7 @@ BoreholeNetworksSimulator.jl contains a second Julia module called `BNSPythonAda
 In this tutorial, we will repeat the example in [Basic tutorial](@ref) but run from Python to show how it works. The full example as a Python script in at `BNSPythonAdapter/example.py`.
 
 BNSPythonAdapter contains a python script `src/adapter.py` that executes the necessary bridging code.
-You should start your python program by importing this module. Assuming that the package directory is added to the `sys.path`, this should work:
+You should start your python program by importing this module. Assuming that the directory `BNSPythonAdapter` is added to the `sys.path`, this should work:
 ````
 import src.adapter
 ````

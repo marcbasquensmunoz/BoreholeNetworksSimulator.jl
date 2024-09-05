@@ -53,6 +53,7 @@ function uniform_Tb_coeffs(borehole::SingleUPipeBorehole, λ, mass_flow, Tref, f
     @unpack λg, λp, rb, rp, rpo, dpw, H, R_cache, A = borehole
 
     hp = heat_transfer_coefficient(mass_flow, Tref, borehole, fluid.name)
+    @show hp
 
     if iszero(R_cache)
         Rp = 1/(2*π*λp)*log(rp/(rp-dpw))
@@ -71,6 +72,7 @@ function uniform_Tb_coeffs(borehole::SingleUPipeBorehole, λ, mass_flow, Tref, f
     Rhp = 1/(2*π*rp*hp)
     R11 += Rhp
     R22 += Rhp
+
 
     den = fluid.cpf * mass_flow * (R11 * R22 - R12^2)
     A[1, 1] = - H / den * R22

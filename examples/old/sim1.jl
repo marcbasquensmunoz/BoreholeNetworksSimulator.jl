@@ -67,7 +67,7 @@ k_in, k_out,  k_b = uniformTb_koeff(A,H)    # COEFFICIENTS OF THE BOREHOLE MODEL
 # 4. BOREHOLE FIELD CONFIGURATION
 #import configuration
 cdir = @__DIR__
-df = CSV.File("$cdir/data/Braedstrup_borehole_coordinates.txt"; decimal=',', delim = ';') |> DataFrame
+df = CSV.File("$cdir/../Braedsturp/data/Braedstrup_borehole_coordinates.txt"; decimal=',', delim = ';') |> DataFrame
 #geometry of the field
 borehole_positions =  [(x, y) for (x,y) in zip(df.X,df.Y) ]
 
@@ -107,7 +107,7 @@ tp_rot = rotation_z(tp,-θ)
 d = evaluate_relevant_distances(GroundWaterFlow(), p_rot, tp_rot) 
 d = [d[1] == 0. && d[2] == 0. ?  (0.,params.rb, d[3],d[4]) : d for d in d]
 
-tstep, tmax = 8760*3600/12., 8760*3600*10.
+tstep, tmax = 8760*3600/12., 10*8760*3600/12.#8760*3600*10.
 t = tstep:tstep:tmax
 Nt = length(t) # number of time steps
 

@@ -27,7 +27,7 @@ end
 
 # Evaluate the heat transfer coefficient 
 function heat_transfer_coefficient(mf, Tref, borehole::Borehole, fluidname)
-    if Tref > 40 || Tref < -100
+    if Tref > 90 || Tref < -100
         return get_default_hp(borehole)
     end
     T0 = 273.15
