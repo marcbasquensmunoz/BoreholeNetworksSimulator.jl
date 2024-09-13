@@ -36,7 +36,7 @@ function simulate!(;operator, options::SimulationOptions, containers::Simulation
     end
     
     last_operation = BoreholeOperation(nothing)
-
+    
     # Simulation loop
     for i = Ts:Nt
         operation = @views operator(i, X[1:2:2Nb, 1:i], X[2:2:2Nb, 1:i], X[2Nb+1:3Nb, 1:i], X[3Nb+1:end, 1:i], configurations)
@@ -54,8 +54,8 @@ function simulate!(;operator, options::SimulationOptions, containers::Simulation
         @views internal_model_coeffs!(M[internal_model_eqs, :], borefield, medium, operation, i == 1 ? get_T0(medium) .* ones(2Nb) :  X[1:2Nb, i-1], fluid)
         if last_operation.network != operation.network
             @views topology_coeffs!(M[topology_eqs, :], operation)
+            @views constraints_coeffs!(M[constraints_eqs, :], constraint, operation)
         end
-        @views constraints_coeffs!(M[constraints_eqs, :], constraint, operation)
         if i == Ts
             @views method_coeffs!(M[method_eqs, :], method, borefield, medium, boundary_condition)
         end
