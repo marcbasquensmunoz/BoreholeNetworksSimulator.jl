@@ -1,13 +1,13 @@
 
 """
-    BoreholeNetwork(branches::Vector)
+    BoreholeNetwork(branches::Vector{Vector{Int}})
 
 Representation of the hydraulic connections of the boreholes in the network.
 Each element in `branches` should be a vector representing a branch of boreholes connected in series, specified by their identifiers.
 The first borehole of each branch is assumed to be connected in parallel. 
 """
 @with_kw struct BoreholeNetwork
-    branches::Vector
+    branches::Vector{Vector{Int}}
 end
 Base.reverse(network::BoreholeNetwork) = BoreholeNetwork(branches=map(branch -> Base.reverse(branch), network.branches))
 n_branches(network::BoreholeNetwork) = length(network.branches)
@@ -15,25 +15,31 @@ n_boreholes(network::BoreholeNetwork) = sum([length(branch) for branch in networ
 first_boreholes(network::BoreholeNetwork) = map(first, network.branches)
 
 """
-    BoreholeOperation{T <: Number}(network::BoreholeNetwork, mass_flows:: Vector{T})
+    BoreholeOperation{Arr <: AbstractArray}(
+        network::BoreholeNetwork         
+        mass_flows::Arr
+    )
 
 Represents a operation state of the network, with `network` representing the hydraulic configuration and `mass_flows` a `Vector` containing the mass flow rate of each branch.
 """
-@with_kw struct BoreholeOperation{T <: Number}
+@with_kw struct BoreholeOperation{Arr <: AbstractArray}
     network::BoreholeNetwork         
-    mass_flows::Vector{T}
+    mass_flows::Arr
 end
-BoreholeOperation(::Nothing) = BoreholeOperation(BoreholeNetwork([]), [0.])
+BoreholeOperation(::Nothing) = BoreholeOperation(BoreholeNetwork([]), @view ones(1)[1:1])
 
 """
-    Fluid(cpf, name)
+    Fluid{T <: Number}(
+        cpf::T
+        name::String
+    )
 
 Represents the fluid flowing through the hydraulic circuit.
 `cpf` is the specific heat of the fluid and `name` is the code used in CoolProp
 """
-@with_kw struct Fluid
-    cpf
-    name
+@with_kw struct Fluid{T <: Number}
+    cpf::T
+    name::String
 end
 
 """
@@ -42,14 +48,15 @@ end
                     C <: Constraint,
                     B <: Borefield, 
                     M <: Medium, 
-                    BC <: BoundaryCondition
+                    BC <: BoundaryCondition,
+                    N <: Number
                 }(
         method::TSM
         constraint::C
         borefield::B
         medium::M
         boundary_condition::BoundaryCondition = DirichletBoundaryCondition()
-        fluid::Fluid = Fluid(cpf=4182., name="INCOMP::MEA-20%")
+        fluid::Fluid{N} = Fluid(cpf=4182., name="INCOMP::MEA-20%")
         configurations::Vector{BoreholeNetwork}
         Δt
         Nt::Int
@@ -72,14 +79,15 @@ Specifies all the options for the simulation.
                     C <: Constraint,
                     B <: Borefield, 
                     M <: Medium, 
-                    BC <: BoundaryCondition
+                    BC <: BoundaryCondition, 
+                    N <: Number
                     #A <: Approximation
                 }
     method::TSM
     constraint::C
     borefield::B
     medium::M
-    fluid::Fluid = Fluid(cpf=4182., name="INCOMP::MEA-20%")
+    fluid::Fluid{N} = Fluid(cpf=4182., name="INCOMP::MEA-20%")
     boundary_condition::BC = DirichletBoundaryCondition()
     #approximation::A = MeanApproximation()
     Δt
@@ -93,15 +101,19 @@ Specifies all the options for the simulation.
 end
 
 """
-    SimulationContainers(M, X, b)
+    SimulationContainers{T <: Number, Mat <: AbstractMatrix}(
+        M::Mat
+        X::Matrix{T}
+        b::Vector{T}
+    )
 
 Contains the matrix `M`, the independent vector `b` defining the problem. Both `M` and `b` change through time.
 Each column of `X` contains the solution of `M X = b` for each time step of the simulation. 
 """
-@with_kw struct SimulationContainers
-    M
-    X
-    b
+@with_kw struct SimulationContainers{T <: Number, Mat <: AbstractMatrix}
+    M::Mat
+    X::Matrix{T}
+    b::Vector{T}
 end
 
 """
@@ -116,7 +128,11 @@ function initialize(options::SimulationOptions)
 end
 function SimulationContainers(options::SimulationOptions) 
     @unpack Nb, Nt = options
-    SimulationContainers(M = spzeros(4Nb, 4Nb), b = zeros(4Nb), X = zeros(4Nb, Nt))
+    if Nb > 50
+        SimulationContainers(M = spzeros(4Nb, 4Nb), b = zeros(4Nb), X = zeros(4Nb, Nt))
+    else 
+        SimulationContainers(M = zeros(4Nb, 4Nb), b = zeros(4Nb), X = zeros(4Nb, Nt))
+    end
 end
 
 function branch_of_borehole(operation::BoreholeOperation, borehole)
@@ -133,19 +149,20 @@ function solve_step!(X, A, b)
     #=
     prob = LinearProblem(A, b)
     linsolve = init(prob)
-    x = solve(linsolve).u
-    =#
+    X .= solve!(linsolve).u=#
     X .= A\b
 end
 
 function topology_coeffs!(M, operation::BoreholeOperation)
-    M .= 0
-    i = 1
+    M .= zero(eltype(M))
+    j = 1
     for branch in operation.network.branches
-        for (out, in) in zip(branch[1:end-1], branch[2:end])
-            M[i, 2*in-1] = 1.
-            M[i, 2*out] = -1.
-            i += 1
+        for i in eachindex(@view branch[1:end-1])
+            in = branch[i+1] 
+            out = branch[i] 
+            M[j, 2*in-1] = 1.
+            M[j, 2*out] = -1.
+            j += 1
         end
     end
 end

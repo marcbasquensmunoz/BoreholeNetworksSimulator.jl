@@ -36,6 +36,8 @@ Model a borehole with a single U-pipe with burial depth `D` and length `H`.
 
     R_cache::SMatrix{2, 2, T, 4} = @SMatrix zeros(2, 2)
     A::MMatrix{2, 2, T, 4} = @MMatrix zeros(2, 2)
+    method::ExpMethodHigham2005 = ExpMethodHigham2005(false)
+    exp_cache::Tuple{Vector{MMatrix{2, 2, T, 4}}, Vector{T}} = ExponentialUtilities.alloc_mem(A, method)
 end
 
 get_H(bh::SingleUPipeBorehole{T}) where {T <: Real} = bh.H
@@ -48,39 +50,36 @@ get_n_segments(bh::SingleUPipeBorehole) = bh.n_segments
 
 
 function uniform_Tb_coeffs(borehole::SingleUPipeBorehole, λ, mass_flow, Tref, fluid)
-    x1, y1 = borehole.pipe_position[1]
-    x2, y2 = borehole.pipe_position[2]
-    @unpack λg, λp, rb, rp, rpo, dpw, H, R_cache, A = borehole
+    @unpack λg, λp, rb, rp, rpo, dpw, H, R_cache, A, method, exp_cache = borehole
 
     hp = heat_transfer_coefficient(mass_flow, Tref, borehole, fluid.name)
-    @show hp
 
     if iszero(R_cache)
+        x1, y1 = borehole.pipe_position[1]
+        x2, y2 = borehole.pipe_position[2]
+
         Rp = 1/(2*π*λp)*log(rp/(rp-dpw))
+
         d12 = sqrt( (1 - (x1^2+y1^2) / rb^2) * (1 - (x2^2+y2^2) / rb^2) + ( (x1 - x2)^2 + (y1 - y2)^2) / rb^2 )
 
-        R11 =  1/(2*π*λg) * ( log(rb/rpo) - (λg - λ)/(λg + λ) * log(1 - (x1^2 + y1^2) / rb^2) ) + Rp
+        R11 =  1/(2*π*λg) * (log(rb/rpo) - (λg - λ)/(λg + λ) * log(1 - (x1^2 + y1^2) / rb^2) ) + Rp
         R12 = -1/(2*π*λg) * (log(( (x1 - x2)^2 + (y1 - y2)^2) / rb^2 ) + (λg - λ)/(λg + λ) * log(d12))
-        R22 =  1/(2*π*λg) * ( log(rb/rpo) - (λg - λ)/(λg + λ) * log(1 - (x2^2 + y2^2) / rb^2) ) + Rp
+        R22 =  1/(2*π*λg) * (log(rb/rpo) - (λg - λ)/(λg + λ) * log(1 - (x2^2 + y2^2) / rb^2) ) + Rp 
         R_cache = @SMatrix [R11 R12; R12 R22]
-    else
-        R11 = R_cache[1, 1]
-        R12 = R_cache[1, 2]
-        R22 = R_cache[2, 2]
     end
 
     Rhp = 1/(2*π*rp*hp)
-    R11 += Rhp
-    R22 += Rhp
 
+    A .= R_cache
+    A[1, 1] += Rhp
+    A[2, 2] += Rhp
 
-    den = fluid.cpf * mass_flow * (R11 * R22 - R12^2)
-    A[1, 1] = - H / den * R22
-    A[1, 2] = H / den * R12
-    A[2, 1] = - H / den * R12
-    A[2, 2] = H / den * R11
-    
-    exponential!(A)
+    C = H / (fluid.cpf * mass_flow)
+    In = @SMatrix [-1 0; 0 1]
+    A .= C .* In * inv(A)
+
+    exponential!(A, method, exp_cache)
+
     EoutH = A[1, 2] - A[2, 2]
     EinH  = A[2, 1] - A[1, 1]      
     return EinH, -EoutH, EoutH - EinH

@@ -43,16 +43,18 @@ function uniform_HeatLoadConstraint(Q_tot::Vector{T}, Nbr) where {T <: Number}
 end
 
 function constraints_coeffs!(M, ::HeatLoadConstraint, operation)
-    M .= 0
-    Nb = sum([length(branch) for branch in operation.network.branches])
+    M .= zero(eltype(M))
+    Nb = n_branches(operation.network)
 
     for (i, branch) in enumerate(operation.network.branches)
-        M[i, 3Nb .+ branch] .= 1.
+        for j in branch
+            M[i, 3Nb + j] = one(eltype(M))
+        end
     end
 end
 
 function constraints_b!(b, constraint::HeatLoadConstraint, operation, step)
-    b .= constraint.Q_tot[:, step]
+    b .= @view constraint.Q_tot[:, step]
 end
 
 function branch_of_borehole(network, borehole)

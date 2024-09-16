@@ -1,4 +1,4 @@
-using .FiniteLineSource: SegmentToSegment, Constants, adaptive_gk_segments, discretization_parameters, f_guess, precompute_coefficients
+using .FiniteLineSource: SegmentToSegment, Constants, adaptive_gk_segments, DiscretizationParameters, f_guess, precompute_coefficients
 
 """
     NonHistoryMethod{T} <: TimeSuperpositionMethod 
@@ -20,8 +20,9 @@ mutable struct NonHistoryMethod{T} <: TimeSuperpositionMethod
     w::Matrix{T}
     expΔt::Vector{T}
     n_disc
+    aux::Vector{T}
 end
-NonHistoryMethod(;n_disc=20) = NonHistoryMethod(zeros(0, 0), zeros(0), zeros(0, 0), zeros(0), n_disc)
+NonHistoryMethod(;n_disc=20) = NonHistoryMethod(zeros(0, 0), zeros(0), zeros(0, 0), zeros(0), n_disc, zeros(0))
 
 FiniteLineSource.SegmentToSegment(s::MeanSegToSegEvParams) = SegmentToSegment(D1=s.D1, H1=s.H1, D2=s.D2, H2=s.H2, σ=s.σ)
 image(s::SegmentToSegment) = SegmentToSegment(D1=-s.D1, H1=-s.H1, D2=s.D2, H2=s.H2, σ=s.σ)
@@ -38,18 +39,20 @@ function precompute_auxiliaries!(method::NonHistoryMethod, options)
 
     constants = Constants(Δt=Δt, α=α, rb=rb, kg=kg, b=b)
     segments = adaptive_gk_segments(f_guess(SegmentToSegment(get_sts(borefield, 1, 1)), constants), 0., b)
-    dps = @views [discretization_parameters(s.a, s.b, n_disc) for s in segments]
+    dps = [DiscretizationParameters(s.a, s.b, n_disc) for s in segments]
     ζ = reduce(vcat, (dp.x for dp in dps)) 
     expΔt = @. exp(-ζ^2 * Δt̃)
 
     n = length(ζ)
     w = zeros(n, Ns*Ns)
 
+    containers, map = FiniteLineSource.initialize_containers(SegmentToSegment(get_sts(borefield, 1, 1)), dps)    
+
     for i in 1:Ns
         for j in 1:Ns
             rb = get_rb(borefield, div(i-1, Ns)+1) # Get the right rb
             sts = SegmentToSegment(get_sts(borefield, i, j))
-            w[:, (i-1)*Ns+j] = reduce(vcat, [coefficients_sts(boundary_condition, sts, constants, dp) for dp in dps])
+            w[:, (i-1)*Ns+j] = reduce(vcat, [coefficients_sts(boundary_condition, sts, constants, dp, containers[map[k]]) for (k, dp) in enumerate(dps)])
         end
     end
 
@@ -59,16 +62,17 @@ function precompute_auxiliaries!(method::NonHistoryMethod, options)
     method.ζ = ζ[perm]
     method.w = w[perm, :]
     method.expΔt = expΔt[perm]
+    method.aux = zeros(n)
 end
 
-function coefficients_sts(::NoBoundary, sts::SegmentToSegment, params::Constants, dp)
-    precompute_coefficients(sts, params=params, dp=dp)
+function coefficients_sts(::NoBoundary, sts::SegmentToSegment, params::Constants, dp, containers)
+    precompute_coefficients(sts, params=params, dp=dp, containers=containers)
 end
 
-function coefficients_sts(::DirichletBoundaryCondition, sts::SegmentToSegment, params::Constants, dp)
+function coefficients_sts(::DirichletBoundaryCondition, sts::SegmentToSegment, params::Constants, dp, containers)
     image_sts = image(sts)
-    w1 = precompute_coefficients(sts, params=params, dp=dp)
-    w2 = precompute_coefficients(image_sts, params=params, dp=dp)
+    w1 = precompute_coefficients(sts, params=params, dp=dp, containers=containers)
+    w2 = precompute_coefficients(image_sts, params=params, dp=dp, containers=containers)
     w1 - w2
 end
 
@@ -107,12 +111,15 @@ function method_coeffs!(M, method::NonHistoryMethod, borefield, medium, boundary
 end
 
 function method_b!(b, method::NonHistoryMethod, borefield, medium, step)
-    @unpack w, expΔt, F = method
+    @unpack w, expΔt, F, aux = method
     b .= -get_T0(medium)
     Nb = n_boreholes(borefield)
 
-    for i in eachindex(b)
-        @inbounds b[i] -= sum([dot(w[:, Nb*(i-1)+j], expΔt .* F[:, Nb*(i-1)+j]) for j in 1:Nb])
+    @inbounds for i in eachindex(b)
+        @inbounds for j in 1:Nb
+            @views @. aux = expΔt * F[:, Nb*(i-1)+j]
+            @views b[i] -= dot(w[:, Nb*(i-1)+j], aux)
+        end
     end
 end
 
@@ -126,8 +133,9 @@ function q_coef(::DirichletBoundaryCondition, medium, method, sts, λ, i)
 end
 
 function constant_coef(method::NonHistoryMethod, i)
-    @unpack expΔt, w, ζ = method
-    -dot(w[:, i], expΔt ./ ζ)
+    @unpack expΔt, w, ζ, aux = method
+    @. aux = expΔt / ζ
+    @views -dot(w[:, i], aux)
 end
 
 function constant_integral(::GroundMedium, method, sts, λ, i)
