@@ -14,18 +14,24 @@ n_branches(network::BoreholeNetwork) = length(network.branches)
 first_boreholes(network::BoreholeNetwork) = map(first, network.branches)
 
 """
-    BoreholeOperation{T <: Number}(network::BoreholeNetwork, mass_flows:: Vector{T})
+    BoreholeOperation{Arr <: AbstractArray}(
+        network::BoreholeNetwork         
+        mass_flows::Arr
+    )
 
 Represents a operation state of the network, with `network` representing the hydraulic configuration and `mass_flows` a `Vector` containing the mass flow rate of each branch.
 """
-@with_kw struct BoreholeOperation{T <: Number}
+@with_kw struct BoreholeOperation{Arr <: AbstractArray}
     network::BoreholeNetwork         
-    mass_flows::Vector{T}
+    mass_flows::Arr
 end
-BoreholeOperation(::Nothing) = BoreholeOperation(BoreholeNetwork([]), zeros(0))
+BoreholeOperation(::Nothing) = BoreholeOperation(BoreholeNetwork([]), @view ones(1)[1:1])
 
 """
-    Fluid{T <: Number}(cpf::T, name::String)
+    Fluid{T <: Number}(
+        cpf::T
+        name::String
+    )
 
 Represents the fluid flowing through the hydraulic circuit.
 `cpf` is the specific heat of the fluid and `name` is the code used in CoolProp
@@ -41,14 +47,15 @@ end
                     C <: Constraint,
                     B <: Borefield, 
                     M <: Medium, 
-                    BC <: BoundaryCondition
+                    BC <: BoundaryCondition,
+                    N <: Number
                 }(
         method::TSM
         constraint::C
         borefield::B
         medium::M
         boundary_condition::BoundaryCondition = DirichletBoundaryCondition()
-        fluid::Fluid = Fluid(cpf=4182., name="INCOMP::MEA-20%")
+        fluid::Fluid{N} = Fluid(cpf=4182., name="INCOMP::MEA-20%")
         configurations::Vector{BoreholeNetwork}
         Δt
         Nt::Int
@@ -71,14 +78,15 @@ Specifies all the options for the simulation.
                     C <: Constraint,
                     B <: Borefield, 
                     M <: Medium, 
-                    BC <: BoundaryCondition
+                    BC <: BoundaryCondition, 
+                    N <: Number
                     #A <: Approximation
                 }
     method::TSM
     constraint::C
     borefield::B
     medium::M
-    fluid::Fluid = Fluid(cpf=4182., name="INCOMP::MEA-20%")
+    fluid::Fluid{N} = Fluid(cpf=4182., name="INCOMP::MEA-20%")
     boundary_condition::BC = DirichletBoundaryCondition()
     #approximation::A = MeanApproximation()
     Δt
@@ -146,12 +154,14 @@ end
 
 function topology_coeffs!(M, operation::BoreholeOperation)
     M .= zero(eltype(M))
-    i = 1
+    j = 1
     for branch in operation.network.branches
-        for (out, in) in zip(branch[1:end-1], branch[2:end])
-            M[i, 2*in-1] = 1.
-            M[i, 2*out] = -1.
-            i += 1
+        for i in eachindex(@view branch[1:end-1])
+            in = branch[i+1] 
+            out = branch[i] 
+            M[j, 2*in-1] = 1.
+            M[j, 2*out] = -1.
+            j += 1
         end
     end
 end

@@ -42,13 +42,14 @@ function make_plot(axis, d)
         configurations = configurations
     )
 
-    function operator(i, Tin, Tout, Tb, q, configurations)
+    function operator(i, Tin, Tout, Tb, q, configurations, mass_flows_container)
         mf = 1.
         active_network = configurations[1]
         Nbr = n_branches(active_network)
-        BoreholeOperation(active_network, mf .* ones(Nbr))
+        @. mass_flows_container = mf
+        @views BoreholeOperation(active_network, mass_flows_container[1:Nbr])
     end
-
+    
     containers = @time initialize(options)
     @time simulate!(operator=operator, options=options, containers=containers)
 

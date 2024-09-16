@@ -36,10 +36,12 @@ function simulate!(;operator, options::SimulationOptions, containers::Simulation
     end
     
     last_operation = BoreholeOperation(nothing)
-    
+    fluid_T = get_T0(medium) .* ones(2Nb)
+    mass_flows_container = zeros(Nb)
+
     # Simulation loop
     for i = Ts:Nt
-        operation = @views operator(i, X[1:2:2Nb, 1:i], X[2:2:2Nb, 1:i], X[2Nb+1:3Nb, 1:i], X[3Nb+1:end, 1:i], configurations)
+        operation = @views operator(i, X[1:2:2Nb, 1:i], X[2:2:2Nb, 1:i], X[2Nb+1:3Nb, 1:i], X[3Nb+1:end, 1:i], configurations, mass_flows_container)
         operation = unwrap(operation)
 
         Nbr = n_branches(operation.network)
@@ -51,7 +53,7 @@ function simulate!(;operator, options::SimulationOptions, containers::Simulation
         balance_eqs = 3Nb+1:4Nb
 
         # Update M
-        @views internal_model_coeffs!(M[internal_model_eqs, :], borefield, medium, operation, i == 1 ? get_T0(medium) .* ones(2Nb) :  X[1:2Nb, i-1], fluid)
+        @views internal_model_coeffs!(M[internal_model_eqs, :], borefield, medium, operation, fluid_T, fluid)
         if last_operation.network != operation.network
             @views topology_coeffs!(M[topology_eqs, :], operation)
             @views constraints_coeffs!(M[constraints_eqs, :], constraint, operation)
@@ -75,6 +77,7 @@ function simulate!(;operator, options::SimulationOptions, containers::Simulation
         # Update auxiliaries
         update_auxiliaries!(method, X, borefield, i)
 
+        @views @. fluid_T = X[1:2Nb, i]
         last_operation = operation
     end
 end
