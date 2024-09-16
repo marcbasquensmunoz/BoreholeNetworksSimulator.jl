@@ -145,7 +145,7 @@ function solve_step!(X, A, b)
 end
 
 function topology_coeffs!(M, operation::BoreholeOperation)
-    M .= 0
+    M .= zero(eltype(M))
     i = 1
     for branch in operation.network.branches
         for (out, in) in zip(branch[1:end-1], branch[2:end])

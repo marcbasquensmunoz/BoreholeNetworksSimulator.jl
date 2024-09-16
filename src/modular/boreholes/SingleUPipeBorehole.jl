@@ -36,7 +36,7 @@ Model a borehole with a single U-pipe with burial depth `D` and length `H`.
 
     R_cache::SMatrix{2, 2, T, 4} = @SMatrix zeros(2, 2)
     A::MMatrix{2, 2, T, 4} = @MMatrix zeros(2, 2)
-    method::ExpMethodHigham2005 = ExpMethodHigham2005()
+    method::ExpMethodHigham2005 = ExpMethodHigham2005(false)
     exp_cache::Tuple{Vector{MMatrix{2, 2, T, 4}}, Vector{T}} = ExponentialUtilities.alloc_mem(A, method)
 end
 
