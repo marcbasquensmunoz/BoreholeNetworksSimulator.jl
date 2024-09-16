@@ -4,7 +4,7 @@ using CairoMakie
 
 function make_plot(axis, d)
     Δt = 3600.
-    Nt = 12*1000*100
+    Nt = 8760*100
 
     D = 10.
     H = 10.
