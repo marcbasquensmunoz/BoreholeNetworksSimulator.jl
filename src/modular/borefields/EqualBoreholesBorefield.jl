@@ -35,6 +35,7 @@ end
 
 function internal_model_coeffs!(M, borefield::EqualBoreholesBorefield, medium, operation, T_fluid, fluid)
     Nb = n_boreholes(borefield)
+    λ = get_λ(medium)
 
     for (i, branch) in enumerate(operation.network.branches)
         mass_flow = operation.mass_flows[i]
@@ -42,7 +43,7 @@ function internal_model_coeffs!(M, borefield::EqualBoreholesBorefield, medium, o
         for j in branch
             Tref = (T_fluid[2*j - 1] + T_fluid[2*j]) / 2
 
-            k_in, k_out, k_b = uniform_Tb_coeffs(borefield.borehole_prototype, get_λ(medium), mass_flow, Tref, fluid)
+            k_in, k_out, k_b = uniform_Tb_coeffs(borefield.borehole_prototype, λ, mass_flow, Tref, fluid)
 
             M[j, j*2 - 1]  = k_in
             M[j, j*2]      = k_out
