@@ -48,7 +48,6 @@ function constraints_coeffs!(M, ::HeatLoadConstraint, operation)
     for (i, branch) in enumerate(operation.network.branches)
         Nb = length(branch)
         for j in branch
-            @show i, 3Nb + j
             M[i, 3Nb + j] = one(eltype(M))
         end
     end

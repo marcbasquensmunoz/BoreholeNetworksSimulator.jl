@@ -107,7 +107,7 @@ tp_rot = rotation_z(tp,-θ)
 d = evaluate_relevant_distances(GroundWaterFlow(), p_rot, tp_rot) 
 d = [d[1] == 0. && d[2] == 0. ?  (0.,params.rb, d[3],d[4]) : d for d in d]
 
-tstep, tmax = 8760*3600/12., 10*8760*3600/12.#8760*3600*10.
+tstep, tmax = 8760*3600/12., 8760*3600*10.
 t = tstep:tstep:tmax
 Nt = length(t) # number of time steps
 

@@ -1,12 +1,11 @@
-using WGLMakie
 
 make_color_range(color_pair, n) = range(color_pair[1], stop=color_pair[2], length=n)
 
-function plot_borefield(network, positions; distinguished_branches = [], colors = [])
+function plot_borefield(network, positions; distinguished_branches = [], colors = [], size = (400, 400))
 
-    scene = Figure(size = (400, 400))
+    scene = Figure(size=size)
     axis = scene[1, 1] = Axis(scene, ylabel = "y [m]", xlabel = "x[m]", aspect = DataAspect())
-    scatter!(axis,  Makie.Point2.(positions) , markersize = 15.)
+    scatter!(axis,  Makie.Point2.(positions), markersize = 15.)
 
     # Draw boreholes
     for (i, n_branch) in enumerate(distinguished_branches)
