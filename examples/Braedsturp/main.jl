@@ -1,5 +1,6 @@
 using BoreholeNetworksSimulator
 using CSV
+using Statistics
 
 function load_positions_from_file(file)
     data = CSV.read(file, values, header=true, decimal=',')
@@ -49,11 +50,12 @@ options = SimulationOptions(
     configurations = configurations
 )
 
-function operator(i, Tin, Tout, Tb, q, configurations)
+function operator(i, Tin, Tout, Tb, q, configurations, mass_flow_containers)
     mf = 0.5
     active_network = configurations[i%12 in 1:6 ? 1 : 2]
     Nbr = n_branches(active_network)
-    BoreholeOperation(active_network, mf .* ones(Nbr))
+    mass_flow_containers .= mf
+    BoreholeOperation(active_network, @view mass_flow_containers[1:Nbr])
 end
 
 containers = @time initialize(options)
@@ -72,8 +74,6 @@ color_ranges = [Pair(colorant"blue", colorant"darkorange"), Pair(colorant"red", 
 
 plot_borefield(network, borehole_positions, distinguished_branches = monitored_branches, colors = color_ranges)
 monitor_branch(containers, network.branches[monitored_branches[1]], color_ranges[1], options.t)
-
-
 
 
 nbranch1, nbranch2 = 8, 3 

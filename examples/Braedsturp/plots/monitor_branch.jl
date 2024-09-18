@@ -11,8 +11,6 @@ function monitor_branch(containers::SimulationContainers, branch, color_pair, t;
     Tfin = BoreholeNetworksSimulator.Tfin(containers, branch)   
     q = BoreholeNetworksSimulator.q(containers, branch)
 
-    @show Tfin
-
     for (borehole, color) in enumerate(color_range)
         lines!(axis_T, collect(t ./ 12Δt), Tfin[borehole, :], color = color, linewidth = 2.)
         lines!(axis_Q, collect(t ./ 12Δt), q[borehole, :], color = color, linewidth = 2.)

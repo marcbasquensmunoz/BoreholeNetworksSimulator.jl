@@ -28,12 +28,6 @@ function simulate!(;operator, options::SimulationOptions, containers::Simulation
     @unpack configurations, method, constraint, borefield, medium, fluid, boundary_condition = options
     @unpack Nb, Ns, Nt, Ts = options
     @unpack M, b, X = containers 
-
-    compatibility = check_compatibility(medium, constraint, method)
-    if compatibility isa NotCompatible
-        println(compatibility.message)
-        return
-    end
     
     last_operation = BoreholeOperation(nothing)
     fluid_T = get_T0(medium) .* ones(2Nb)
@@ -56,8 +50,8 @@ function simulate!(;operator, options::SimulationOptions, containers::Simulation
         @views internal_model_coeffs!(M[internal_model_eqs, :], borefield, medium, operation, fluid_T, fluid)
         if last_operation.network != operation.network
             @views topology_coeffs!(M[topology_eqs, :], operation)
-            @views constraints_coeffs!(M[constraints_eqs, :], constraint, operation)
         end
+        @views constraints_coeffs!(M[constraints_eqs, :], constraint, operation)
         if i == Ts
             @views method_coeffs!(M[method_eqs, :], method, borefield, medium, boundary_condition)
         end
@@ -67,6 +61,7 @@ function simulate!(;operator, options::SimulationOptions, containers::Simulation
 
         # Update b
         @views internal_model_b!(b[internal_model_eqs], borefield)
+        @views topology_b!(b[topology_eqs], operation)
         @views constraints_b!(b[constraints_eqs], constraint, operation, i)
         @views method_b!(b[method_eqs], method, borefield, medium, i)
         @views heat_balance_b!(b[balance_eqs], borefield)  
