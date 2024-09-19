@@ -1,5 +1,5 @@
 
-function monitor_branch(containers, branch, color_pair, t; Δt = 8760/12*3600.)
+function monitor_branch(containers, branch, t; Δt = 8760/12*3600., color_pair = Pair(colorant"red", colorant"blue"))
     scene = Figure(size = (600, 450))
 
     axis_T = scene[1, 1] = Axis(scene, ylabel = "T [°C]") #, xlabel = "time [months]")

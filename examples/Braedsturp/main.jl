@@ -25,8 +25,8 @@ network = BoreholeNetwork([
     [27, 28, 21, 15, 9, 4]
 ])
 configurations = [  
-    network,            # Heat injection
-    reverse(network)    # Heat extraction
+    network,            # Heat extraction
+    reverse(network)    # Heat injection
 ]
 
 Tf_injection = 90.
@@ -36,10 +36,10 @@ borehole_positions = load_positions_from_file(borehole_locations)
 
 method = ConvolutionMethod()
 medium = FlowInPorousMedium(λw = 0.6, λs = 2., Cw = 4.18*1e6, Cs = 1.7*1e6, θ = 0., Φ = 0.2, T0 = 10.)
-borehole = SingleUPipeBorehole(H = 50., D = 4., λg = 2.5, pipe_position = ((0.03, 0.0), (-0.03, 0.0)))
+borehole = SingleUPipeBorehole(H = 50., D = 4., λg = 1.5, pipe_position = ((0.03, 0.0), (-0.03, 0.0)))
 borefield = EqualBoreholesBorefield(borehole_prototype=borehole, positions=borehole_positions)
 constraint = uniform_InletTempConstraint([i%12 in 1:6 ? Tf_injection : Tf_extraction for i=1:Nt], n_branches(network))
-fluid = Fluid(cpf = 4182., name = "INCOMP::MEA-20%")
+fluid = Fluid(cpf = 4182., name = "Water")
 
 options = SimulationOptions(
     method = method,
@@ -54,7 +54,7 @@ options = SimulationOptions(
 
 function operator(i, Tin, Tout, Tb, q, configurations, mass_flow_containers)
     mf = 0.5
-    active_network = configurations[i%12 in 1:6 ? 1 : 2]
+    active_network = configurations[i%12 in 1:6 ? 2 : 1]
     Nbr = n_branches(active_network)
     mass_flow_containers .= mf
     BoreholeOperation(active_network, @view mass_flow_containers[1:Nbr])
@@ -73,4 +73,4 @@ monitored_branches = [3, 8]
 color_ranges = [Pair(colorant"darkorange", colorant"blue"), Pair(colorant"red", colorant"green")]
 
 plot_borefield(network, borehole_positions, distinguished_branches = monitored_branches, colors = color_ranges)
-monitor_branch(containers, network.branches[monitored_branches[1]], color_ranges[1], options.t)
+monitor_branch(containers, network.branches[monitored_branches[1]], options.t, color_pair=color_ranges[1])
