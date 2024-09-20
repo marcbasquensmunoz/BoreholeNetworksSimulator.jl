@@ -4,9 +4,9 @@ using WGLMakie
 
 include("results.jl")
 include("borefield.jl")
-include("monitor_branch.jl")
+include("monitor.jl")
 
-export monitor_branch
+export monitor
 export plot_borefield
 
 end

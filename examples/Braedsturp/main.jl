@@ -70,7 +70,7 @@ containers.X
 # Draw plots
 
 monitored_branches = [3, 8]
-color_ranges = [Pair(colorant"darkorange", colorant"blue"), Pair(colorant"red", colorant"green")]
+color_ranges = [(colorant"darkorange", colorant"blue"), (colorant"red", colorant"green")]
 
 plot_borefield(network, borehole_positions, distinguished_branches = monitored_branches, colors = color_ranges)
-monitor_branch(containers, network.branches[monitored_branches[1]], options.t, color_pair=color_ranges[1])
+monitor(containers, network.branches[monitored_branches[1]], options.t, color_pair=color_ranges[1])
