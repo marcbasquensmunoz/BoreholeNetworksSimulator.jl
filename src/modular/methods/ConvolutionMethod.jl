@@ -11,13 +11,15 @@ It should be precomputed with [`initialize`](@ref).
 mutable struct ConvolutionMethod{T} <: TimeSuperpositionMethod 
     g::Array{T, 3}
     q::Array{T, 2}
+    aux::Vector{T}
 end
-ConvolutionMethod() = ConvolutionMethod(zeros(0,0,0), zeros(0,0))
+ConvolutionMethod() = ConvolutionMethod(zeros(0,0,0), zeros(0,0), zeros(0))
 
 function precompute_auxiliaries!(method::ConvolutionMethod, options)
     @unpack Nb, Nt, t, borefield, medium, boundary_condition = options
     method.g = zeros(Nb, Nb, Nt)
     method.q = zeros(Nb, Nt)
+    method.aux = zeros(Nb)
     compute_response!(method.g, medium, borefield, boundary_condition, t)
     return method
 end
@@ -38,12 +40,15 @@ function method_coeffs!(M, method::ConvolutionMethod, borefield, medium, boundar
 end
 
 function method_b!(b, method::ConvolutionMethod, borefield, medium, step)
+    @unpack g, q, aux = method
+
     Ns = n_segments(borefield)
     b .= -get_T0(medium)
 
-    for k = 1:step-1
+    for k in 1:step-1
         for i in 1:Ns
-            @views @inbounds b[i] -= dot(method.q[:, k], method.g[:, i, step - k + 1] - method.g[:, i, step - k])
+            @views @. aux = g[:, i, step - k + 1] - g[:, i, step - k]
+            @views @inbounds b[i] -= dot(q[:, k], aux)
         end
     end
 end

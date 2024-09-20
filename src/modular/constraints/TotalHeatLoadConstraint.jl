@@ -22,7 +22,6 @@ function constraints_coeffs!(M, ::TotalHeatLoadConstraint, operation, borefield)
         M[i+1, bh_in] = 1.
     end
 
-    first_bh = 4
     if sum(abs.(operation.mass_flows)) == 0
         M[1, 2*first_bh-1] = 1.
         M[1, 2Nb+first_bh] = -1.

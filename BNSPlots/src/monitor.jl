@@ -23,7 +23,7 @@ Creates a plot of the result of the simulation.
 - `Δt`: The scale of the x-axis in the plot. Possible options: :year, :month, :hour.
 - `color_pair`: A pair of colors used as extrema to generate a range of colors for each borehole. 
 """
-function monitor(containers, branch, steps, t; display = [:Tfin, :Tfout, :Tb, :q, :mf], Δt = :year, color_pair = (colorant"navajowhite2", colorant"darkgreen"), mf)
+function monitor(containers, branch, t; display = [:Tfin, :Tfout, :Tb, :q], Δt = :year, color_pair = (colorant"navajowhite2", colorant"darkgreen"))
     if isempty(display)
         return
     end
@@ -31,33 +31,29 @@ function monitor(containers, branch, steps, t; display = [:Tfin, :Tfout, :Tb, :q
         return throw("Plot time step must be one of :year, :month, :hour")
     end
 
-    scene = Figure(size=(800, 500))
+    scene = Figure()
     grid = scene[1, 1] = GridLayout()
     axes = []
 
     color_range = make_color_range(color_pair, length(branch)) 
     
     if anyin([:Tfin, :Tfout, :Tb], display)
-        axis_T = Axis(grid[length(axes)+1, 1], ylabel = L"T \, \left[ °C \right]")
+        axis_T = Axis(grid[length(axes)+1, 1], ylabel = "T [°C]")
         push!(axes, axis_T)
     end
     if :q in display
-        axis_Q = Axis(grid[length(axes)+1, 1], ylabel = L"q \, \left[ \frac{W}{m} \right]")
+        axis_Q = Axis(grid[length(axes)+1, 1], ylabel = "q [W/m]")
         push!(axes, axis_Q)
     end
-    if :mf in display
-        axis_m = Axis(grid[length(axes)+1, 1], ylabel = L"\dot{m} \, \left[ \frac{kg}{s} \right]")
-        push!(axes, axis_m)
-    end
 
-    Tfin = get_Tfin(containers, branch, steps)  
-    Tfout = get_Tfout(containers, branch, steps)  
-    Tb = get_Tb(containers, branch, steps)    
-    q = get_q(containers, branch, steps)
+    Tfin = get_Tfin(containers, branch)  
+    Tfout = get_Tfout(containers, branch)  
+    Tb = get_Tb(containers, branch)    
+    q = get_q(containers, branch)
 
     secs_in_year = 8760*3600
     conversion = Dict(:year => 1, :month => 12, :hour => 8760)
-    time = collect(t[steps] ./ secs_in_year * conversion[Δt])
+    time = collect(t ./ secs_in_year * conversion[Δt])
 
     for (borehole, color) in enumerate(color_range)
         if :Tfin in display
@@ -72,19 +68,9 @@ function monitor(containers, branch, steps, t; display = [:Tfin, :Tfout, :Tb, :q
         if :q in display
             lines!(axis_Q, time, q[borehole, :], color = color, linewidth = 2.)
         end
-        if :mf in display
-            stairs!(axis_m, time, mf[borehole, steps], color = color, linewidth = 2.)
-        end
     end
 
 
-    group_color = [PolyElement(color = color, strokecolor = :transparent) for color in color_range]
-    group_marker = [LineElement(color = :black), LineElement(color = :black, linestyle = :dash), MarkerElement(marker = :circle, color = :black, strokecolor = :transparent, markersize = 5.)]
-    legend = Legend(scene, [group_color, group_marker], [["4", "7"], ["Tfin", "Tfout", "Tb"]], ["Boreholes", "Temperatures"], tellheight = true, tellwidth = false)
-    legend.titleposition = :top
-    legend.orientation = :horizontal
-    legend.nbanks = 1
-    scene[2,1] = legend
     for i in 1:length(axes)-1
         hidexdecorations!(axes[i], grid = false)
         linkxaxes!(axes[i], axes[i+1])

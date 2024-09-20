@@ -41,7 +41,7 @@ function uniform_InletTempConstraint(T_in::Vector{N}, Nbr) where {N <: Number}
     InletTempConstraint(T)
 end
 
-function constraints_coeffs!(M, ::InletTempConstraint, operation)
+function constraints_coeffs!(M, ::InletTempConstraint, operation, borefield)
     M .= zero(eltype(M))
     for (i, borehole) in enumerate(first_boreholes(operation.network))
         M[i, 2*borehole - 1] = one(eltype(M))

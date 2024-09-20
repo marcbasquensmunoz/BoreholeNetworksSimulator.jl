@@ -34,7 +34,7 @@ Convenience initializer for `HeatLoadConstraint`. It creates a uniform heat load
 where `T_in` are the heat load for each time step.
 """
 function uniform_HeatLoadConstraint(Q_tot::Vector{T}, Nbr) where {T <: Number}
-    Nt = length(T_in)
+    Nt = length(Q_tot)
     Q = zeros(Nbr, Nt)
     for i in 1:Nbr
         Q[i, :] .= Q_tot
@@ -42,13 +42,13 @@ function uniform_HeatLoadConstraint(Q_tot::Vector{T}, Nbr) where {T <: Number}
     HeatLoadConstraint(Q)
 end
 
-function constraints_coeffs!(M, ::HeatLoadConstraint, operation)
+function constraints_coeffs!(M, ::HeatLoadConstraint, operation, borefield)
     M .= zero(eltype(M))
-    Nb = n_branches(operation.network)
 
     for (i, branch) in enumerate(operation.network.branches)
+        Nb = n_boreholes(operation.network)
         for j in branch
-            M[i, 3Nb + j] = one(eltype(M))
+            M[i, 3Nb + j] = one(eltype(M)) * get_H(borefield, j)
         end
     end
 end
