@@ -105,9 +105,10 @@ options = SimulationOptions(
 # The second specifies the mass flow rate through each branch of the selected configuration, provided as 
 # a vector. In our example, we will keep this constant through the simulation:
 
-function operator(i, Tin, Tout, Tb, q, configurations)
+function operator(i, Tin, Tout, Tb, q, configurations, mass_flows)
     network = configurations[1]
-    BoreholeOperation(network, 2 .* ones(n_branches(network)))
+    mass_flows .=  2 
+    BoreholeOperation(network, @view mass_flows[1:n_branches(network)])
 end
 
 # Before simulating, we first need to call [`initialize`](@ref) to run some precomputations
