@@ -11,6 +11,7 @@ The first borehole of each branch is assumed to be connected in parallel.
 end
 Base.reverse(network::BoreholeNetwork) = BoreholeNetwork(branches=map(branch -> Base.reverse(branch), network.branches))
 n_branches(network::BoreholeNetwork) = length(network.branches)
+n_boreholes(network::BoreholeNetwork) = sum([length(branch) for branch in network.branches])
 first_boreholes(network::BoreholeNetwork) = map(first, network.branches)
 
 """
@@ -122,6 +123,11 @@ Precompute the objects of each `TimeSuperpositionMethod` that can be computed ah
 """
 function initialize(options::SimulationOptions) 
     # TODO: detect overlapping boreholes
+    compatibility = check_compatibility(options.medium, options.constraint, options.method)
+    if compatibility isa NotCompatible
+        println(compatibility.message)
+        return
+    end
     precompute_auxiliaries!(options.method, options)
     SimulationContainers(options)
 end
@@ -150,20 +156,6 @@ function solve_step!(X, A, b)
     linsolve = init(prob)
     X .= solve!(linsolve).u=#
     X .= A\b
-end
-
-function topology_coeffs!(M, operation::BoreholeOperation)
-    M .= zero(eltype(M))
-    j = 1
-    for branch in operation.network.branches
-        for i in eachindex(@view branch[1:end-1])
-            in = branch[i+1] 
-            out = branch[i] 
-            M[j, 2*in-1] = 1.
-            M[j, 2*out] = -1.
-            j += 1
-        end
-    end
 end
 
 unwrap(x::Any) = x

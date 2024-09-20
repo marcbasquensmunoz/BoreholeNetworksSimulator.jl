@@ -1,4 +1,4 @@
-import BoreholeNetworksSimulator: constraints_coeffs!, constraints_b!
+import BoreholeNetworksSimulator: constraints_coeffs!, constraints_b!, BorefieldMock
 
 @testset "test_InletTempConstraint_M_parallel" begin
     Nbr = 3
@@ -12,8 +12,9 @@ import BoreholeNetworksSimulator: constraints_coeffs!, constraints_b!
 
     network = BoreholeNetwork([[1], [2], [3]])
     operation = BoreholeOperation(network=network, mass_flows=ones(Nbr))
+    borefield = BorefieldMock()
 
-    constraints_coeffs!(M, constraint, operation)
+    constraints_coeffs!(M, constraint, operation, borefield)
 
     expected = [(1, 1, 1.), (2, 3, 1.), (3, 5, 1.)]
     @test test_sparse_matrix(M, expected)
@@ -31,8 +32,9 @@ end
 
     network = BoreholeNetwork([[1, 2, 3]])
     operation = BoreholeOperation(network=network, mass_flows=ones(Nbr))
+    borefield = BorefieldMock()
 
-    constraints_coeffs!(M, constraint, operation)
+    constraints_coeffs!(M, constraint, operation, borefield)
 
     expected = [(1, 1, 1.)]
     @test test_sparse_matrix(M, expected)
@@ -50,8 +52,9 @@ end
 
     network = BoreholeNetwork([[1, 2], [3, 4], [5]])
     operation = BoreholeOperation(network=network, mass_flows=ones(Nbr))
+    borefield = BorefieldMock()
 
-    constraints_coeffs!(M, constraint, operation)
+    constraints_coeffs!(M, constraint, operation, borefield)
 
     expected = [(1, 1, 1.), (2, 2*2+1, 1.), (3, 4*2+1, 1.)]
     @test test_sparse_matrix(M, expected)

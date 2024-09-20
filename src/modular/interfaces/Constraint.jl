@@ -16,7 +16,7 @@ Required functions:
 abstract type Constraint end
 
 @required Constraint begin
-    constraints_coeffs!(M, ::Constraint, operation)
+    constraints_coeffs!(M, ::Constraint, operation, borefield)
     constraints_b!(b, ::Constraint, operation, step)
 end
 
@@ -30,5 +30,5 @@ Mock for testing purposes.
     M = []
     b = []
 end
-constraints_coeffs!(M, c::ConstraintMock, operation) = c.M .= M
+constraints_coeffs!(M, c::ConstraintMock, operation, borefield) = c.M .= M
 constraints_b!(b, c::ConstraintMock, operation, step) = c.b .= b

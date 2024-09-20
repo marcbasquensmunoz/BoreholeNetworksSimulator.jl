@@ -1,9 +1,11 @@
-import BoreholeNetworksSimulator: constraints_coeffs!, constraints_b!
+import BoreholeNetworksSimulator: constraints_coeffs!, constraints_b!, BorefieldMock
 
 @testset "test_HeatLoadConstraint_M_parallel" begin
     Nbr = 3
     Nb = 3
     Nt = 1
+
+    H = 23.
 
     Q_tot = ones(Nbr, Nt)
     constraint = HeatLoadConstraint(Q_tot)
@@ -12,10 +14,11 @@ import BoreholeNetworksSimulator: constraints_coeffs!, constraints_b!
 
     network = BoreholeNetwork([[1], [2], [3]])
     operation = BoreholeOperation(network=network, mass_flows=ones(Nbr))
+    borefield = BorefieldMock(H = H * ones(3))
 
-    constraints_coeffs!(M, constraint, operation)
+    constraints_coeffs!(M, constraint, operation, borefield)
 
-    expected = [(1, 3Nb+1, 1.), (2, 3Nb+2, 1.), (3, 3Nb+3, 1.)]
+    expected = [(1, 3Nb+1, H), (2, 3Nb+2, H), (3, 3Nb+3, H)]
     @test test_sparse_matrix(M, expected)
 end
 
@@ -24,6 +27,8 @@ end
     Nb = 3
     Nt = 1
 
+    H = 32.
+
     Q_tot = ones(Nbr, Nt)
     constraint = HeatLoadConstraint(Q_tot)
 
@@ -31,10 +36,11 @@ end
 
     network = BoreholeNetwork([[1, 2, 3]])
     operation = BoreholeOperation(network=network, mass_flows=ones(Nbr))
+    borefield = BorefieldMock(H = H * ones(3))
 
-    constraints_coeffs!(M, constraint, operation)
+    constraints_coeffs!(M, constraint, operation, borefield)
 
-    expected = [(1, 3Nb+1, 1.), (1, 3Nb+2, 1.), (1, 3Nb+3, 1.)]
+    expected = [(1, 3Nb+1, H), (1, 3Nb+2, H), (1, 3Nb+3, H)]
     @test test_sparse_matrix(M, expected)
 end
 
@@ -43,6 +49,8 @@ end
     Nb = 5
     Nt = 1
 
+    H = 51.
+
     Q_tot = ones(Nbr, Nt)
     constraint = HeatLoadConstraint(Q_tot)
 
@@ -50,10 +58,11 @@ end
 
     network = BoreholeNetwork([[1, 2], [3, 4], [5]])
     operation = BoreholeOperation(network=network, mass_flows=ones(Nbr))
+    borefield = BorefieldMock(H = H * ones(5))
 
-    constraints_coeffs!(M, constraint, operation)
+    constraints_coeffs!(M, constraint, operation, borefield)
 
-    expected = [(1, 3Nb+1, 1.), (1, 3Nb+2, 1.), (2, 3Nb+3, 1.), (2, 3Nb+4, 1.), (3, 3Nb+5, 1.)]
+    expected = [(1, 3Nb+1, H), (1, 3Nb+2, H), (2, 3Nb+3, H), (2, 3Nb+4, H), (3, 3Nb+5, H)]
     @test test_sparse_matrix(M, expected)
 end
 

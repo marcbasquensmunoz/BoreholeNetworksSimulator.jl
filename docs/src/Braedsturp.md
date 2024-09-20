@@ -1,13 +1,16 @@
+# Example: Braedsturp borefield 
 
-
-## Example
 The example considers a borehole field of 48 boreholes connected according to scheme utilized in the installation in Braedsturp, Denmark. 
+The source code of this example can be found in `examples/Braedsturp/main.jl`.
+The field is in a porous medium with an underground water flow of ``0.01 \frac{m}{\text{day}}``, which we assume to be in the ``x`` direction. 
+The borefield consists of 8 branches, each branch in parallel, and within each branch there are ``6``boreholes in series. 
+The positions and connections are represented in the following plot: 
 
-<img src="examples/braedsturp/configuration.png" width="400" height="400" />
+![](./examples/braedsturp/configuration.png)
 
 ## Run the example
 ```
-include("examples/modular/main.jl")
+include("examples/Braedsturp/main.jl")
 ```
 In this example, the simulation is executed and the results are saved in the cache file named 'cache_3.1536e8.jld2'. The result data is also available in memory:
 ```
@@ -28,23 +31,22 @@ julia> containers.X
 ## Plots
 Plots showing the results of the simulation as also available
 ```
-julia > include("examples/plots/sim1.jl") 
+julia > include("examples/old/sim1.jl") 
 ```
 
 Inlet borehole temperatures and heat flows for boreholes along two branches in the borehole field. The time series are color coded according to the previous configuration plot above. In addition to the inlet temperature, the output temperature from the branch (grey dot), and the mean output temperature from the field (black dot) are displayed.
 
-<img src="examples/braedsturp/branch1_test1.png" width="600" height="300" />
-<img src="examples/braedsturp/branch2_test1.png" width="600" height="300" />
-
+![](./examples/braedsturp/branch1_test1.png)
+![](./examples/braedsturp/branch2_test1.png)
 
 Finally we can display the heatmap of the temperature field in the borehole region during the 10th year of operation
 
-<img src="examples/braedsturp/heatmap_test1.png" width="600" height="300" />
+![](./examples/braedsturp/heatmap_test1.png)
 
 
 ## Running the code in Python
-Julia is interoperable with Python, making it possible to run this code from Python. In order to so do, install the Python module `juliacall` and run 
+The example is also avaiable from Python. For details of how this is done refer to [Running BoreholeNetworksSimulator from Python](@ref). 
+The Python version is in:
 ```
-python3 examples/modular/main.py
+examples/Braedsturp/main.py
 ```
-This script calls the same code as the `main.jl`.

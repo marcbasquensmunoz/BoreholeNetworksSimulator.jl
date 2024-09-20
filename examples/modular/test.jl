@@ -64,7 +64,7 @@ X1-X2
 
 ### FLS
 q = [1 for i=1:Nt]
-I = zeros(length(q))
+I = zeros(length(q))'
 params = FiniteLineSource.Constants(Δt=Δt, rb=rb, b=2.)
 
 setup = FiniteLineSource.SegmentToSegment(D1=D, H1=H, D2=D, H2=H, σ=rb)

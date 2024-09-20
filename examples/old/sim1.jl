@@ -67,7 +67,7 @@ k_in, k_out,  k_b = uniformTb_koeff(A,H)    # COEFFICIENTS OF THE BOREHOLE MODEL
 # 4. BOREHOLE FIELD CONFIGURATION
 #import configuration
 cdir = @__DIR__
-df = CSV.File("$cdir/data/Braedstrup_borehole_coordinates.txt"; decimal=',', delim = ';') |> DataFrame
+df = CSV.File("$cdir/../Braedsturp/data/Braedstrup_borehole_coordinates.txt"; decimal=',', delim = ';') |> DataFrame
 #geometry of the field
 borehole_positions =  [(x, y) for (x,y) in zip(df.X,df.Y) ]
 
