@@ -42,13 +42,13 @@ function uniform_HeatLoadConstraint(Q_tot::Vector{T}, Nbr) where {T <: Number}
     HeatLoadConstraint(Q)
 end
 
-function constraints_coeffs!(M, ::HeatLoadConstraint, operation)
+function constraints_coeffs!(M, ::HeatLoadConstraint, operation, borefield)
     M .= zero(eltype(M))
 
     for (i, branch) in enumerate(operation.network.branches)
-        Nb = length(branch)
+        Nb = n_boreholes(operation.network)
         for j in branch
-            M[i, 3Nb + j] = one(eltype(M))
+            M[i, 3Nb + j] = one(eltype(M)) * get_H(borefield, j)
         end
     end
 end

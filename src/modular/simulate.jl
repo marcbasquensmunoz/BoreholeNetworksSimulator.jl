@@ -51,13 +51,13 @@ function simulate!(;operator, options::SimulationOptions, containers::Simulation
         if last_operation.network != operation.network
             @views topology_coeffs!(M[topology_eqs, :], operation)
         end
-        @views constraints_coeffs!(M[constraints_eqs, :], constraint, operation)
+        @views constraints_coeffs!(M[constraints_eqs, :], constraint, operation, borefield)
         if i == Ts
             @views method_coeffs!(M[method_eqs, :], method, borefield, medium, boundary_condition)
         end
-        if last_operation.mass_flows != operation.mass_flows
+        #if last_operation.mass_flows != operation.mass_flows
             @views heat_balance_coeffs!(M[balance_eqs, :], borefield, operation, fluid)
-        end
+        #end
 
         # Update b
         @views internal_model_b!(b[internal_model_eqs], borefield)
