@@ -1,4 +1,4 @@
-using .FiniteLineSource: SegmentToSegment, Constants, adaptive_gk_segments, DiscretizationParameters, f_guess, precompute_coefficients
+using .FiniteLineSource: SegmentToSegment, SegmentToPoint, Constants, adaptive_gk_segments, DiscretizationParameters, f_guess, precompute_coefficients, IntegrationSegment
 
 """
     NonHistoryMethod{T} <: TimeSuperpositionMethod 
@@ -26,6 +26,7 @@ NonHistoryMethod(;n_disc=20) = NonHistoryMethod(zeros(0, 0), zeros(0), zeros(0, 
 
 FiniteLineSource.SegmentToSegment(s::MeanSegToSegEvParams) = SegmentToSegment(D1=s.D1, H1=s.H1, D2=s.D2, H2=s.H2, σ=s.σ)
 image(s::SegmentToSegment) = SegmentToSegment(D1=-s.D1, H1=-s.H1, D2=s.D2, H2=s.H2, σ=s.σ)
+image(s::SegmentToPoint) = SegmentToPoint(D=-s.D, H=-s.H, z=s.z, σ=s.σ)
 
 function precompute_auxiliaries!(method::NonHistoryMethod, options)
     @unpack Nb, Nt, Ns, Δt, borefield, medium, boundary_condition = options
@@ -38,7 +39,8 @@ function precompute_auxiliaries!(method::NonHistoryMethod, options)
     b = ceil(erfcinv(ϵ / sqrt(π/Δt̃)) / sqrt(Δt̃))
 
     constants = Constants(Δt=Δt, α=α, rb=rb, kg=kg, b=b)
-    segments = adaptive_gk_segments(f_guess(SegmentToSegment(get_sts(borefield, 1, 1)), constants), 0., b)
+    segments = [IntegrationSegment(0., 0.05, 0., 0.), IntegrationSegment(0.05, 0.1, 0., 0.), IntegrationSegment(0.1, 0.5, 0., 0.), IntegrationSegment(0.5, 1., 0., 0.), IntegrationSegment(1., 3., 0., 0.), IntegrationSegment(3., 7., 0., 0.)]
+    #segments=adaptive_gk_segments(f_guess(SegmentToSegment(get_sts(borefield, 1, 1)), constants), 0., b)
     dps = [DiscretizationParameters(s.a, s.b, n_disc) for s in segments]
     ζ = reduce(vcat, (dp.x for dp in dps)) 
     expΔt = @. exp(-ζ^2 * Δt̃)
@@ -50,9 +52,9 @@ function precompute_auxiliaries!(method::NonHistoryMethod, options)
 
     for i in 1:Ns
         for j in 1:Ns
-            rb = get_rb(borefield, div(i-1, Ns)+1) # Get the right rb
-            sts = SegmentToSegment(get_sts(borefield, i, j))
-            w[:, (i-1)*Ns+j] = reduce(vcat, [coefficients_sts(boundary_condition, sts, constants, dp, containers[map[k]]) for (k, dp) in enumerate(dps)])
+            setup = SegmentToSegment(get_sts(borefield, i, j))
+            #setup = get_stp(borefield, i, j)
+            w[:, (i-1)*Ns+j] = reduce(vcat, [coefficients(boundary_condition, setup, constants, dp, containers[map[k]]) for (k, dp) in enumerate(dps)])
         end
     end
 
@@ -65,14 +67,14 @@ function precompute_auxiliaries!(method::NonHistoryMethod, options)
     method.aux = zeros(n)
 end
 
-function coefficients_sts(::NoBoundary, sts::SegmentToSegment, params::Constants, dp, containers)
-    precompute_coefficients(sts, params=params, dp=dp, containers=containers)
+function coefficients(::NoBoundary, setup::SegmentToSegment, params::Constants, dp, containers)
+    precompute_coefficients(setup, params=params, dp=dp, containers=containers)
 end
 
-function coefficients_sts(::DirichletBoundaryCondition, sts::SegmentToSegment, params::Constants, dp, containers)
-    image_sts = image(sts)
-    w1 = precompute_coefficients(sts, params=params, dp=dp, containers=containers)
-    w2 = precompute_coefficients(image_sts, params=params, dp=dp, containers=containers)
+function coefficients(::DirichletBoundaryCondition, setup::SegmentToSegment, params::Constants, dp, containers)
+    image_setup = image(setup)
+    w1 = precompute_coefficients(setup, params=params, dp=dp, containers=containers)
+    w2 = precompute_coefficients(image_setup, params=params, dp=dp, containers=containers)
     w1 - w2
 end
 
@@ -81,6 +83,13 @@ function get_sts(borefield::Borefield, i, j)
     xj, yj, Dj, Hj = segment_coordinates(borefield, j)
     σ = i == j ? get_rb(borefield, i) : sqrt((xi-xj)^2 + (yi-yj)^2)
     MeanSegToSegEvParams(D1=Di, H1=Hi, D2=Dj, H2=Hj, σ=σ)
+end
+
+function get_stp(borefield::Borefield, i, j)
+    xi, yi, Di, Hi = segment_coordinates(borefield, i)
+    xj, yj, Dj, Hj = segment_coordinates(borefield, j)
+    σ = i == j ? get_rb(borefield, i) : sqrt((xi-xj)^2 + (yi-yj)^2)
+    FiniteLineSource.SegmentToPoint(σ = σ, D = Di, H = Hi, z = Dj + Hj/2)
 end
 
 function update_auxiliaries!(method::NonHistoryMethod, X, borefield, step)
@@ -99,8 +108,8 @@ function method_coeffs!(M, method::NonHistoryMethod, borefield, medium, boundary
 
     for i in 1:Ns
         for j in 1:Ns
-            sts = SegmentToSegment(get_sts(borefield, i, j))
-            M[i, 3Nb+j] = q_coef(boundary_condition, medium, method, sts, λ, (i-1)*Ns+j) 
+            setup = SegmentToSegment(get_sts(borefield, i, j))
+            M[i, 3Nb+j] = q_coef(boundary_condition, medium, method, setup, λ, (i-1)*Ns+j) 
         end
     end
 
@@ -123,13 +132,13 @@ function method_b!(b, method::NonHistoryMethod, borefield, medium, step)
     end
 end
 
-function q_coef(::NoBoundary, medium, method, sts, λ, i)
-    constant_integral(medium, method, sts, λ, i) + constant_coef(method, i)
+function q_coef(::NoBoundary, medium, method, setup, λ, i)
+    constant_integral(medium, method, setup, λ, i) + constant_coef(method, i)
 end
 
-function q_coef(::DirichletBoundaryCondition, medium, method, sts, λ, i)
+function q_coef(::DirichletBoundaryCondition, medium, method, setup, λ, i)
     @unpack expΔt, w, ζ = method
-    constant_integral(medium, method, sts, λ, i) - constant_integral(medium, method, image(sts), λ, i) + constant_coef(method, i)
+    constant_integral(medium, method, setup, λ, i) - constant_integral(medium, method, image(setup), λ, i) + constant_coef(method, i)
 end
 
 function constant_coef(method::NonHistoryMethod, i)
@@ -138,12 +147,16 @@ function constant_coef(method::NonHistoryMethod, i)
     @views -dot(w[:, i], aux)
 end
 
-function constant_integral(::GroundMedium, method, sts, λ, i)
-    @unpack D1, H1, D2, H2, σ = sts
-    @unpack expΔt, w, ζ = method
+function constant_integral(::GroundMedium, method, setup::SegmentToSegment, λ, i)
+    @unpack D1, H1, D2, H2, σ = setup
 
     β(d) = sqrt(σ^2 + d^2) + d*log(sqrt(σ^2 + d^2) - d)
-    constant_integral = 1/(4π*λ*H2) * (β(D1+H1-D2-H2) + β(D1-D2) - β(D1+H1-D2) - β(D1-D2-H2))
+    1/(4π*λ*H2) * (β(D1+H1-D2-H2) + β(D1-D2) - β(D1+H1-D2) - β(D1-D2-H2))
+end
 
-    constant_integral #- dot(w[:, i], expΔt ./ ζ)
+function constant_integral(::GroundMedium, method, setup::SegmentToPoint, λ, i)
+    @unpack D, H, z, σ = setup
+    @unpack expΔt, w, ζ = method
+
+    1/(4π*λ) * log((z-D+sqrt(σ^2+(z-D)^2))/(z-D-H+sqrt(σ^2+(z-D-H)^2)))
 end
