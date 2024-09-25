@@ -1,5 +1,10 @@
 
-struct Water <: Fluid end
+struct Water <: Fluid 
+    stored_properties::ThermophysicalProperties
+end
+function Water()
+    Water(load_properties("Water"))
+end
 
 cpf(::Water) = 4182.
-thermophysical_properties(::Water, Tref) = thermophysical_properties(Tref, "Water")
+thermophysical_properties(f::Water, T) = evaluate_thermophysical_properties(f.stored_properties, T)

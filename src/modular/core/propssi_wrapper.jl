@@ -25,7 +25,7 @@ function thermophysical_properties(Tref, fluidname::String)
 end
 
 # Evaluate the heat transfer coefficient 
-function heat_transfer_coefficient(mf, Tref, borehole::Borehole, fluid)
+function heat_transfer_coefficient(mf, Tref, borehole::Borehole, fluid::Fluid)
     T0 = 273.15
     rp = get_rp(borehole)
     μ, ρ, cp, k = thermophysical_properties(fluid, Tref + T0)
