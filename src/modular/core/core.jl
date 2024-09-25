@@ -29,35 +29,20 @@ end
 BoreholeOperation(::Nothing) = BoreholeOperation(BoreholeNetwork([]), @view ones(1)[1:1])
 
 """
-    Fluid{T <: Number}(
-        cpf::T
-        name::String
-    )
-
-Represents the fluid flowing through the hydraulic circuit.
-`cpf` is the specific heat of the fluid and `name` is the code used in CoolProp
-"""
-@with_kw struct Fluid{T <: Number}
-    cpf::T
-    name::String
-end
-
-"""
     struct SimulationOptions{
                     TSM <: TimeSuperpositionMethod,
                     C <: Constraint,
                     B <: Borefield, 
                     M <: Medium, 
                     BC <: BoundaryCondition,
-                    N <: Number,
-                    F <: Fluid
+                    N <: Number
                 }(
         method::TSM
         constraint::C
         borefield::B
         medium::M
         boundary_condition::BoundaryCondition = DirichletBoundaryCondition()
-        fluid::F = Water()
+        fluid::Fluid{N} = Fluid(cpf=4182., name="INCOMP::MEA-20%")
         configurations::Vector{BoreholeNetwork}
         Δt
         Nt::Int
@@ -81,14 +66,14 @@ Specifies all the options for the simulation.
                     B <: Borefield, 
                     M <: Medium, 
                     BC <: BoundaryCondition, 
-                    N <: Number
+                    F <: Fluid
                     #A <: Approximation
                 }
     method::TSM
     constraint::C
     borefield::B
     medium::M
-    fluid::Fluid{N} = Fluid(cpf=4182., name="INCOMP::MEA-20%")
+    fluid::F
     boundary_condition::BC = DirichletBoundaryCondition()
     #approximation::A = MeanApproximation()
     Δt

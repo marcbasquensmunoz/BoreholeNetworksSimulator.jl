@@ -47,13 +47,13 @@ borehole = SingleUPipeBorehole(H = 240., D = 4., λg = 2.5, pipe_position = ((0.
 borefield = EqualBoreholesBorefield(borehole_prototype=borehole, positions=borehole_positions)
 constraint = TotalHeatLoadConstraint(Q_tot)
 method = NonHistoryMethod()
-fluid = Fluid(cpf = 4182., name = "INCOMP::MEA-20%")
+fluid = Water()#Fluid(cpf = 4182., name = "INCOMP::MEA-20%")
 
 options = SimulationOptions(
     method = method,
     constraint = constraint,
     borefield = borefield,
-    fluid = fluid,
+    #fluid = fluid,
     medium = medium,
     Δt = Δt,
     Nt = Nt,
@@ -81,24 +81,16 @@ end
 
 #plot_weekly_Q()
 
-function plot_yearly_Q()
+function plot_Q()
     fig = Figure(size=(1500, 400))
     ax = Axis(fig[1, 1])  
-    t = 1:8736
-    lines!(ax, t ./ 728., Q_year ./ (1000) )
+    t = 1:8760
+    lines!(ax, t ./ 730., Q_year ./ 1000 )
     ax.xticks = 0:12
     ax.xtickformat = x -> ["$(monthname(Int(n+3)%12+1))" for n in x]
     ax.ylabel = "Power [kW]"
     fig
 end
 
-#plot_yearly_Q()
 
-function make_mf_plot(mf)
-    fig = Figure()
-    ax = Axis(fig[1, 1])  
-    t = 1:Nt
-    lines!(ax, t, mf)
-    ax.ylabel = "Mass flow rate [kg/s]"
-    fig
-end
+save("examples/tekniska/plots/Q_year.pdf", plot_Q())

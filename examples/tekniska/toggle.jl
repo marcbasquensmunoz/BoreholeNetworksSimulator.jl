@@ -33,8 +33,10 @@ function operator(i, Tin, Tout, Tb, q, configurations, mass_flow_containers)
 
     active_network = configurations[1]
     Nbr = n_branches(active_network)
-    mass_flow_containers[1:6] .= mf1
-    mass_flow_containers[7:10] .= mf2
+    branch1 = [1, 6, 2, 7, 3, 8]
+    branch2 = [4, 5, 9, 10]
+    mass_flow_containers[branch1] .= mf1
+    mass_flow_containers[branch2] .= mf2
 
     mfs[1, i] = mf1
     mfs[2, i] = mf2

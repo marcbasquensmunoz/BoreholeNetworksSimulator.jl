@@ -78,7 +78,7 @@ function uniform_Tb_coeffs(borehole::SingleUPipeBorehole, λ, mass_flow, Tref, f
     A[1, 1] += Rhp
     A[2, 2] += Rhp
 
-    C = H / (fluid.cpf * mass_flow)
+    C = H / (cpf(fluid) * mass_flow)
     In = @SMatrix [-1 0; 0 1]
     A .= C .* In * inv(A)
 
