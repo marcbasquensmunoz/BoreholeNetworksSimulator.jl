@@ -6,12 +6,14 @@ Representation of the hydraulic connections of the boreholes in the network.
 Each element in `branches` should be a vector representing a branch of boreholes connected in series, specified by their identifiers.
 The first borehole of each branch is assumed to be connected in parallel. 
 """
-@with_kw struct BoreholeNetwork
+struct BoreholeNetwork
     branches::Vector{Vector{Int}}
+    n_boreholes::Int
 end
+BoreholeNetwork(branches::Vector{Vector{Int}}) = BoreholeNetwork(branches, sum([length(branch) for branch in branches]))
 Base.reverse(network::BoreholeNetwork) = BoreholeNetwork(branches=map(branch -> Base.reverse(branch), network.branches))
 n_branches(network::BoreholeNetwork) = length(network.branches)
-n_boreholes(network::BoreholeNetwork) = sum([length(branch) for branch in network.branches])
+n_boreholes(network::BoreholeNetwork) = network.n_boreholes
 first_boreholes(network::BoreholeNetwork) = map(first, network.branches)
 
 """
@@ -26,7 +28,7 @@ Represents a operation state of the network, with `network` representing the hyd
     network::BoreholeNetwork         
     mass_flows::Arr
 end
-BoreholeOperation(::Nothing) = BoreholeOperation(BoreholeNetwork([]), @view ones(1)[1:1])
+BoreholeOperation(::Nothing) = BoreholeOperation(BoreholeNetwork([], 0), @view ones(1)[1:1])
 
 """
     struct SimulationOptions{
@@ -100,6 +102,7 @@ Each column of `X` contains the solution of `M X = b` for each time step of the 
     M::Mat
     X::Matrix{T}
     b::Vector{T}
+    mf::Matrix{T}
 end
 
 """
@@ -120,9 +123,9 @@ end
 function SimulationContainers(options::SimulationOptions) 
     @unpack Nb, Nt = options
     if Nb > 50
-        SimulationContainers(M = spzeros(4Nb, 4Nb), b = zeros(4Nb), X = zeros(4Nb, Nt))
+        SimulationContainers(M = spzeros(4Nb, 4Nb), b = zeros(4Nb), X = zeros(4Nb, Nt), mf = zeros(Nb, Nt))
     else 
-        SimulationContainers(M = zeros(4Nb, 4Nb), b = zeros(4Nb), X = zeros(4Nb, Nt))
+        SimulationContainers(M = zeros(4Nb, 4Nb), b = zeros(4Nb), X = zeros(4Nb, Nt), mf = zeros(Nb, Nt))
     end
 end
 

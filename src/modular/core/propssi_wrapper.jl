@@ -28,18 +28,10 @@ end
 function heat_transfer_coefficient(mf, Tref, borehole::Borehole, fluid)
     T0 = 273.15
     rp = get_rp(borehole)
-    try
-        μ, ρ, cp, k = thermophysical_properties(Tref + T0, "Water")
-        w = mf/(ρ * π * rp^2)
-        Re = 2 * ρ * w * rp/ μ
-        Pr = μ * cp/(2*rp)
-        Nu = evaluate_nusselt(Re, Pr)
-        return Nu * k /(2*rp)
-    catch error
-        h = get_default_hp(borehole)
-        @info "PropsSI raised an error in the computation of the heat transfer coefficient for the fluid $fluid at temperature $(Tref+T0)."
-        @info "$error"
-        @info "Continuing simulation with h = $h."
-        return h
-    end
+    μ, ρ, cp, k = thermophysical_properties(fluid, Tref + T0)
+    w = mf/(ρ * π * rp^2)
+    Re = 2 * ρ * w * rp/ μ
+    Pr = μ * cp/(2*rp)
+    Nu = evaluate_nusselt(Re, Pr)
+    return Nu * k /(2*rp)
 end

@@ -24,11 +24,7 @@ borefield = EqualBoreholesBorefield(borehole_prototype=borehole, positions=posit
 constraint = constant_HeatLoadConstraint(5 .* ones(BoreholeNetworksSimulator.n_boreholes(borefield)), Nt)
 
 configurations = [BoreholeNetwork([[1], [2]])]
-
-function operator(i, Tin, Tout, Tb, q, configurations)
-    network = configurations[1]
-    BoreholeOperation(network, 2 .* ones(n_branches(network)))
-end
+operator = SimpleOperator(mass_flow = 2., branches = 2)
 
 # Now, we define two different options using different `method` parameters, 
 # one with `ConvolutionMethod` corresponding to the convolution,
@@ -38,6 +34,7 @@ options_convolution = SimulationOptions(
     constraint = constraint,
     borefield = borefield,
     medium = medium,
+    fluid = Water(),
     Δt = Δt,
     Nt = Nt,
     configurations = configurations
@@ -48,6 +45,7 @@ options_nonhistory = SimulationOptions(
     constraint = constraint,
     borefield = borefield,
     medium = medium,
+    fluid = Water(),
     Δt = Δt,
     Nt = Nt,
     configurations = configurations

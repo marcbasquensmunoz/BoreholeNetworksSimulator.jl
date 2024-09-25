@@ -23,7 +23,7 @@ Creates a plot of the result of the simulation.
 - `Δt`: The scale of the x-axis in the plot. Possible options: :year, :month, :hour.
 - `color_pair`: A pair of colors used as extrema to generate a range of colors for each borehole. 
 """
-function monitor(containers, branch, steps, t; display = [:Tfin, :Tfout, :Tb, :q, :mf], Δt = :year, color_pair = (colorant"navajowhite2", colorant"darkgreen"), mf)
+function monitor(containers, branch, steps, t; display = [:Tfin, :Tfout, :Tb, :q, :mf], Δt = :year, color_pair = (colorant"navajowhite2", colorant"darkgreen"))
     if isempty(display)
         return
     end
@@ -54,6 +54,7 @@ function monitor(containers, branch, steps, t; display = [:Tfin, :Tfout, :Tb, :q
     Tfout = get_Tfout(containers, branch)  
     Tb = get_Tb(containers, branch)    
     q = get_q(containers, branch)
+    mf = get_mf(containers, branch)
 
     secs_in_year = 8760*3600
     conversion = Dict(:year => 1, :month => 12, :hour => 8760)

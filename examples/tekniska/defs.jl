@@ -6,12 +6,10 @@ using WGLMakie
 Δt = 3600.
 Nt = 8760*5
 
-
 network = BoreholeNetwork([[i] for i in 1:10])
 configurations = [  
     network
 ]
-
 
 σ = 10.
 Δy = 5.
@@ -47,23 +45,21 @@ borehole = SingleUPipeBorehole(H = 240., D = 4., λg = 2.5, pipe_position = ((0.
 borefield = EqualBoreholesBorefield(borehole_prototype=borehole, positions=borehole_positions)
 constraint = TotalHeatLoadConstraint(Q_tot)
 method = NonHistoryMethod()
-fluid = Water()#Fluid(cpf = 4182., name = "INCOMP::MEA-20%")
+fluid = Water()
 
 options = SimulationOptions(
     method = method,
     constraint = constraint,
     borefield = borefield,
-    #fluid = fluid,
+    fluid = fluid,
     medium = medium,
     Δt = Δt,
     Nt = Nt,
     configurations = configurations
 )
 
-
 group1 = [1, 6, 2, 7, 3, 8]
 borefield_fig = plot_borefield(network, borehole_positions, distinguished_branches=collect(1:10), colors=[i in group1 ? (colorant"red", colorant"red") : (colorant"green", colorant"green") for i in 1:10])
-
 
 function plot_weekly_Q()
     fig = Figure(size=(1500, 400))
@@ -79,8 +75,6 @@ function plot_weekly_Q()
     fig
 end
 
-#plot_weekly_Q()
-
 function plot_Q()
     fig = Figure(size=(1500, 400))
     ax = Axis(fig[1, 1])  
@@ -92,5 +86,8 @@ function plot_Q()
     fig
 end
 
+weekly = plot_weekly_Q()
+yearly = plot_Q()
 
-save("examples/tekniska/plots/Q_year.pdf", plot_Q())
+#save("examples/tekniska/plots/Q_week.png", weekly)
+#save("examples/tekniska/plots/Q_year.png", yearly)

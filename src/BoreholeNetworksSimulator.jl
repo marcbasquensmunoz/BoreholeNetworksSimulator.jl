@@ -25,7 +25,7 @@ modular = get_all_julia_files_in_dir(joinpath(@__DIR__, "modular"))
 sort_dependencies!(modular, ["interfaces", "core"])
 include.(modular)
 
-export Fluid, Water
+export Fluid, Water, EthanolMix
 export Borehole, SingleUPipeBorehole
 export Borefield, EqualBoreholesBorefield
 export Medium, GroundMedium, FlowInPorousMedium

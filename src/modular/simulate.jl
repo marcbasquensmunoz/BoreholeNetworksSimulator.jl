@@ -27,16 +27,16 @@ At the end of simulation, `containers.X` will contain the results. `containers` 
 function simulate!(;operator, options::SimulationOptions, containers::SimulationContainers)
     @unpack configurations, method, constraint, borefield, medium, fluid, boundary_condition = options
     @unpack Nb, Ns, Nt, Ts = options
-    @unpack M, b, X = containers 
+    @unpack M, b, X, mf = containers 
     
     last_operation = BoreholeOperation(nothing)
     fluid_T = get_T0(medium) .* ones(2Nb)
-    mass_flows_container = zeros(Nb)
 
     # Simulation loop
     for i = Ts:Nt
         operation = @views operate(operator, i, options, X[1:2:2Nb, 1:i], X[2:2:2Nb, 1:i], X[2Nb+1:3Nb, 1:i], X[3Nb+1:end, 1:i])
         operation = unwrap(operation)
+        mf[:, i] .= operation.mass_flows
 
         Nbr = n_branches(operation.network)
 

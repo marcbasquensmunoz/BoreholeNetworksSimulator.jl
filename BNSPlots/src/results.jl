@@ -17,6 +17,10 @@ get_q(containers)                      = containers.X[get_q_range(containers):en
 get_q(containers, borehole::Int)       = containers.X[get_q_range_start(containers) + borehole, :]
 get_q(containers, branch::Vector{Int}) = containers.X[get_q_range_start(containers) .+ branch, :]
 
+get_mf(containers)                      = containers.mf
+get_mf(containers, borehole::Int)       = containers.mf[borehole, :]
+get_mf(containers, branch::Vector{Int}) = containers.X[branch, :]
+
 get_Tfin_range(Nb::Int) = 1:2:2Nb
 get_Tfin_range(containers) = get_Tfin_range(get_Nb(containers))
 #get_Tfin_range(options) = get_Tfin_range(options.Nb)

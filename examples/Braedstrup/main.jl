@@ -3,6 +3,7 @@ using BNSPlots
 using CSV
 using Statistics
 using Colors
+using Parameters
 
 function load_positions_from_file(file)
     data = CSV.read(file, values, header=true, decimal=',')
@@ -39,7 +40,7 @@ medium = FlowInPorousMedium(λw = 0.6, λs = 2., Cw = 4.18*1e6, Cs = 1.7*1e6, θ
 borehole = SingleUPipeBorehole(H = 50., D = 4., λg = 1.5, pipe_position = ((0.03, 0.0), (-0.03, 0.0)))
 borefield = EqualBoreholesBorefield(borehole_prototype=borehole, positions=borehole_positions)
 constraint = uniform_InletTempConstraint([i%12 in 1:6 ? Tf_injection : Tf_extraction for i=1:Nt], n_branches(network))
-fluid = Fluid(cpf = 4182., name = "Water")
+fluid = Water()
 
 options = SimulationOptions(
     method = method,
@@ -52,15 +53,19 @@ options = SimulationOptions(
     configurations = configurations
 )
 
-function operator(i, Tin, Tout, Tb, q, configurations, mass_flow_containers)
-    mf = 0.5
-    active_network = configurations[i%12 in 1:6 ? 2 : 1]
-    Nbr = n_branches(active_network)
-    mass_flow_containers .= mf
-    BoreholeOperation(active_network, @view mass_flow_containers[1:Nbr])
+@with_kw struct SeasonalOperator <: Operator
+    mass_flows
+    seasonal_configuration
 end
 
+function operate(operator::SeasonalOperator, i, options, Tfin, Tfout, Tb, q)
+    active_network = options.configurations[operator.seasonal_configuration[step]]
+    BoreholeOperation(active_network, operator.mass_flow)
+end
+
+operator = SeasonalOperator(mass_flows=0.5 .* ones(n_branches(network)), seasonal_configuration=[i%12 in 1:6 ? 2 : 1 for i in 1:Nt])
 containers = @time initialize(options)
+
 @time simulate!(operator=operator, options=options, containers=containers)
 
 containers.X
