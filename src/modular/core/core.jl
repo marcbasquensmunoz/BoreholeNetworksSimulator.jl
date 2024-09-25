@@ -49,14 +49,15 @@ end
                     B <: Borefield, 
                     M <: Medium, 
                     BC <: BoundaryCondition,
-                    N <: Number
+                    N <: Number,
+                    F <: Fluid
                 }(
         method::TSM
         constraint::C
         borefield::B
         medium::M
         boundary_condition::BoundaryCondition = DirichletBoundaryCondition()
-        fluid::Fluid{N} = Fluid(cpf=4182., name="INCOMP::MEA-20%")
+        fluid::F = Water()
         configurations::Vector{BoreholeNetwork}
         Δt
         Nt::Int

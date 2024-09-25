@@ -1,4 +1,3 @@
-
 # evaluate nusselt number for flow in pipe for given value of Reynolds and Prandtl number
 # currently for Reynolds greater than 10000 we use Dittus-Boelter correlation which require
 # knowledge on whether the fluid is heated or cooled. The choosen default is that the fluid is heated.
@@ -17,7 +16,7 @@ end
 
 # evaluate fluid propert at a given absolute temperature. 
 # default mixture is water&Ethanol with 20% concentration of Ethanol
-function thermophysical_properties(Tref, fluidname)
+function thermophysical_properties(Tref, fluidname::String)
     μ =  PropsSI("viscosity","T",Tref,"P",101325,fluidname)
     ρ =  PropsSI("D","T", Tref,"P",101325,fluidname)
     cp = PropsSI("C","T",Tref,"P",101325,fluidname)
@@ -26,17 +25,21 @@ function thermophysical_properties(Tref, fluidname)
 end
 
 # Evaluate the heat transfer coefficient 
-function heat_transfer_coefficient(mf, Tref, borehole::Borehole, fluidname)
-    if Tref > 90 || Tref < -100
-        return get_default_hp(borehole)
-    end
+function heat_transfer_coefficient(mf, Tref, borehole::Borehole, fluid)
     T0 = 273.15
     rp = get_rp(borehole)
-    μ, ρ, cp, k = thermophysical_properties(Tref + T0, fluidname)
-    w = mf/(ρ * π * rp^2)
-    Re = 2 * ρ * w * rp/ μ
-    Pr = μ * cp/(2*rp)
-	Nu = evaluate_nusselt(Re, Pr)
-    h = Nu * k /(2*rp)
-    return h
+    try
+        μ, ρ, cp, k = thermophysical_properties(Tref + T0, "Water")
+        w = mf/(ρ * π * rp^2)
+        Re = 2 * ρ * w * rp/ μ
+        Pr = μ * cp/(2*rp)
+        Nu = evaluate_nusselt(Re, Pr)
+        return Nu * k /(2*rp)
+    catch error
+        h = get_default_hp(borehole)
+        @info "PropsSI raised an error in the computation of the heat transfer coefficient for the fluid $fluid at temperature $(Tref+T0)."
+        @info "$error"
+        @info "Continuing simulation with h = $h."
+        return h
+    end
 end

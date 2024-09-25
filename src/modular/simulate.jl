@@ -35,7 +35,7 @@ function simulate!(;operator, options::SimulationOptions, containers::Simulation
 
     # Simulation loop
     for i = Ts:Nt
-        operation = @views operator(i, X[1:2:2Nb, 1:i], X[2:2:2Nb, 1:i], X[2Nb+1:3Nb, 1:i], X[3Nb+1:end, 1:i], configurations, mass_flows_container)
+        operation = @views operate(operator, i, options, X[1:2:2Nb, 1:i], X[2:2:2Nb, 1:i], X[2Nb+1:3Nb, 1:i], X[3Nb+1:end, 1:i])
         operation = unwrap(operation)
 
         Nbr = n_branches(operation.network)

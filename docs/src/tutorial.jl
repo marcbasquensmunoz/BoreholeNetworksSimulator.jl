@@ -93,23 +93,23 @@ options = SimulationOptions(
     constraint = constraint,
     borefield = borefield,
     medium = medium,
+    #fluid = Water(),
     Δt = Δt,
     Nt = Nt,
     configurations = configurations
 )
 
 # As we have mentioned, the simulation is designed to allow for a controllable opeartion during its duration.
-# We do this by defining a function that takes as an input the current state of the borefield and outputs
-# a [`BoreholeOperation`](@ref) object. This object has two variables: the first specifies which 
-# configuration will be used for the next time step. In our case, we only want a single configuration.
+# We do this by creating a subtype of [`Operator`](@ref) containing the operation strategy. Then, we must
+# implement a method of the funcion [`operate`](@ref) with our `Operator` subtype, that takes as an input the 
+# current state of the borefield and outputs a [`BoreholeOperation`](@ref) object. 
+# `BoreholeOperation` has two variables: the first specifies which 
+# configuration will be used for the next time step. In our case, we only want a static, simple configuration.
 # The second specifies the mass flow rate through each branch of the selected configuration, provided as 
-# a vector. In our example, we will keep this constant through the simulation:
+# a vector. In our example, we will keep this constant through the simulation.
+# For this purpose, there exists the type [`SimpleOperator`](@ref), that implements precisely this strategy.
 
-function operator(i, Tin, Tout, Tb, q, configurations, mass_flows)
-    network = configurations[1]
-    mass_flows .=  2 
-    BoreholeOperation(network, @view mass_flows[1:n_branches(network)])
-end
+operator = SimpleOperator(mass_flow = 2., branches = 2)
 
 # Before simulating, we first need to call [`initialize`](@ref) to run some precomputations
 # that will be used throught the simulation and to instantiate containers where the result will be written.

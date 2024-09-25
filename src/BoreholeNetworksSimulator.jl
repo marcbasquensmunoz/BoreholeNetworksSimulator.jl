@@ -31,7 +31,8 @@ export Medium, GroundMedium, FlowInPorousMedium
 export Constraint, TotalHeatLoadConstraint, HeatLoadConstraint, InletTempConstraint, constant_HeatLoadConstraint, uniform_HeatLoadConstraint, constant_InletTempConstraint, uniform_InletTempConstraint
 export TimeSuperpositionMethod, ConvolutionMethod, NonHistoryMethod
 export BoundaryCondition, NoBoundary, DirichletBoundaryCondition
-export SimulationOptions, SimulationContainers, BoreholeOperation, BoreholeNetwork, Fluid
+export SimulationOptions, SimulationContainers, BoreholeNetwork
+export BoreholeOperation, Operator, SimpleOperator
 export simulate!, compute_parameters, load_cache!, save_cache, initialize
 export n_branches
 

@@ -56,7 +56,7 @@ function uniform_Tb_coeffs(borehole::SingleUPipeBorehole, λ, mass_flow, Tref, f
         return 1., -1., 0.
     end 
 
-    hp = heat_transfer_coefficient(mass_flow, Tref, borehole, fluid.name)
+    hp = heat_transfer_coefficient(mass_flow, Tref, borehole, fluid)
 
     if iszero(R_cache)
         x1, y1 = borehole.pipe_position[1]
