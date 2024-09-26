@@ -45,7 +45,7 @@ borehole = SingleUPipeBorehole(H = 240., D = 4., λg = 2.5, pipe_position = ((0.
 borefield = EqualBoreholesBorefield(borehole_prototype=borehole, positions=borehole_positions)
 constraint = TotalHeatLoadConstraint(Q_tot)
 method = NonHistoryMethod()
-fluid = Water()
+fluid = EthanolMix()
 
 options = SimulationOptions(
     method = method,
