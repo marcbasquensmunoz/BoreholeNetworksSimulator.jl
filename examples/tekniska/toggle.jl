@@ -1,53 +1,52 @@
 using BoreholeNetworksSimulator
 using BNSPlots
+using Parameters
 
 include("defs.jl")
 
-Q_thr = 20000
+@with_kw mutable struct ToggleOperator <: Operator 
+    Q_threshold
+    toggle = 2
+    single_branch = false
+    hours_used = 0
+    mass_flow
+    mass_flow_containers
+end
 
-Q_thr = 20000.
-global toggle = 2
-global single_branch = false
-global hours_used = 0
+function BoreholeNetworksSimulator.operate(operator::ToggleOperator, step, options, Tin, Tout, Tb, q)
+    @unpack mass_flow, Q_threshold, single_branch, hours_used, toggle, mass_flow_containers = operator
+    current_load = options.constraint.Q_tot[step]
 
-mfs = zeros(2, Nt)
-
-function operator(i, Tin, Tout, Tb, q, configurations, mass_flow_containers)
-    mf = 0.5
-
-    if Q_tot[i] > Q_thr
-        mf1 = mf
-        mf2 = mf
-        global single_branch = false
-        global hours_used = 0
+    if current_load > Q_threshold
+        mf1 = mass_flow
+        mf2 = mass_flow
+        single_branch = false
+        hours_used = 0
     else
         if !single_branch || hours_used > 3
-            global toggle = (toggle)%2 + 1
-            global single_branch = true
-            global hours_used = 0
+            toggle = (toggle)%2 + 1
+            single_branch = true
+            hours_used = 0
         end
-        mf1 = mf * (toggle%2)
-        mf2 = mf * (toggle-1)%2
-        global hours_used += 1
+        mf1 = mass_flow * (toggle%2)
+        mf2 = mass_flow * (toggle-1)%2
+        hours_used += 1
     end
 
-    active_network = configurations[1]
-    Nbr = n_branches(active_network)
     branch1 = [1, 6, 2, 7, 3, 8]
     branch2 = [4, 5, 9, 10]
     mass_flow_containers[branch1] .= mf1
     mass_flow_containers[branch2] .= mf2
 
-    mfs[1, i] = mf1
-    mfs[2, i] = mf2
-    BoreholeOperation(active_network, @view mass_flow_containers[1:Nbr])
+    @pack! operator = single_branch, hours_used, toggle, mass_flow_containers
+    BoreholeOperation(options.configurations[1], mass_flow_containers)
 end
 
+operator = ToggleOperator(Q_threshold = 20000., mass_flow = 0.5, mass_flow_containers = zeros(n_branches(network)))
 containers = @time initialize(options)
 @time simulate!(operator=operator, options=options, containers=containers)
 
 t_range = (5*8760-24*7):5*8760
-toggle_plot = monitor(containers, [4, 7], t_range, options.t, color_pair = (colorant"darkgreen", colorant"red"), mf=mfs) 
+toggle_plot = monitor(containers, [4, 7], t_range, options.t, color_pair = (colorant"darkgreen", colorant"red")) 
 
-CairoMakie.activate!()
-save("examples/tekniska/plots/toggle.pdf", toggle_plot)
+save("examples/tekniska/plots/toggle.png", toggle_plot)

@@ -3,35 +3,22 @@ using BNSPlots
 
 include("defs.jl")
 
-mf = zeros(Nt)
-
-function operator(i, Tin, Tout, Tb, q, configurations, mass_flow_containers)
-    m = 0.5 * Q_tot[i]/Q_ref
-    mf1 = m
-    mf2 = m
-    active_network = configurations[1]
-    Nbr = n_branches(active_network)
-    mass_flow_containers[1:6] .= mf1
-    mass_flow_containers[7:10] .= mf2
-    mf[i] = m
-    BoreholeOperation(active_network, @view mass_flow_containers[1:Nbr])
-end
-
-@with_kw struct VariableMFOperator <: Operator
+struct VariableMFOperator <: Operator
+    mass_flow_series
     mass_flows
 end
 
-function operate(operator::VariableMFOperator, step, options, Tin, Tout, Tb, q)
-
-    BoreholeOperation(active_network, @view mass_flow_containers[1:Nbr])
+function BoreholeNetworksSimulator.operate(operator::VariableMFOperator, step, options, Tin, Tout, Tb, q)
+    operator.mass_flows .= operator.mass_flow_series[step]
+    BoreholeOperation(options.configurations[1], operator.mass_flows)
 end
 
-operator = VariableMFOperator(mass_flows = 0.5 * Q_tot[i]/Q_ref)
+operator = VariableMFOperator(0.5 .* Q_tot ./ Q_ref, zeros(n_branches(network)))
 
 containers = @time initialize(options)
 @time simulate!(operator=operator, options=options, containers=containers)
 
 t_range = (5*8760-24*7):5*8760
-prop_m_plot = monitor(containers, [4, 7], t_range, options.t, color_pair = (colorant"darkgreen", colorant"red"), mf=hcat(mf, mf)') 
+prop_m_plot = monitor(containers, [4, 7], t_range, options.t, color_pair = (colorant"darkgreen", colorant"red")) 
 
 save("examples/tekniska/plots/prop_m.png", prop_m_plot)
