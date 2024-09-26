@@ -1,7 +1,6 @@
 import sys, os
-sys.path.insert(1, "/".join(os.path.realpath(__file__).split("/")[0:-2]))
-import python.adapter
-from juliacall import Main as jl
+sys.path.insert(1, "/".join(os.path.realpath(__file__).split("/")[0:-3]))
+import BNSPythonAdapter.src.adapter
 import numpy as np
 import pandas as pd
 
@@ -46,6 +45,19 @@ options = jl.SimulationOptions(
     Nt = Nt,
     configurations = configurations
 )
+
+
+class SeasonalOperator(jl.Operator):
+    def __init__(self, mass_flows, seasonal_configuration):
+        self.mass_flows = mass_flows
+        self.seasonal_configuration = seasonal_configuration
+
+    def operate(self, i, options, Tfin, Tfout, Tb, q):
+        active_network = options.configurations[operator.seasonal_configuration[i]]
+        jl.BoreholeOperation(active_network, operator.mass_flow)
+
+
+#operator = SeasonalOperator(mass_flows=0.5 .* ones(n_branches(network)), seasonal_configuration=[i%12 in 1:6 ? 2 : 1 for i in 1:Nt])
 
 def operator(i, Tin, Tout, Tb, q, configurations):
     mf = 0.5

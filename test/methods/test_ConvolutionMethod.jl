@@ -1,5 +1,5 @@
 import BoreholeNetworksSimulator: method_coeffs!, method_b!, precompute_auxiliaries!, update_auxiliaries!
-import BoreholeNetworksSimulator: MediumMock, BorefieldMock, ConstraintMock, BoundaryConditionMock
+import BoreholeNetworksSimulator: MediumMock, BorefieldMock, ConstraintMock, BoundaryConditionMock, FluidMock
 
 @testset "test_ConvolutionMethod_auxiliaries" begin
     method = ConvolutionMethod()
@@ -14,6 +14,7 @@ import BoreholeNetworksSimulator: MediumMock, BorefieldMock, ConstraintMock, Bou
         constraint=constraint,
         borefield=borefield,
         medium=medium,
+        fluid=FluidMock(),
         Δt=3600*24*30.,
         Nt=Nt,
         configurations=[]
@@ -49,6 +50,7 @@ end
         constraint=constraint,
         borefield=borefield,
         medium=medium,
+        fluid=FluidMock(),
         boundary_condition=boundary_condition,
         Δt=3600*24*30.,
         Nt=Nt,
@@ -86,6 +88,7 @@ end
         constraint=constraint,
         borefield=borefield,
         medium=medium,
+        fluid=FluidMock(),
         boundary_condition=boundary_condition,
         Δt=3600*24*30.,
         Nt=Nt,

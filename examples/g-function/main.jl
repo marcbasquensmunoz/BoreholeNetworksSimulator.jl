@@ -1,6 +1,5 @@
 using BoreholeNetworksSimulator
 using WGLMakie
-using CairoMakie
 
 function make_plot(axis, d)
     Δt = 3600.
@@ -24,11 +23,11 @@ function make_plot(axis, d)
     end
 
     method = NonHistoryMethod()
-    medium = GroundMedium(λ = λ, α = α, T0 = 0.)
+    medium = GroundMedium(λ = λ, α = α, T0 = 20.)
     borehole = SingleUPipeBorehole(H = H, D = D, λg = 2.5, pipe_position = ((0.03, 0.0), (-0.03, 0.0)))
     borefield = EqualBoreholesBorefield(borehole_prototype=borehole, positions=create_rectangular_field(n, m, d))
     constraint = constant_HeatLoadConstraint(ones(n*m), Nt)
-    fluid = Fluid(cpf = 4182., name = "INCOMP::MEA-20%")
+    fluid = Water()
 
     options = SimulationOptions(
         method = method,
@@ -42,15 +41,9 @@ function make_plot(axis, d)
         configurations = configurations
     )
 
-    function operator(i, Tin, Tout, Tb, q, configurations, mass_flows_container)
-        mf = 1.
-        active_network = configurations[1]
-        Nbr = n_branches(active_network)
-        @. mass_flows_container = mf
-        @views BoreholeOperation(active_network, mass_flows_container[1:Nbr])
-    end
-    
+    operator = SimpleOperator(mass_flow = 1., branches =  n_branches(network))
     containers = @time initialize(options)
+
     @time simulate!(operator=operator, options=options, containers=containers)
 
     bh = Int(2Nb+1 + Nb/2)
@@ -69,4 +62,4 @@ make_plot(axis, 0.5*10)
 fig[1, 2] = Legend(fig, axis, "", framevisible = false)
 
 fig
-save("examples/g-function/gfunction.pdf", fig)
+save("examples/g-function/gfunction.png", fig)

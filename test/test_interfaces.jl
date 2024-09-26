@@ -7,6 +7,7 @@ const RI = RequiredInterfaces
 end
 
 @testset "test_Constraint_interfaces" begin
+    @test RI.check_interface_implemented(Constraint, TotalHeatLoadConstraint)
     @test RI.check_interface_implemented(Constraint, HeatLoadConstraint)
     @test RI.check_interface_implemented(Constraint, InletTempConstraint)
 end
@@ -22,4 +23,12 @@ end
 @testset "test_TimeSuperpositionMethod_interfaces" begin
     @test RI.check_interface_implemented(TimeSuperpositionMethod, ConvolutionMethod)
     @test RI.check_interface_implemented(TimeSuperpositionMethod, NonHistoryMethod)
+end
+
+@testset "test_Fluid_interfaces" begin
+    @test RI.check_interface_implemented(Fluid, Water)
+end
+
+@testset "test_Operator_interfaces" begin
+    @test RI.check_interface_implemented(Operator, SimpleOperator)
 end

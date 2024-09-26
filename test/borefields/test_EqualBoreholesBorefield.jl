@@ -1,4 +1,4 @@
-import BoreholeNetworksSimulator: BoreholeMock, MediumMock 
+import BoreholeNetworksSimulator: BoreholeMock, MediumMock, FluidMock
 import BoreholeNetworksSimulator: n_boreholes, get_H, get_rb, segment_coordinates, internal_model_coeffs!, internal_model_b!
 
 @testset "test_EqualBoreholesBorefield" begin
@@ -35,7 +35,7 @@ end
     borefield = EqualBoreholesBorefield(borehole_prototype=borehole, positions=positions)
 
     medium = MediumMock()
-    fluid = Fluid(cpf=1000., name="")
+    fluid = FluidMock(cpf = 1000.)
     T_fluid = 10 * ones(2*Nb)
 
     network = BoreholeNetwork([[1], [2], [3]])

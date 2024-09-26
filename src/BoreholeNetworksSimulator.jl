@@ -9,6 +9,8 @@ using StaticArrays
 using SparseArrays
 using LinearSolve
 using JLD2
+using CSV
+using DataFrames
 using DataStructures
 using QuadGK
 using FastGaussQuadrature
@@ -24,15 +26,20 @@ include("utils.jl")
 modular = get_all_julia_files_in_dir(joinpath(@__DIR__, "modular"))
 sort_dependencies!(modular, ["interfaces", "core"])
 include.(modular)
+include("CoolProp/load_properties.jl")
+include("CoolProp/interpolate.jl")
 
+export Fluid, Water, EthanolMix
 export Borehole, SingleUPipeBorehole
 export Borefield, EqualBoreholesBorefield
 export Medium, GroundMedium, FlowInPorousMedium
 export Constraint, TotalHeatLoadConstraint, HeatLoadConstraint, InletTempConstraint, constant_HeatLoadConstraint, uniform_HeatLoadConstraint, constant_InletTempConstraint, uniform_InletTempConstraint
 export TimeSuperpositionMethod, ConvolutionMethod, NonHistoryMethod
 export BoundaryCondition, NoBoundary, DirichletBoundaryCondition
-export SimulationOptions, SimulationContainers, BoreholeOperation, BoreholeNetwork, Fluid
+export SimulationOptions, SimulationContainers, BoreholeNetwork
+export BoreholeOperation, Operator, SimpleOperator, operate
 export simulate!, compute_parameters, load_cache!, save_cache, initialize
 export n_branches
+export ThermophysicalProperties
 
 end # module
