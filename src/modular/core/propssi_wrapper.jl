@@ -1,12 +1,12 @@
 # evaluate nusselt number for flow in pipe for given value of Reynolds and Prandtl number
 # currently for Reynolds greater than 10000 we use Dittus-Boelter correlation which require
 # knowledge on whether the fluid is heated or cooled. The choosen default is that the fluid is heated.
-function evaluate_nusselt(Re,Pr; mode = "heating")
-    if Re<2300
+function evaluate_nusselt(Re, Pr; mode = "heating")
+    if Re < 2300
         Nu = 3.66
-    elseif (Re >= 2300) && (Re<10000)        
+    elseif (Re >= 2300) && (Re < 10000)        
         f =  (1.58*log(Re) - 3.28)^(-2)
-        Nu = (0.5*f*(Re - 1000.) * Pr)/(1 + 12.7*sqrt(0.5*f) *(Pr^(2/3) - 1))
+        Nu = (0.5*f*(Re - 1000.) * Pr)/(1 + 12.7*sqrt(0.5*f) * (Pr^(2/3) - 1))
     else 
         n = mode == "heating" ? 0.3 : 0.4  
         Nu = 0.023 * Re^0.8 * Pr^n

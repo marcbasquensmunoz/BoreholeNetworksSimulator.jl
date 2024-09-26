@@ -4,7 +4,10 @@ function interpolate(T, property, value)
     while T[i] > value
         i += 1
     end
-    return property[i]
+    if i == length(T)
+        return property[i]
+    end
+    return (property[i] + property[i+1])/2
 end
 
 function evaluate_thermophysical_properties(properties::ThermophysicalProperties, T)

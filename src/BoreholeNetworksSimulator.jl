@@ -37,7 +37,7 @@ export Constraint, TotalHeatLoadConstraint, HeatLoadConstraint, InletTempConstra
 export TimeSuperpositionMethod, ConvolutionMethod, NonHistoryMethod
 export BoundaryCondition, NoBoundary, DirichletBoundaryCondition
 export SimulationOptions, SimulationContainers, BoreholeNetwork
-export BoreholeOperation, Operator, SimpleOperator
+export BoreholeOperation, Operator, SimpleOperator, operate
 export simulate!, compute_parameters, load_cache!, save_cache, initialize
 export n_branches
 export ThermophysicalProperties

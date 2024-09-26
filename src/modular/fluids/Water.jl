@@ -1,6 +1,6 @@
 
 struct Water <: Fluid 
-    stored_properties::ThermophysicalProperties
+    stored_properties::ThermophysicalProperties{Float64}
 end
 function Water()
     Water(load_properties("Water"))
