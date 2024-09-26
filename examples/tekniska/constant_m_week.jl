@@ -5,17 +5,7 @@ include("defs.jl")
 
 operator = SimpleOperator(mass_flow=0.5, branches=n_branches(network))
 containers = @time initialize(options)
-#=
-Profile.Allocs.clear()
-@time Profile.Allocs.@profile sample_rate=0.01 simulate!(operator=operator, options=options, containers=containers)
-PProf.Allocs.pprof(from_c=false)
-=#
-#=
-Profile.clear()
-@time @profile simulate!(operator=operator, options=options, containers=containers)
-pprof()
-=#
-simulate!(operator=operator, options=options, containers=containers)
+@time simulate!(operator=operator, options=options, containers=containers)
 
 t_range = (5*8760-24*7):5*8760
 const_m_plot = monitor(containers, [4, 7], t_range, options.t, color_pair = (colorant"darkgreen", colorant"red")) 

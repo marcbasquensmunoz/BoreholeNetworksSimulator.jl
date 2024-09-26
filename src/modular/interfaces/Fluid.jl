@@ -26,4 +26,4 @@ Mock for testing purposes.
     properties = (0., 0., 0., 0.)
 end
 cpf(fluid::FluidMock) = fluid.cpf
-thermophysical_properties(fluid::Fluid, T) = fluid.properties
+thermophysical_properties(fluid::FluidMock, T) = fluid.properties
