@@ -3,9 +3,9 @@ using BNSPlots
 
 include("defs.jl")
 
-struct VariableMFOperator <: Operator
-    mass_flow_series
-    mass_flows
+struct VariableMFOperator{T <: Number} <: Operator
+    mass_flow_series::Vector{T}
+    mass_flows::Vector{T}
 end
 
 function BoreholeNetworksSimulator.operate(operator::VariableMFOperator, step, options, Tin, Tout, Tb, q)

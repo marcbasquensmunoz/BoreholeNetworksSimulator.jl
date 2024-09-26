@@ -4,13 +4,13 @@ using Parameters
 
 include("defs.jl")
 
-@with_kw mutable struct ToggleOperator <: Operator 
-    Q_threshold
-    toggle = 2
-    single_branch = false
-    hours_used = 0
-    mass_flow
-    mass_flow_containers
+@with_kw mutable struct ToggleOperator{T <: Number} <: Operator 
+    Q_threshold::T
+    toggle::Int = 2
+    single_branch::Bool = false
+    hours_used::Int = 0
+    mass_flow::T
+    mass_flow_containers::Vector{T}
 end
 
 function BoreholeNetworksSimulator.operate(operator::ToggleOperator, step, options, Tin, Tout, Tb, q)
