@@ -9,8 +9,8 @@ plots_directory = joinpath(project_directory, "BNSPlots")
 cd(project_directory) do
     Pkg.Registry.add(RegistrySpec(url = geothermal_registry))
     Pkg.Registry.add("General")
-    Pkg.activate(documenter_directory)
     Pkg.develop(PackageSpec(path = project_directory))
-    #Pkg.develop(PackageSpec(path = plots_directory))
+    Pkg.develop(PackageSpec(path = plots_directory))
+    Pkg.activate(documenter_directory)
     Pkg.instantiate()
 end
