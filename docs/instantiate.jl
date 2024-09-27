@@ -6,13 +6,11 @@ project_directory = joinpath(@__DIR__, "..")
 documenter_directory = isempty(ARGS) ? @__DIR__() : joinpath(pwd(), ARGS[1])
 plots_directory = joinpath(project_directory, "BNSPlots")
 
-@show plots_directory
-
 cd(project_directory) do
     Pkg.Registry.add(RegistrySpec(url = geothermal_registry))
     Pkg.Registry.add("General")
     Pkg.activate(documenter_directory)
     Pkg.develop(PackageSpec(path = project_directory))
-    Pkg.develop(PackageSpec(path = plots_directory))
+    #Pkg.develop(PackageSpec(path = plots_directory))
     Pkg.instantiate()
 end
