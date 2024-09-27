@@ -1,4 +1,11 @@
 
+"""
+    SimpleOperator{T <: Number} <: Operator (
+        mass_flows::Vector{T}
+    )
+
+Constant operation strategy, always returning `BoreholeOperation(options.configurations[1], operator.mass_flows)`.
+"""
 struct SimpleOperator{T <: Number} <: Operator
     mass_flows::Vector{T}
 end

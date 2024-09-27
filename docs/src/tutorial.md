@@ -14,11 +14,9 @@ Let us see the components one by one with an example.
 We start by specifying the simulation time step and the simulation duration. For our example,
 we will take monthly time steps during 10 years:
 
-````
+````@example tutorial
 using BoreholeNetworksSimulator
-````
 
-````
 Δt = 8760*3600/12.
 Nt = 10*12
 ````
@@ -30,7 +28,7 @@ The undisturbed temperature of the ground is ``T_0=10 \ ^{\circ}C``.
 We model the ground with a subtype of [`Medium`](@ref), in
 our case, as per our assumptions, we are particularly interested in [`GroundMedium`](@ref):
 
-````
+````@example tutorial
 α = 1e-6
 λ = 3.
 T0 = 10.
@@ -51,7 +49,7 @@ we can use [`EqualBoreholesBorefield`](@ref), which instantiates several identic
 from a prototype. The prototype is specified by a subtype of [`Borehole`](@ref).
 In our case, we can use [`SingleUPipeBorehole`](@ref) to model a borehole with a single U-pipe.
 
-````
+````@example tutorial
 D = 10.
 H = 100.
 
@@ -63,7 +61,7 @@ pipe resistance, etc., but for the moment we will use their default values.
 
 Next, we need to specify where the borehole are located.
 
-````
+````@example tutorial
 σ = 5.
 positions = [(0., 0.), (0., σ)]
 borefield = EqualBoreholesBorefield(borehole_prototype=borehole, positions=positions)
@@ -86,7 +84,7 @@ of the boreholes present in that branch. Each identifier `i::Int` refers to the 
 In our example, we want to simulate two independent boreholes, so each of them must be in a separate branch.
 Also, for the moment, we are only interested in this configuration, so we define:
 
-````
+````@example tutorial
 configurations = [BoreholeNetwork([[1], [2]])]
 ````
 
@@ -97,7 +95,7 @@ impose that their inlet temperatures be equal. In our example, since we want out
 we will impose the total amount of heat that we want to extract from each borehole. We will impose a constant
 load, equal for both boreholes. This is specified by
 
-````
+````@example tutorial
 q1 = 5.
 q2 = 5.
 constraint = constant_HeatLoadConstraint([q1, q2], Nt)
@@ -105,12 +103,13 @@ constraint = constant_HeatLoadConstraint([q1, q2], Nt)
 
 We can finally create the object with all the options:
 
-````
+````@example tutorial
 options = SimulationOptions(
     method = ConvolutionMethod(),
     constraint = constraint,
     borefield = borefield,
     medium = medium,
+    fluid = Water(),
     Δt = Δt,
     Nt = Nt,
     configurations = configurations
@@ -118,29 +117,29 @@ options = SimulationOptions(
 ````
 
 As we have mentioned, the simulation is designed to allow for a controllable opeartion during its duration.
-We do this by defining a function that takes as an input the current state of the borefield and outputs
-a [`BoreholeOperation`](@ref) object. This object has two variables: the first specifies which
-configuration will be used for the next time step. In our case, we only want a single configuration.
+We do this by creating a subtype of [`Operator`](@ref) containing the operation strategy. Then, we must
+implement a method of the function `operate` with our `Operator` subtype, that takes as an input the
+current state of the borefield and outputs a [`BoreholeOperation`](@ref) object.
+`BoreholeOperation` has two variables: the first specifies which
+configuration will be used for the next time step. In our case, we only want a static, simple configuration.
 The second specifies the mass flow rate through each branch of the selected configuration, provided as
-a vector. In our example, we will keep this constant through the simulation:
+a vector. In our example, we will keep this constant through the simulation.
+For this purpose, there exists the type [`SimpleOperator`](@ref), that implements precisely this strategy.
 
-````
-function operator(i, Tin, Tout, Tb, q, configurations)
-    network = configurations[1]
-    BoreholeOperation(network, 2 .* ones(n_branches(network)))
-end
+````@example tutorial
+operator = SimpleOperator(mass_flow = 2., branches = 2)
 ````
 
 Before simulating, we first need to call [`initialize`](@ref) to run some precomputations
 that will be used throught the simulation and to instantiate containers where the result will be written.
 
-````
+````@example tutorial
 containers = initialize(options)
 ````
 
 And finally, we can start the simulation.
 
-````
+````@example tutorial
 @time simulate!(operator=operator, options=options, containers=containers)
 ````
 
@@ -150,12 +149,18 @@ strategies.
 
 The result is saved in
 
-````
+````@example tutorial
 containers.X
 ````
 
 Each column in `containers.X` contains the results for a time step.
-In each column, the first ``2 N_b`` correspond to the fluid temperatures. In particular,  
-the odd entries `containers.X[1:2:2Nb, :]` are the inlet temperatures, while the even entries `containers.X[2:2:2Nb, :]` are the outlet temperatures of each borehole.
-The next ``N_b`` values `containers.X[2Nb+1:3Nb, :]` are the borehole wall temperatures.
-The last ``N_b`` values `containers.X[3Nb+1:4Nb, :]` are the heat extraction of each borehole.
+In each column, the first ``2 N_b`` correspond to the fluid temperatures. In particular,
+the odd entries `containers.X[1:2:2Nb, :]` are the inlet temperatures, while the even entries `containers.X[2:2:2Nb, :]`
+are the outlet temperatures of each borehole.
+The next ``Nb`` values `containers.X[2Nb+1:3Nb, :]` are the borehole wall temperatures.
+The last ``Nb`` values `containers.X[3Nb+1:4Nb, :]` are the heat extraction of each borehole.
+
+---
+
+*This page was generated using [Literate.jl](https://github.com/fredrikekre/Literate.jl).*
+

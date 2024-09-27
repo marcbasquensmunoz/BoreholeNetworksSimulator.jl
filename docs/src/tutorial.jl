@@ -12,8 +12,6 @@
 
 using BoreholeNetworksSimulator
 
-#
-
 Δt = 8760*3600/12.
 Nt = 10*12
 
@@ -101,7 +99,7 @@ options = SimulationOptions(
 
 # As we have mentioned, the simulation is designed to allow for a controllable opeartion during its duration.
 # We do this by creating a subtype of [`Operator`](@ref) containing the operation strategy. Then, we must
-# implement a method of the funcion [`operate`](@ref) with our `Operator` subtype, that takes as an input the 
+# implement a method of the function `operate` with our `Operator` subtype, that takes as an input the 
 # current state of the borefield and outputs a [`BoreholeOperation`](@ref) object. 
 # `BoreholeOperation` has two variables: the first specifies which 
 # configuration will be used for the next time step. In our case, we only want a static, simple configuration.

@@ -47,6 +47,6 @@ containers = @time initialize(options)
 @time simulate!(operator=operator, options=options, containers=containers)
 
 t_range = (5*8760-24*7):5*8760
-toggle_plot = monitor(containers, [4, 7], t_range, options.t, color_pair = (colorant"darkgreen", colorant"red")) 
+toggle_plot = monitor(containers, [4, 7], options.t, steps = t_range, color_pair = (colorant"darkgreen", colorant"red")) 
 
 save("examples/tekniska/plots/toggle.png", toggle_plot)

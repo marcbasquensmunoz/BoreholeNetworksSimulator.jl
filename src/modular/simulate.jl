@@ -37,9 +37,9 @@ function simulate!(;operator, options::SimulationOptions, containers::Simulation
         operation = @views operate(operator, i, options, X[1:2:2Nb, 1:i], X[2:2:2Nb, 1:i], X[2Nb+1:3Nb, 1:i], X[3Nb+1:end, 1:i])
         operation = unwrap(operation)
 
-        for (i, branch) in enumerate(operation.network.branches)
+        for (j, branch) in enumerate(operation.network.branches)
             for borehole in branch
-                mf[borehole, i] = operation.mass_flows[i]
+                mf[borehole, i] = operation.mass_flows[j]
             end
         end
 

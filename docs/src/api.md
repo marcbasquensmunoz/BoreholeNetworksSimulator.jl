@@ -13,7 +13,8 @@ simulate!
 ```
 
 Note that an array of `BoreholeNetwork` containing all the configurations allowed during the simulation must be specified in `SimulationOptions`.
-On the other hand, `BoreholeOperation` is an object that needs to be returns by an `operator` function at each time step , representing the dynamical changes in the operation. See [Basic tutorial](@ref) for more details.
+On the other hand, `BoreholeOperation` is an object that needs to be returned by an object subtype of `[Operator](@ref)` at each time step , representing the dynamical changes in the operation. 
+See [Basic tutorial](@ref) for more details.
 
 ```@docs
 BoreholeNetwork
@@ -23,6 +24,15 @@ BoreholeNetwork
 BoreholeOperation
 ```
 
+```@docs
+Operator
+```
+
+### Prewritten operator strategies
+
+```@docs
+SimpleOperator
+```
 
 ## Simulation Options
 
@@ -35,6 +45,25 @@ SimulationOptions
 ```
 
 The several options are listed below:
+
+### Fluid
+
+Models the fluid used in the hydraulic system.
+
+```@docs
+Fluid
+```
+
+#### Options
+
+```@docs
+Water
+```
+
+```@docs
+EthanolMix
+```
+
 
 ### Medium
 

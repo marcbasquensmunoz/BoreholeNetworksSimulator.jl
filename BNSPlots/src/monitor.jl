@@ -9,7 +9,7 @@ function anyin(elements, v)
 end
 
 """
-    monitor(containers, branch, t; display = [:Tfin, :Tfout, :Tb, :q], Δt = :year, color_pair = (colorant"navajowhite2", colorant"darkgreen")
+    monitor(containers, branch, t; steps = 1:length(t), display = [:Tfin, :Tfout, :Tb, :q], Δt = :year, color_pair = (colorant"navajowhite2", colorant"darkgreen")
 
 Creates a plot of the result of the simulation.
 # Arguments
@@ -18,12 +18,13 @@ Creates a plot of the result of the simulation.
 - `t`: The times at which the data corresponds. It should normally be `options.t`.
 
 # Optional arguments
+- `steps`: Index of the steps to display in the plot.
 - `display`: A vector describing which plots that will be generated. If `:Tfin`, `:Tfout` or `:Tb` are specified, a temperature plot will be created showing the inlet fluid temperature, 
     the outlet fluid temperature, and the borehole wall temperature, respectively. If `:q` is specified, a separate power plot will be created shwoing the heat extracted per meter.
 - `Δt`: The scale of the x-axis in the plot. Possible options: :year, :month, :hour.
 - `color_pair`: A pair of colors used as extrema to generate a range of colors for each borehole. 
 """
-function monitor(containers, branch, steps, t; display = [:Tfin, :Tfout, :Tb, :q, :mf], Δt = :year, color_pair = (colorant"navajowhite2", colorant"darkgreen"))
+function monitor(containers, branch, t; steps = 1:length(t), display = [:Tfin, :Tfout, :Tb, :q, :mf], Δt = :year, color_pair = (colorant"navajowhite2", colorant"darkgreen"))
     if isempty(display)
         return
     end
