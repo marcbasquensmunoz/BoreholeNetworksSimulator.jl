@@ -1,7 +1,7 @@
 
 function interpolate(T, property, value)
     i = 1
-    while T[i] > value
+    while i < length(T) && T[i] < value
         i += 1
     end
     if i == length(T)
@@ -11,9 +11,9 @@ function interpolate(T, property, value)
 end
 
 function evaluate_thermophysical_properties(properties::ThermophysicalProperties, T)
-    μ = interpolate(properties.T, properties.μ, T)
-    ρ = interpolate(properties.T, properties.ρ, T)
+    μ  = interpolate(properties.T, properties.μ,  T)
+    ρ  = interpolate(properties.T, properties.ρ,  T)
     cp = interpolate(properties.T, properties.cp, T)
-    k = interpolate(properties.T, properties.k, T)
+    k  = interpolate(properties.T, properties.k,  T)
     return (μ, ρ, cp, k)
 end
