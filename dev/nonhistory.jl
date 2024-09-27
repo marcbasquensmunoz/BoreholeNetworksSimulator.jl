@@ -14,7 +14,7 @@ using BoreholeNetworksSimulator
 
 #
 
-Δt = 3600.#8760*3600/12.
+Δt = 3600.
 Nt = 8760
 
 medium = GroundMedium(α=1e-6, λ=3., T0=10.)
@@ -64,5 +64,5 @@ abs.(containers_convolution.X - containers_nonhistory.X)
 
 # ## References
 # [1] [Lazzarotto, Alberto; Basquens, Marc; Cimmino, Massimo; 
-# _Non-history dependent temporal superposition algorithm for the pint source solution_,
+# _Non-history dependent temporal superposition algorithm for the point source solution_,
 # Research Conference Proceedings of the IGSHPA (2024).](https://doi.org/10.22488/okstate.24.000021)
