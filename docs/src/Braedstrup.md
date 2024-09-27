@@ -45,11 +45,11 @@ In order to visualize the results, we can use the subpackage `BNSPlots`. For mor
 Inlet borehole temperatures and heat flows for boreholes along two branches in the borehole field. The time series are color coded according to the previous configuration plot above. In addition to the inlet temperature, the output temperature from the branch (grey dot), and the mean output temperature from the field (black dot) are displayed.
 
 ![](./examples/Braedstrup/branch1.png)
-![](./examples/braedstrup/branch2_test1.png)
+![](./examples/Braedstrup/branch2_test1.png)
 
 Finally we can display the heatmap of the temperature field in the borehole region during the 10th year of operation
 
-![](./examples/braedstrup/heatmap_test1.png)
+![](./examples/Braedstrup/heatmap_test1.png)
 
 
 ## Running the code in Python
