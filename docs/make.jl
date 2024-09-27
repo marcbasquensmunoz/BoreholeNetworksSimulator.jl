@@ -1,4 +1,6 @@
-using Documenter, #=Literate,=# BoreholeNetworksSimulator
+cd(@__DIR__)
+import Pkg; Pkg.activate(@__DIR__); Pkg.update(); Pkg.instantiate()
+using Documenter, Literate, BoreholeNetworksSimulator, BNSPlots
 
 pages = [
     "Introduction" => "index.md",
@@ -7,15 +9,16 @@ pages = [
         "Non-history method" => "nonhistory.md",
         "Running from python" => "python.md"
     ],
+    "Visualizing the result with BNSPlots" => "BNSPlots.md",
     "Examples" => [
-        "Braedsturp borefield" => "Braedsturp.md" 
+        "Braedstrup borefield" => "Braedstrup.md" 
     ],
     "API" => "api.md"
 ]
 
 dir = @__DIR__
-#Literate.markdown("$dir/src/tutorial.jl", "$dir/src")
-#Literate.markdown("$dir/src/nonhistory.jl", "$dir/src")
+Literate.markdown("$dir/src/tutorial.jl", "$dir/src")
+Literate.markdown("$dir/src/nonhistory.jl", "$dir/src")
 makedocs(
     pages = pages,
     sitename = "BoreholeNetworksSimulator.jl"

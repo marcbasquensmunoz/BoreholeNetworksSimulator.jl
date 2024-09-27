@@ -4,13 +4,13 @@ using Parameters
 
 include("defs.jl")
 
-@with_kw mutable struct ToggleOperator <: Operator 
-    Q_threshold
-    toggle = 2
-    single_branch = false
-    hours_used = 0
-    mass_flow
-    mass_flow_containers
+@with_kw mutable struct ToggleOperator{T <: Number} <: Operator 
+    Q_threshold::T
+    toggle::Int = 2
+    single_branch::Bool = false
+    hours_used::Int = 0
+    mass_flow::T
+    mass_flow_containers::Vector{T}
 end
 
 function BoreholeNetworksSimulator.operate(operator::ToggleOperator, step, options, Tin, Tout, Tb, q)
@@ -47,6 +47,6 @@ containers = @time initialize(options)
 @time simulate!(operator=operator, options=options, containers=containers)
 
 t_range = (5*8760-24*7):5*8760
-toggle_plot = monitor(containers, [4, 7], t_range, options.t, color_pair = (colorant"darkgreen", colorant"red")) 
+toggle_plot = monitor(containers, [4, 7], options.t, steps = t_range, color_pair = (colorant"darkgreen", colorant"red")) 
 
 save("examples/tekniska/plots/toggle.png", toggle_plot)

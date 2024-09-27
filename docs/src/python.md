@@ -38,7 +38,7 @@ borehole = jl.SingleUPipeBorehole(H=H, D=D)
 positions = jl.Array[jl.Tuple[jl.Float64, jl.Float64]]([(0., 0.), (0., σ)])
 borefield = jl.EqualBoreholesBorefield(borehole_prototype=borehole, positions=positions)
 
-configurations = [jl.BoreholeNetwork([[1], [2]])]
+configurations = [jl.BoreholeNetwork(jl.Vector[jl.Vector[jl.Int]]([[1], [2]]))]
 
 q1 = 5.
 q2 = 5.
@@ -50,6 +50,7 @@ options = jl.SimulationOptions(
     constraint = constraint,
     borefield = borefield,
     medium = medium,
+    fluid = jl.Water(),
     Δt = Δt,
     Nt = Nt,
     configurations = configurations
@@ -58,11 +59,24 @@ options = jl.SimulationOptions(
 Note that the code itself is not very different from its Julia version, but there are two remarks worth making. First, we need to call any object defined in Julia by typing `jl.` in front. This creates a python object with the same fields that `PythonCall.jl` knows how to convert back into a Julia object.
 Second, note that we have defined the arrays by explicitly declaring their generic type. If we don't do this, they will be converted into `Vector{Any}` in the Julia code, which is not desirable.
 
-Another difference is the definition of our `operator` object. Since we are writing python, it should now be a python function, however, since the Julia code is expecting an object of type `BoreholeOperation`, its return type must be `jl.BoreholeOperation`, that `PythonCall.jl` knows how to convert. 
+Another difference is the definition of our `[Operator](@ref)` object. Since we are writing python, it should now be a python object with a method `operate` that returns an object of type `jl.BoreholeOperation`, which `PythonCall.jl` knows how to convert to `BoreholeOperation`. For the ssake of the example, we will implement again the `[SimpleOperator](@ref)` operator that is already implemented in Julia. For further examples, check the python version of the code for `[Example: Braedstrup borefield ](@ref)`.
 ````
-def operator(i, Tin, Tout, Tb, q, configurations):
-    return jl.BoreholeOperation(configurations[0], jl.Array[jl.Float64]([2., 2.]))
+class SimpleOperator():
+    def __init__(self, mass_flow, branches):
+        self.mass_flows = jl.Vector[jl.Float64](mass_flow * np.ones(branches))
+
+    def operate(self, i, options, Tfin, Tfout, Tb, q):
+        return jl.BoreholeOperation(options.configurations[0], operator.mass_flows)
+
+
+operator = SimpleOperator(2., 2)
 ````
+
+Note that this is equivalent to calling the same code from Julia:
+````
+operator = jl.SimpleOperator(mass_flow = 2., branches = 2)
+````
+
 
 Finally we can run the simulation
 ````

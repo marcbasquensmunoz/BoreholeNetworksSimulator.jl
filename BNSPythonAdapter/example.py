@@ -18,7 +18,7 @@ borehole = jl.SingleUPipeBorehole(H=H, D=D)
 positions = jl.Array[jl.Tuple[jl.Float64, jl.Float64]]([(0., 0.), (0., σ)])
 borefield = jl.EqualBoreholesBorefield(borehole_prototype=borehole, positions=positions)
 
-configurations = [jl.BoreholeNetwork([[1], [2]])]
+configurations = [jl.BoreholeNetwork(jl.Vector[jl.Vector[jl.Int]]([[1], [2]]))]
 
 q1 = 5.
 q2 = 5.
@@ -30,14 +30,13 @@ options = jl.SimulationOptions(
     constraint = constraint,
     borefield = borefield,
     medium = medium,
+    fluid = jl.Water(),
     Δt = Δt,
     Nt = Nt,
     configurations = configurations
 )
 
-def operator(i, Tin, Tout, Tb, q, configurations):
-    return jl.BoreholeOperation(configurations[0], jl.Array[jl.Float64]([2., 2.]))
-
+operator = jl.SimpleOperator(mass_flow = 2., branches = 2)
 containers = jl.initialize(options)
 jl.simulate_b(operator=operator, options=options, containers=containers)
 

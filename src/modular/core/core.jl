@@ -11,7 +11,7 @@ struct BoreholeNetwork
     n_boreholes::Int
 end
 BoreholeNetwork(branches::Vector{Vector{Int}}) = BoreholeNetwork(branches, sum([length(branch) for branch in branches]))
-Base.reverse(network::BoreholeNetwork) = BoreholeNetwork(branches=map(branch -> Base.reverse(branch), network.branches))
+Base.reverse(network::BoreholeNetwork) = BoreholeNetwork(map(branch -> Base.reverse(branch), network.branches))
 n_branches(network::BoreholeNetwork) = length(network.branches)
 n_boreholes(network::BoreholeNetwork) = network.n_boreholes
 first_boreholes(network::BoreholeNetwork) = map(first, network.branches)

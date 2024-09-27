@@ -1,3 +1,5 @@
 [deps]
+BNSPlots = "bee248e1-b98f-493a-9b88-5d838671920e"
 BoreholeNetworksSimulator = "b11dda51-a240-44f0-a43d-fea4e1309b86"
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
+Literate = "98b081ad-f1c9-55d3-8b20-4c87d4299306"

@@ -1,7 +1,11 @@
 from juliacall import Main as jl
 from juliacall import Pkg as jlPkg
+import pathlib
 
-jlPkg.activate(".")
+project_dir = str(pathlib.Path(__file__).parent.parent.resolve().absolute())
+
+jlPkg.activate(jl.pyconvert(jl.String, project_dir))
+jlPkg.instantiate()
 jl.seval("using BNSPythonAdapter")
 jl.seval("using BoreholeNetworksSimulator")
 
@@ -21,6 +25,7 @@ class BoreholeOperation:
     def __init__(self, network, mass_flows):
         self.network = network
         self.mass_flows = mass_flows
+
 
 
 jl.seval('''
