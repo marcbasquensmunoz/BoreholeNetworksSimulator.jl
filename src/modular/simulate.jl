@@ -25,7 +25,7 @@ At the end of simulation, `containers.X` will contain the results. `containers` 
 - `configurations`: is the list of possible hydraulic configurations of the borefield.
 """
 function simulate!(;operator, options::SimulationOptions, containers::SimulationContainers)
-    @unpack configurations, method, constraint, borefield, medium, fluid, boundary_condition = options
+    @unpack configurations, method, constraint, borefield, medium, fluid, boundary_condition, approximation = options
     @unpack Nb, Ns, Nt, Ts = options
     @unpack M, b, X, mf = containers 
     
@@ -58,7 +58,7 @@ function simulate!(;operator, options::SimulationOptions, containers::Simulation
         end
         @views constraints_coeffs!(M[constraints_eqs, :], constraint, operation, borefield)
         if i == Ts
-            @views method_coeffs!(M[method_eqs, :], method, borefield, medium, boundary_condition)
+            @views method_coeffs!(M[method_eqs, :], method, borefield, medium, boundary_condition, approximation)
         end
         #if last_operation.mass_flows != operation.mass_flows
             @views heat_balance_coeffs!(M[balance_eqs, :], borefield, operation, fluid)

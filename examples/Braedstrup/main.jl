@@ -48,6 +48,7 @@ options = SimulationOptions(
     borefield = borefield,
     fluid = fluid,
     medium = medium,
+    approximation = MidPointApproximation(),
     Δt = Δt,
     Nt = Nt,
     configurations = configurations

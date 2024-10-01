@@ -37,13 +37,15 @@ BoreholeOperation(::Nothing) = BoreholeOperation(BoreholeNetwork([], 0), @view o
                     B <: Borefield, 
                     M <: Medium, 
                     BC <: BoundaryCondition,
-                    N <: Number
+                    A <: Approximation,
+                    F <: Fluid
                 }(
         method::TSM
         constraint::C
         borefield::B
         medium::M
         boundary_condition::BoundaryCondition = DirichletBoundaryCondition()
+        approximation::A = MeanApproximation()
         fluid::Fluid{N} = Fluid(cpf=4182., name="INCOMP::MEA-20%")
         configurations::Vector{BoreholeNetwork}
         Δt
@@ -57,19 +59,21 @@ Specifies all the options for the simulation.
 - `borefield`: describes the geometrical properties and the boreholes of the borefield on which the simulation will be performed. Available options: `EqualBoreholesBorefield`.
 - `medium`: properties of the ground where the `borefield` is places. Available options: `GroundMedium`, `FlowInPorousMedium`.
 - `boundary_condition`: boundary condition of the domain where the simulation is performed. Available options: `NoBoundary`, `DirichletBoundaryCondition`.
+- `approximation`: determines how the approximate value for each segment is computed.
 - `fluid`: properties of the fluid flowing through the hydraulic system.
 - `configurations`: possible hydraulic topologies possible in the system, including reverse flow.
 - `Δt`: time step used in the simulation.
 - `Nt`: total amount of time steps of the simulation.
 """
 @with_kw struct SimulationOptions{
+                    N <: Number,
                     TSM <: TimeSuperpositionMethod,
                     C <: Constraint,
                     B <: Borefield, 
                     M <: Medium, 
                     BC <: BoundaryCondition, 
+                    A <: Approximation,
                     F <: Fluid
-                    #A <: Approximation
                 }
     method::TSM
     constraint::C
@@ -77,8 +81,8 @@ Specifies all the options for the simulation.
     medium::M
     fluid::F
     boundary_condition::BC = DirichletBoundaryCondition()
-    #approximation::A = MeanApproximation()
-    Δt
+    approximation::A = MeanApproximation()
+    Δt::N
     Nt::Int
     Nb::Int = n_boreholes(borefield)
     Ns::Int = n_segments(borefield)
