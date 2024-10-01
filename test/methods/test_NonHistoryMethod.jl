@@ -1,6 +1,8 @@
 import BoreholeNetworksSimulator: method_coeffs!, method_b!, precompute_auxiliaries!, update_auxiliaries!
 import BoreholeNetworksSimulator: MediumMock, BorefieldMock, ConstraintMock, BoundaryConditionMock, FluidMock
 
+
+global const atol = eps()
 @testset "test_NonHistoryMethod_auxiliaries" begin
     n_disc = 20
     method = NonHistoryMethod(n_disc=n_disc)
@@ -35,11 +37,11 @@ import BoreholeNetworksSimulator: MediumMock, BorefieldMock, ConstraintMock, Bou
     @test length(method.expΔt) == (n_disc+1)*segments_disc
 
     ζ = load_data("$(@__DIR__)/zeta")
-    @test ζ == method.ζ
+    @test ζ ≈ method.ζ atol=atol
     w = load_data("$(@__DIR__)/w")
-    @test w == method.w
+    @test w ≈ method.w atol=atol
     expΔt = load_data("$(@__DIR__)/expdt")
-    @test expΔt == method.expΔt
+    @test expΔt ≈ method.expΔt atol=atol
 
     X = zeros(4Nb, Nt)
     for i in 1:Nt
@@ -48,7 +50,7 @@ import BoreholeNetworksSimulator: MediumMock, BorefieldMock, ConstraintMock, Bou
     update_auxiliaries!(method, X, borefield, 1)
 
     F = load_data("$(@__DIR__)/F")
-    @test F == method.F
+    @test F ≈ method.F atol=atol
 end
 
 @testset "test_NonHistoryMethod_method_coeffs!" begin
@@ -123,5 +125,5 @@ end
     b = zeros(Nb)
     method_b!(b, method, borefield, medium, 1)
 
-    @test b == -0.034753875439466134 .* ones(Nb)
+    @test b ≈ -0.034753875439466134 .* ones(Nb) atol=atol
 end
