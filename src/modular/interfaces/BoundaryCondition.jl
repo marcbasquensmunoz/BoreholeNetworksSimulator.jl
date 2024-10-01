@@ -13,4 +13,5 @@ abstract type BoundaryCondition end
 Mock for testing purposes.
 """
 struct BoundaryConditionMock <: BoundaryCondition end
-coefficients_sts(::BoundaryConditionMock, sts::SegmentToSegment, params::Constants, dp) = 1.
+coefficients(::BoundaryConditionMock, setup::SegmentToSegment, params::Constants, dp, containers) = ones(length(containers.aux))
+q_coef(::BoundaryConditionMock, m, method, sts, λ, i) = m.q_coef

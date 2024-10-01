@@ -1,5 +1,5 @@
 import BoreholeNetworksSimulator: method_coeffs!, method_b!, precompute_auxiliaries!, update_auxiliaries!
-import BoreholeNetworksSimulator: MediumMock, BorefieldMock, ConstraintMock, BoundaryConditionMock
+import BoreholeNetworksSimulator: MediumMock, BorefieldMock, ConstraintMock, BoundaryConditionMock, FluidMock
 
 @testset "test_NonHistoryMethod_auxiliaries" begin
     n_disc = 20
@@ -13,11 +13,13 @@ import BoreholeNetworksSimulator: MediumMock, BorefieldMock, ConstraintMock, Bou
         coordinates=[(0., 0., 0., 100.), (0., 1., 0., 100.)])
     medium = MediumMock(g=g, α=α, λ=λ)
     constraint = ConstraintMock()
+    fluid = FluidMock()
     options = SimulationOptions(
         method=method,
         constraint=constraint,
         borefield=borefield,
         medium=medium,
+        fluid=fluid,
         Δt=3600*24*30.,
         Nt=Nt,
         configurations=[]
@@ -61,12 +63,14 @@ end
         coordinates=[(0., 0., 0., 100.), (0., 1., 0., 100.)])
     medium = MediumMock(g=g, α=α, λ=λ, q_coef=W)
     constraint = ConstraintMock()
-    boundary_condition = NoBoundary()
+    boundary_condition = BoundaryConditionMock()
+    fluid = FluidMock()
     options = SimulationOptions(
         method=method,
         constraint=constraint,
         borefield=borefield,
         medium=medium,
+        fluid=fluid,
         boundary_condition=boundary_condition,
         Δt=3600*24*30.,
         Nt=Nt,
@@ -78,8 +82,8 @@ end
     method_coeffs!(M, method, borefield, medium, boundary_condition)
 
     expected = [
-        (1, 2Nb+1, 1.), (1, 3Nb+1, -W), (1, 3Nb+2, -W),
-        (2, 2Nb+2, 1.), (2, 3Nb+1, -W), (2, 3Nb+2, -W)
+        (1, 2Nb+1, -1.), (1, 3Nb+1, W), (1, 3Nb+2, W),
+        (2, 2Nb+2, -1.), (2, 3Nb+1, W), (2, 3Nb+2, W)
         ]
     @test test_sparse_matrix(M, expected)
 end
@@ -97,11 +101,13 @@ end
     medium = MediumMock(g=g, α=α, λ=λ, q_coef=W)
     constraint = ConstraintMock()
     boundary_condition = NoBoundary()
+    fluid = FluidMock()
     options = SimulationOptions(
         method=method,
         constraint=constraint,
         borefield=borefield,
         medium=medium,
+        fluid=fluid,
         boundary_condition=boundary_condition,
         Δt=3600*24*30.,
         Nt=Nt,
@@ -117,5 +123,5 @@ end
     b = zeros(Nb)
     method_b!(b, method, borefield, medium, 1)
 
-    @test b == 0.03475387541039184 .* ones(Nb)
+    @test b == -0.034753875439466134 .* ones(Nb)
 end

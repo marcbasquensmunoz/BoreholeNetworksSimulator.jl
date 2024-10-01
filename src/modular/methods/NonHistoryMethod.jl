@@ -1,4 +1,4 @@
-using .FiniteLineSource: SegmentToSegment, SegmentToPoint, Constants, adaptive_gk_segments, DiscretizationParameters, f_guess, precompute_coefficients, IntegrationSegment
+using .FiniteLineSource: SegmentToSegment, SegmentToPoint, Constants, DiscretizationParameters, f_guess, precompute_coefficients
 
 """
     NonHistoryMethod{T} <: TimeSuperpositionMethod 
@@ -39,8 +39,7 @@ function precompute_auxiliaries!(method::NonHistoryMethod, options)
     b = ceil(erfcinv(ϵ / sqrt(π/Δt̃)) / sqrt(Δt̃))
 
     constants = Constants(Δt=Δt, α=α, rb=rb, kg=kg, b=b)
-    segments = [IntegrationSegment(0., 0.05, 0., 0.), IntegrationSegment(0.05, 0.1, 0., 0.), IntegrationSegment(0.1, 0.5, 0., 0.), IntegrationSegment(0.5, 1., 0., 0.), IntegrationSegment(1., 3., 0., 0.), IntegrationSegment(3., 7., 0., 0.)]
-    #segments=adaptive_gk_segments(f_guess(SegmentToSegment(get_sts(borefield, 1, 1)), constants), 0., b)
+    _, _, segments = quadgk_segbuf(f_guess(SegmentToSegment(get_sts(borefield, 1, 1)), constants), 0., b)
     dps = [DiscretizationParameters(s.a, s.b, n_disc) for s in segments]
     ζ = reduce(vcat, (dp.x for dp in dps)) 
     expΔt = @. exp(-ζ^2 * Δt̃)

@@ -39,4 +39,4 @@ get_λ(m::MediumMock) = m.λ
 get_α(m::MediumMock) = m.α
 get_T0(m::MediumMock) = m.T0
 compute_response!(g, m::MediumMock, borefield, boundary_condition, t) = g .= m.g
-q_coef(m::MediumMock, method, sts, λ, i) = m.q_coef
+constant_integral(::MediumMock, method, setup, λ, i) = 0.
