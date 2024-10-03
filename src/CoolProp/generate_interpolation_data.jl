@@ -24,7 +24,8 @@ function generate_data(fluid_name, T_lims)
     end
 
     df = DataFrame(T = T_sample, μ = μ, ρ = ρ, cp = cp, k = k)
-    CSV.write("$(@__DIR__)/../modular/fluids/data_$fluid_name", df)
+    path = joinpath(dirname(@__DIR__), "modular", "fluids", "data_$fluid_name")
+    CSV.write(path, df)
 end
 
 generate_data("Water", (0, 100))
