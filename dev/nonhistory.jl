@@ -18,7 +18,7 @@ using BoreholeNetworksSimulator
 Nt = 8760
 
 medium = GroundMedium(α=1e-6, λ=3., T0=10.)
-borehole = SingleUPipeBorehole(H=10., D=10.)
+borehole = SingleUPipeBorehole(H=100., D=10.)
 positions = [(0., 0.), (0., 5.)]
 borefield = EqualBoreholesBorefield(borehole_prototype=borehole, positions=positions)
 constraint = constant_HeatLoadConstraint(5 .* ones(BoreholeNetworksSimulator.n_boreholes(borefield)), Nt)
@@ -58,7 +58,6 @@ containers_convolution = @time initialize(options_convolution)
 # And now let us run the non-history
 containers_nonhistory = @time initialize(options_nonhistory)
 @time simulate!(operator=operator, options=options_nonhistory, containers=containers_nonhistory)
-
 
 abs.(containers_convolution.X - containers_nonhistory.X)
 
