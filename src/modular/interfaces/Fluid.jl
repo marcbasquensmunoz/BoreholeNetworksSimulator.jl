@@ -14,16 +14,3 @@ abstract type Fluid end
     cpf(::Fluid)
     thermophysical_properties(::Fluid, T)
 end
-
-
-"""
-    FluidMock <: Fluid 
-
-Mock for testing purposes.
-"""
-@with_kw struct FluidMock <: Fluid 
-    cpf = 0.
-    properties = (0., 0., 0., 0.)
-end
-cpf(fluid::FluidMock) = fluid.cpf
-thermophysical_properties(fluid::FluidMock, T) = fluid.properties

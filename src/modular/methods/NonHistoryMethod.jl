@@ -1,4 +1,4 @@
-using .FiniteLineSource: SegmentToSegment, SegmentToPoint, Constants, adaptive_gk_segments, DiscretizationParameters, f_guess, precompute_coefficients, IntegrationSegment
+using .FiniteLineSource: SegmentToSegment, SegmentToPoint, Constants, DiscretizationParameters, f_guess, precompute_coefficients, initialize_containers, make_DiscretizationParameters
 
 """
     NonHistoryMethod{T} <: TimeSuperpositionMethod 
@@ -19,17 +19,42 @@ mutable struct NonHistoryMethod{T} <: TimeSuperpositionMethod
     ζ::Vector{T}
     w::Matrix{T}
     expΔt::Vector{T}
-    n_disc
+    n_disc::Int
     aux::Vector{T}
 end
-NonHistoryMethod(;n_disc=20) = NonHistoryMethod(zeros(0, 0), zeros(0), zeros(0, 0), zeros(0), n_disc, zeros(0))
+NonHistoryMethod(;n_disc::Int=20) = NonHistoryMethod(zeros(0, 0), zeros(0), zeros(0, 0), zeros(0), n_disc, zeros(0))
 
-FiniteLineSource.SegmentToSegment(s::MeanSegToSegEvParams) = SegmentToSegment(D1=s.D1, H1=s.H1, D2=s.D2, H2=s.H2, σ=s.σ)
-image(s::SegmentToSegment) = SegmentToSegment(D1=-s.D1, H1=-s.H1, D2=s.D2, H2=s.H2, σ=s.σ)
-image(s::SegmentToPoint) = SegmentToPoint(D=-s.D, H=-s.H, z=s.z, σ=s.σ)
+function get_boreholes_distance(borefield, i, j)
+    x1, y1, D1, H1 = segment_coordinates(borefield, i)
+    x2, y2, D2, H2 = segment_coordinates(borefield, j)
+
+    σ = i == j ? get_rb(borefield, i) : sqrt((x1 - x2)^2 + (y1 - y2)^2)
+    return SegmentToSegment(σ=σ, D1=D1, D2=D2, H1=H1, H2=H2)
+end
+
+function distances(borefield, boundary_condition)
+    map = Dict{SegmentToSegment{Float64}, Int}()
+    buffers = get_buffers(boundary_condition)
+
+    k = 1
+    boreholes = 1:n_boreholes(borefield)
+    for i in boreholes
+        for j in boreholes
+            s = get_boreholes_distance(borefield, i, j)
+            if !haskey(map, s)
+                map[s] = k
+                k += 1
+
+                rb = get_rb(borefield, i)
+                add_buffer!(buffers, boundary_condition, s, rb)
+            end
+        end
+    end
+    return map, buffers
+end
 
 function precompute_auxiliaries!(method::NonHistoryMethod, options)
-    @unpack Nb, Nt, Ns, Δt, borefield, medium, boundary_condition = options
+    @unpack Nb, Nt, Ns, Δt, borefield, medium, boundary_condition, approximation = options
     @unpack n_disc = method
     α = get_α(medium)
     rb = get_rb(borefield, 1) 
@@ -39,57 +64,39 @@ function precompute_auxiliaries!(method::NonHistoryMethod, options)
     b = ceil(erfcinv(ϵ / sqrt(π/Δt̃)) / sqrt(Δt̃))
 
     constants = Constants(Δt=Δt, α=α, rb=rb, kg=kg, b=b)
-    segments = [IntegrationSegment(0., 0.05, 0., 0.), IntegrationSegment(0.05, 0.1, 0., 0.), IntegrationSegment(0.1, 0.5, 0., 0.), IntegrationSegment(0.5, 1., 0., 0.), IntegrationSegment(1., 3., 0., 0.), IntegrationSegment(3., 7., 0., 0.)]
-    #segments=adaptive_gk_segments(f_guess(SegmentToSegment(get_sts(borefield, 1, 1)), constants), 0., b)
-    dps = [DiscretizationParameters(s.a, s.b, n_disc) for s in segments]
+    _, _, segments = quadgk_segbuf(f_guess(setup(approximation, borefield, 1, 1), constants), 0., b)
+    xt, w = gausslegendre(n_disc+1)  
+    dps = [make_DiscretizationParameters(s.a, s.b, n_disc, xt=xt, w=w) for s in segments]
     ζ = reduce(vcat, (dp.x for dp in dps)) 
     expΔt = @. exp(-ζ^2 * Δt̃)
 
+    distances_map, quadgk_buffers = distances(borefield, boundary_condition)
+    disc_map, containers = initialize_containers(setup(approximation, borefield, 1, 1), dps)    
+
     n = length(ζ)
     w = zeros(n, Ns*Ns)
+    w_buffer = zeros(n, length(distances_map))
 
-    containers, map = FiniteLineSource.initialize_containers(SegmentToSegment(get_sts(borefield, 1, 1)), dps)    
-
+    for (key, value) in pairs(distances_map)
+        for (k, dp) in enumerate(dps)
+            range = (n_disc+1)*(k-1)+1:(n_disc+1)*k
+            w_buffer[range, value] .= weights(boundary_condition, key, constants, dp, containers[disc_map[k]], quadgk_buffers[value])
+        end
+    end
     for i in 1:Ns
         for j in 1:Ns
-            setup = SegmentToSegment(get_sts(borefield, i, j))
-            #setup = get_stp(borefield, i, j)
-            w[:, (i-1)*Ns+j] = reduce(vcat, [coefficients(boundary_condition, setup, constants, dp, containers[map[k]]) for (k, dp) in enumerate(dps)])
+            k = distances_map[get_boreholes_distance(borefield, i, j)]
+            @views @. w[:, (i-1)*Ns+j] = w_buffer[:, k]
         end
     end
 
     perm = sortperm(ζ)
 
+    @views method.ζ = ζ[perm]
+    @views method.w = w[perm, :]
+    @views method.expΔt = expΔt[perm]
     method.F = zeros(n, Ns*Ns)
-    method.ζ = ζ[perm]
-    method.w = w[perm, :]
-    method.expΔt = expΔt[perm]
     method.aux = zeros(n)
-end
-
-function coefficients(::NoBoundary, setup::SegmentToSegment, params::Constants, dp, containers)
-    precompute_coefficients(setup, params=params, dp=dp, containers=containers)
-end
-
-function coefficients(::DirichletBoundaryCondition, setup::SegmentToSegment, params::Constants, dp, containers)
-    image_setup = image(setup)
-    w1 = precompute_coefficients(setup, params=params, dp=dp, containers=containers)
-    w2 = precompute_coefficients(image_setup, params=params, dp=dp, containers=containers)
-    w1 - w2
-end
-
-function get_sts(borefield::Borefield, i, j)
-    xi, yi, Di, Hi = segment_coordinates(borefield, i)
-    xj, yj, Dj, Hj = segment_coordinates(borefield, j)
-    σ = i == j ? get_rb(borefield, i) : sqrt((xi-xj)^2 + (yi-yj)^2)
-    MeanSegToSegEvParams(D1=Di, H1=Hi, D2=Dj, H2=Hj, σ=σ)
-end
-
-function get_stp(borefield::Borefield, i, j)
-    xi, yi, Di, Hi = segment_coordinates(borefield, i)
-    xj, yj, Dj, Hj = segment_coordinates(borefield, j)
-    σ = i == j ? get_rb(borefield, i) : sqrt((xi-xj)^2 + (yi-yj)^2)
-    FiniteLineSource.SegmentToPoint(σ = σ, D = Di, H = Hi, z = Dj + Hj/2)
 end
 
 function update_auxiliaries!(method::NonHistoryMethod, X, borefield, step)
@@ -101,15 +108,15 @@ function update_auxiliaries!(method::NonHistoryMethod, X, borefield, step)
     end
 end
 
-function method_coeffs!(M, method::NonHistoryMethod, borefield, medium, boundary_condition)
+function method_coeffs!(M, method::NonHistoryMethod, options)
+    @unpack borefield, medium, boundary_condition, approximation = options
     Nb = n_boreholes(borefield)
     Ns = n_segments(borefield)
     λ = get_λ(medium)
 
     for i in 1:Ns
         for j in 1:Ns
-            setup = SegmentToSegment(get_sts(borefield, i, j))
-            M[i, 3Nb+j] = q_coef(boundary_condition, medium, method, setup, λ, (i-1)*Ns+j) 
+            M[i, 3Nb+j] = q_coef(boundary_condition, medium, method, setup(approximation, borefield, i, j), λ, (i-1)*Ns+j) 
         end
     end
 
@@ -130,33 +137,4 @@ function method_b!(b, method::NonHistoryMethod, borefield, medium, step)
             @views b[i] -= dot(w[:, Nb*(i-1)+j], aux)
         end
     end
-end
-
-function q_coef(::NoBoundary, medium, method, setup, λ, i)
-    constant_integral(medium, method, setup, λ, i) + constant_coef(method, i)
-end
-
-function q_coef(::DirichletBoundaryCondition, medium, method, setup, λ, i)
-    @unpack expΔt, w, ζ = method
-    constant_integral(medium, method, setup, λ, i) - constant_integral(medium, method, image(setup), λ, i) + constant_coef(method, i)
-end
-
-function constant_coef(method::NonHistoryMethod, i)
-    @unpack expΔt, w, ζ, aux = method
-    @. aux = expΔt / ζ
-    @views -dot(w[:, i], aux)
-end
-
-function constant_integral(::GroundMedium, method, setup::SegmentToSegment, λ, i)
-    @unpack D1, H1, D2, H2, σ = setup
-
-    β(d) = sqrt(σ^2 + d^2) + d*log(sqrt(σ^2 + d^2) - d)
-    1/(4π*λ*H2) * (β(D1+H1-D2-H2) + β(D1-D2) - β(D1+H1-D2) - β(D1-D2-H2))
-end
-
-function constant_integral(::GroundMedium, method, setup::SegmentToPoint, λ, i)
-    @unpack D, H, z, σ = setup
-    @unpack expΔt, w, ζ = method
-
-    1/(4π*λ) * log((z-D+sqrt(σ^2+(z-D)^2))/(z-D-H+sqrt(σ^2+(z-D-H)^2)))
 end

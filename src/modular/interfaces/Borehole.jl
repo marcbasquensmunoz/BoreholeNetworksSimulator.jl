@@ -21,22 +21,3 @@ end
 
 get_n_segments(::Borehole) = 1
 get_h(bh::Borehole) = get_H(bh)
-
-
-"""
-    BoreholeMock <: Borehole 
-
-Mock for testing purposes.
-"""
-@with_kw struct BoreholeMock <: Borehole 
-    H = 0.
-    D = 0.
-    rb = 0.
-    Ci = 0.
-    Co = 0.
-    Cb = 0.
-end
-get_H(bh::BoreholeMock) = bh.H
-get_D(bh::BoreholeMock) = bh.D
-get_rb(bh::BoreholeMock) = bh.rb
-uniform_Tb_coeffs(bh::BoreholeMock, λ, mass_flow, Tref, fluid) = bh.Ci, bh.Co, bh.Cb

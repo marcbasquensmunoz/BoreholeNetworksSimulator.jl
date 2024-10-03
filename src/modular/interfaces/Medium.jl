@@ -20,23 +20,3 @@ abstract type Medium end
     get_T0(::Medium)
     compute_response!(g, ::Medium, borefield, boundary_condition, t) 
 end
-
-
-
-"""
-    MediumMock <: Medium
-
-Mock for testing purposes.
-"""
-@with_kw struct MediumMock <: Medium 
-    λ = 0.
-    α = 0.
-    T0 = 0.
-    g = 0.
-    q_coef = 0.
-end
-get_λ(m::MediumMock) = m.λ
-get_α(m::MediumMock) = m.α
-get_T0(m::MediumMock) = m.T0
-compute_response!(g, m::MediumMock, borefield, boundary_condition, t) = g .= m.g
-q_coef(m::MediumMock, method, sts, λ, i) = m.q_coef

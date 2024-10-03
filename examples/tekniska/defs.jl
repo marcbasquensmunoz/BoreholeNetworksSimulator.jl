@@ -53,6 +53,7 @@ options = SimulationOptions(
     borefield = borefield,
     fluid = fluid,
     medium = medium,
+    approximation = MeanApproximation(),
     Δt = Δt,
     Nt = Nt,
     configurations = configurations

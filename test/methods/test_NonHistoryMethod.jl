@@ -1,6 +1,7 @@
 import BoreholeNetworksSimulator: method_coeffs!, method_b!, precompute_auxiliaries!, update_auxiliaries!
-import BoreholeNetworksSimulator: MediumMock, BorefieldMock, ConstraintMock, BoundaryConditionMock
 
+
+global const atol = eps()
 @testset "test_NonHistoryMethod_auxiliaries" begin
     n_disc = 20
     method = NonHistoryMethod(n_disc=n_disc)
@@ -13,11 +14,13 @@ import BoreholeNetworksSimulator: MediumMock, BorefieldMock, ConstraintMock, Bou
         coordinates=[(0., 0., 0., 100.), (0., 1., 0., 100.)])
     medium = MediumMock(g=g, α=α, λ=λ)
     constraint = ConstraintMock()
+    fluid = FluidMock()
     options = SimulationOptions(
         method=method,
         constraint=constraint,
         borefield=borefield,
         medium=medium,
+        fluid=fluid,
         Δt=3600*24*30.,
         Nt=Nt,
         configurations=[]
@@ -33,11 +36,11 @@ import BoreholeNetworksSimulator: MediumMock, BorefieldMock, ConstraintMock, Bou
     @test length(method.expΔt) == (n_disc+1)*segments_disc
 
     ζ = load_data("$(@__DIR__)/zeta")
-    @test ζ == method.ζ
+    @test ζ ≈ method.ζ atol=atol
     w = load_data("$(@__DIR__)/w")
-    @test w == method.w
+    @test w ≈ method.w atol=atol
     expΔt = load_data("$(@__DIR__)/expdt")
-    @test expΔt == method.expΔt
+    @test expΔt ≈ method.expΔt atol=atol
 
     X = zeros(4Nb, Nt)
     for i in 1:Nt
@@ -46,7 +49,7 @@ import BoreholeNetworksSimulator: MediumMock, BorefieldMock, ConstraintMock, Bou
     update_auxiliaries!(method, X, borefield, 1)
 
     F = load_data("$(@__DIR__)/F")
-    @test F == method.F
+    @test F ≈ method.F atol=atol
 end
 
 @testset "test_NonHistoryMethod_method_coeffs!" begin
@@ -61,12 +64,14 @@ end
         coordinates=[(0., 0., 0., 100.), (0., 1., 0., 100.)])
     medium = MediumMock(g=g, α=α, λ=λ, q_coef=W)
     constraint = ConstraintMock()
-    boundary_condition = NoBoundary()
+    boundary_condition = BoundaryConditionMock()
+    fluid = FluidMock()
     options = SimulationOptions(
         method=method,
         constraint=constraint,
         borefield=borefield,
         medium=medium,
+        fluid=fluid,
         boundary_condition=boundary_condition,
         Δt=3600*24*30.,
         Nt=Nt,
@@ -75,11 +80,11 @@ end
     precompute_auxiliaries!(method, options)
 
     M = zeros(Nb, 4Nb)
-    method_coeffs!(M, method, borefield, medium, boundary_condition)
+    method_coeffs!(M, method, options)
 
     expected = [
-        (1, 2Nb+1, 1.), (1, 3Nb+1, -W), (1, 3Nb+2, -W),
-        (2, 2Nb+2, 1.), (2, 3Nb+1, -W), (2, 3Nb+2, -W)
+        (1, 2Nb+1, -1.), (1, 3Nb+1, W), (1, 3Nb+2, W),
+        (2, 2Nb+2, -1.), (2, 3Nb+1, W), (2, 3Nb+2, W)
         ]
     @test test_sparse_matrix(M, expected)
 end
@@ -97,11 +102,13 @@ end
     medium = MediumMock(g=g, α=α, λ=λ, q_coef=W)
     constraint = ConstraintMock()
     boundary_condition = NoBoundary()
+    fluid = FluidMock()
     options = SimulationOptions(
         method=method,
         constraint=constraint,
         borefield=borefield,
         medium=medium,
+        fluid=fluid,
         boundary_condition=boundary_condition,
         Δt=3600*24*30.,
         Nt=Nt,
@@ -117,5 +124,5 @@ end
     b = zeros(Nb)
     method_b!(b, method, borefield, medium, 1)
 
-    @test b == 0.03475387541039184 .* ones(Nb)
+    @test b ≈ -0.034753875429839785 .* ones(Nb) atol=atol
 end

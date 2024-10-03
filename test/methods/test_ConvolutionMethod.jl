@@ -1,5 +1,4 @@
 import BoreholeNetworksSimulator: method_coeffs!, method_b!, precompute_auxiliaries!, update_auxiliaries!
-import BoreholeNetworksSimulator: MediumMock, BorefieldMock, ConstraintMock, BoundaryConditionMock, FluidMock
 
 @testset "test_ConvolutionMethod_auxiliaries" begin
     method = ConvolutionMethod()
@@ -59,7 +58,7 @@ end
     precompute_auxiliaries!(method, options)
 
     M = zeros(Nb, 4Nb)
-    method_coeffs!(M, method, borefield, medium, boundary_condition)
+    method_coeffs!(M, method, options)
 
     expected = [
         (1, 2Nb+1, -1.), (1, 3Nb+1, g), (1, 3Nb+2, g),

@@ -46,7 +46,7 @@ function sts_response(s::SegmentToSegment, params::Constants, t)
     params = FiniteLineSource.MeanSegToSegEvParams(s)
     r_min, r_max = FiniteLineSource.h_mean_lims(params)
     f(r) = FiniteLineSource.h_mean_sts(r, params) * point_step_response(t, r, α, kg)
-    x, w = FiniteLineSource.adaptive_gk(f, r_min, r_max)
+    x, w = FiniteLineSource.adaptive_nodes_and_weights(f, r_min, r_max)
     dot(f.(x), w)
 end
 
