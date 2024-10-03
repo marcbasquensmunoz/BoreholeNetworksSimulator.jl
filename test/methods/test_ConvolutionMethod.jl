@@ -59,7 +59,7 @@ end
     precompute_auxiliaries!(method, options)
 
     M = zeros(Nb, 4Nb)
-    method_coeffs!(M, method, borefield, medium, boundary_condition)
+    method_coeffs!(M, method, options)
 
     expected = [
         (1, 2Nb+1, -1.), (1, 3Nb+1, g), (1, 3Nb+2, g),

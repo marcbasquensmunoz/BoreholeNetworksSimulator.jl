@@ -4,9 +4,8 @@
 Interface for time superposition methods.
 
 Required functions:
-- `method_coeffs!(M, ::TimeSuperpositionMethod, borefield, medium, boundary_condition)`: Compute inplace in `M`
-    the coefficients corresponding to the heat transfer equations, given the `medium`, 
-    and `boundary_condition` in use in the system.
+- `method_coeffs!(M, ::TimeSuperpositionMethod, options)`: Compute inplace in `M`
+    the coefficients corresponding to the heat transfer equations, given `options`.
     Note that `M` is only a slice of `Nbr` (number of branches) rows, provided as a `view`.
 - `method_b!(b, ::TimeSuperpositionMethod, borefield, medium, step)`: Compute inplace in `b`
     the independent terms corresponding to the heat transfer equations, given the `medium`, 
@@ -20,7 +19,7 @@ Required functions:
 abstract type TimeSuperpositionMethod end
 
 @required TimeSuperpositionMethod begin
-    method_coeffs!(M, ::TimeSuperpositionMethod, borefield, medium, boundary_condition)
+    method_coeffs!(M, ::TimeSuperpositionMethod, options)
     method_b!(b, ::TimeSuperpositionMethod, borefield, medium, step)
     precompute_auxiliaries!(method::TimeSuperpositionMethod, options)
     update_auxiliaries!(method::TimeSuperpositionMethod, X, borefield, step)

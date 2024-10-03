@@ -59,7 +59,6 @@ containers_convolution = @time initialize(options_convolution)
 containers_nonhistory = @time initialize(options_nonhistory)
 @time simulate!(operator=operator, options=options_nonhistory, containers=containers_nonhistory)
 
-
 abs.(containers_convolution.X - containers_nonhistory.X)
 
 # ## References

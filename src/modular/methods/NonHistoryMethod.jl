@@ -1,4 +1,4 @@
-using .FiniteLineSource: SegmentToSegment, SegmentToPoint, Constants, DiscretizationParameters, f_guess, precompute_coefficients
+using .FiniteLineSource: SegmentToSegment, SegmentToPoint, Constants, DiscretizationParameters, f_guess, precompute_coefficients, initialize_containers
 
 """
     NonHistoryMethod{T} <: TimeSuperpositionMethod 
@@ -24,6 +24,35 @@ mutable struct NonHistoryMethod{T} <: TimeSuperpositionMethod
 end
 NonHistoryMethod(;n_disc::Int=20) = NonHistoryMethod(zeros(0, 0), zeros(0), zeros(0, 0), zeros(0), n_disc, zeros(0))
 
+function get_boreholes_distance(borefield, i, j)
+    x1, y1, D1, H1 = segment_coordinates(borefield, i)
+    x2, y2, D2, H2 = segment_coordinates(borefield, j)
+
+    σ = i == j ? get_rb(borefield, i) : sqrt((x1 - x2)^2 + (y1 - y2)^2)
+    return SegmentToSegment(σ=σ, D1=D1, D2=D2, H1=H1, H2=H2)
+end
+
+function distances(borefield, boundary_condition)
+    map = Dict{SegmentToSegment{Float64}, Int}()
+    buffers = get_buffers(boundary_condition)
+
+    k = 1
+    boreholes = 1:n_boreholes(borefield)
+    for i in boreholes
+        for j in boreholes
+            s = get_boreholes_distance(borefield, i, j)
+            if !haskey(map, s)
+                map[s] = k
+                k += 1
+
+                rb = get_rb(borefield, i)
+                add_buffer!(buffers, boundary_condition, s, rb)
+            end
+        end
+    end
+    return map, buffers
+end
+
 function precompute_auxiliaries!(method::NonHistoryMethod, options)
     @unpack Nb, Nt, Ns, Δt, borefield, medium, boundary_condition, approximation = options
     @unpack n_disc = method
@@ -36,19 +65,27 @@ function precompute_auxiliaries!(method::NonHistoryMethod, options)
 
     constants = Constants(Δt=Δt, α=α, rb=rb, kg=kg, b=b)
     _, _, segments = quadgk_segbuf(f_guess(setup(approximation, borefield, 1, 1), constants), 0., b)
-    @show length(segments)
     dps = [DiscretizationParameters(s.a, s.b, n_disc) for s in segments]
     ζ = reduce(vcat, (dp.x for dp in dps)) 
     expΔt = @. exp(-ζ^2 * Δt̃)
 
+    distances_map, quadgk_buffers = distances(borefield, boundary_condition)
+    disc_map, containers = initialize_containers(setup(approximation, borefield, 1, 1), dps)    
+
     n = length(ζ)
     w = zeros(n, Ns*Ns)
+    w_buffer = zeros(n, length(distances_map))
 
-    containers, map = FiniteLineSource.initialize_containers(setup(approximation, borefield, 1, 1), dps)    
-
+    for (key, value) in pairs(distances_map)
+        for (k, dp) in enumerate(dps)
+            range = (n_disc+1)*(k-1)+1:(n_disc+1)*k
+            w_buffer[range, value] .= weights(boundary_condition, key, constants, dp, containers[disc_map[k]], quadgk_buffers[value])
+        end
+    end
     for i in 1:Ns
         for j in 1:Ns
-            w[:, (i-1)*Ns+j] = reduce(vcat, [weights(boundary_condition, setup(approximation, borefield, i, j), constants, dp, containers[map[k]]) for (k, dp) in enumerate(dps)])
+            k = distances_map[get_boreholes_distance(borefield, i, j)]
+            @views @. w[:, (i-1)*Ns+j] = w_buffer[:, k]
         end
     end
 
@@ -70,7 +107,8 @@ function update_auxiliaries!(method::NonHistoryMethod, X, borefield, step)
     end
 end
 
-function method_coeffs!(M, method::NonHistoryMethod, borefield, medium, boundary_condition, approximation)
+function method_coeffs!(M, method::NonHistoryMethod, options)
+    @unpack borefield, medium, boundary_condition, approximation = options
     Nb = n_boreholes(borefield)
     Ns = n_segments(borefield)
     λ = get_λ(medium)

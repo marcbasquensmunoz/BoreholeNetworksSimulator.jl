@@ -58,7 +58,7 @@ function simulate!(;operator, options::SimulationOptions, containers::Simulation
         end
         @views constraints_coeffs!(M[constraints_eqs, :], constraint, operation, borefield)
         if i == Ts
-            @views method_coeffs!(M[method_eqs, :], method, borefield, medium, boundary_condition, approximation)
+            @views method_coeffs!(M[method_eqs, :], method, options)
         end
         #if last_operation.mass_flows != operation.mass_flows
             @views heat_balance_coeffs!(M[balance_eqs, :], borefield, operation, fluid)

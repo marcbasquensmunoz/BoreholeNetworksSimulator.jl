@@ -29,7 +29,8 @@ function update_auxiliaries!(method::ConvolutionMethod, X, borefield, step)
     method.q[:, step] = @view X[3Nb+1:end, step] 
 end
 
-function method_coeffs!(M, method::ConvolutionMethod, borefield, medium, boundary_condition)
+function method_coeffs!(M, method::ConvolutionMethod, options)
+    @unpack borefield, medium, boundary_condition, approximation = options
     Nb = n_boreholes(borefield)
     Ns = n_segments(borefield)
     M[1:Ns, 3Nb+1:3Nb+Ns] = @view method.g[:,:,1]
