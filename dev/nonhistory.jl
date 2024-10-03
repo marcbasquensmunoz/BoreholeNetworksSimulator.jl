@@ -22,6 +22,7 @@ borehole = SingleUPipeBorehole(H=100., D=10.)
 positions = [(0., 0.), (0., 5.)]
 borefield = EqualBoreholesBorefield(borehole_prototype=borehole, positions=positions)
 constraint = constant_HeatLoadConstraint(5 .* ones(BoreholeNetworksSimulator.n_boreholes(borefield)), Nt)
+fluid = Water()
 
 configurations = [BoreholeNetwork([[1], [2]])]
 operator = SimpleOperator(mass_flow = 2., branches = 2)
@@ -34,7 +35,7 @@ options_convolution = SimulationOptions(
     constraint = constraint,
     borefield = borefield,
     medium = medium,
-    fluid = Water(),
+    fluid = fluid,
     Δt = Δt,
     Nt = Nt,
     configurations = configurations
@@ -45,7 +46,7 @@ options_nonhistory = SimulationOptions(
     constraint = constraint,
     borefield = borefield,
     medium = medium,
-    fluid = Water(),
+    fluid = fluid,
     Δt = Δt,
     Nt = Nt,
     configurations = configurations
