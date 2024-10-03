@@ -1,4 +1,9 @@
 
+global const fluid_names = Dict([
+    :ethanol20 => "EthanolMix20",
+    :water => "Water"
+])
+
 function load_properties(fluid_name)
     path = joinpath(dirname(@__DIR__), "modular", "fluids", "data_$fluid_name")
     df = CSV.read(path, DataFrame)

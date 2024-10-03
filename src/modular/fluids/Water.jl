@@ -14,7 +14,7 @@ struct Water <: Fluid
     stored_properties::ThermophysicalProperties{Float64}
 end
 function Water()
-    Water(load_properties("Water"))
+    Water(load_properties(fluid_names[:water]))
 end
 
 cpf(::Water) = 4182.

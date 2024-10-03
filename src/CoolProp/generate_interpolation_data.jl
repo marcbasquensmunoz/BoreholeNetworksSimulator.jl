@@ -28,5 +28,5 @@ function generate_data(fluid_name, T_lims)
     CSV.write(path, df)
 end
 
-generate_data("Water", (0, 100))
-generate_data("INCOMP::MEA-20%", (-11.118, 40))
+generate_data(fluid_names[:water], (0, 100))
+generate_data(fluid_names[:ethanol20], (-11.118, 40))
