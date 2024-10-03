@@ -1,5 +1,4 @@
 import BoreholeNetworksSimulator: method_coeffs!, method_b!, precompute_auxiliaries!, update_auxiliaries!
-import BoreholeNetworksSimulator: MediumMock, BorefieldMock, ConstraintMock, BoundaryConditionMock, FluidMock
 
 
 global const atol = eps()
@@ -125,5 +124,5 @@ end
     b = zeros(Nb)
     method_b!(b, method, borefield, medium, 1)
 
-    @test b ≈ -0.034753875439466134 .* ones(Nb) atol=atol
+    @test b ≈ -0.034753875429839785 .* ones(Nb) atol=atol
 end

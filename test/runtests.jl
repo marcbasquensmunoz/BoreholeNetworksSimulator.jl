@@ -1,6 +1,11 @@
 using BoreholeNetworksSimulator, Test
+using Parameters
 
 include("utils.jl")
+
+interface_mocks = BoreholeNetworksSimulator.get_all_julia_files_in_dir("mocks/interfaces/")
+include.(interface_mocks)
+include("mocks/buffer.jl")
 
 # Check interface implementations
 include("test_interfaces.jl")

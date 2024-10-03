@@ -5,13 +5,13 @@ abstract type QuadGKBuffer end
 struct NoBoundaryQuadGKBuffer <: QuadGKBuffer
     buffer::Buffer{Float64}
 end
-NoBoundaryQuadGKBuffer(s, rb) = NoBoundaryQuadGKBuffer(Buffer(initialize_buffer(s, rb)))
+NoBoundaryQuadGKBuffer(s, rb::T) where {T <: Number} = NoBoundaryQuadGKBuffer(Buffer(initialize_buffer(s, rb)))
 
 struct DirichletQuadGKBuffer <: QuadGKBuffer
     buffer::Buffer{Float64}
     image_buffer::Buffer{Float64}
 end
-DirichletQuadGKBuffer(s, rb) = DirichletQuadGKBuffer(Buffer(initialize_buffer(s, rb)), Buffer(initialize_buffer(image(s), rb)))
+DirichletQuadGKBuffer(s, rb::T) where {T <: Number} = DirichletQuadGKBuffer(Buffer(initialize_buffer(s, rb)), Buffer(initialize_buffer(image(s), rb)))
 
 get_buffers(::NoBoundary) = Vector{NoBoundaryQuadGKBuffer}()
 get_buffers(::DirichletBoundaryCondition) = Vector{DirichletQuadGKBuffer}()

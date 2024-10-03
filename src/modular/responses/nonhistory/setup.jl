@@ -14,4 +14,4 @@ function get_stp(borefield::Borefield, i, j)
 end
 
 setup(::MeanApproximation, borefield::Borefield, i, j) = get_sts(borefield, i, j)
-setup(::MidPointApproximation, borefield::Borefield, i, j) = get_stp(borefield, i, j)
+#setup(::MidPointApproximation, borefield::Borefield, i, j) = get_stp(borefield, i, j)
