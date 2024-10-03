@@ -1,4 +1,4 @@
-[![documentation (placeholder)](https://img.shields.io/badge/docs-stable-blue.svg)](https://marcbasquensmunoz.github.io/BoreholeNetworksSimulator.jl/stable/)
+[![documentation (placeholder)](https://img.shields.io/badge/docs-stable-blue.svg)](https://marcbasquensmunoz.github.io/BoreholeNetworksSimulator.jl/dev/)
 [![Aqua QA](https://raw.githubusercontent.com/JuliaTesting/Aqua.jl/master/badge.svg)](https://github.com/JuliaTesting/Aqua.jl)
 [![Build Status](https://github.com/marcbasquensmunoz/BoreholeNetworksSimulator.jl/actions/workflows/testing.yml/badge.svg?branch=main)](https://github.com/marcbasquensmunoz/BoreholeNetworksSimulator.jl/actions/workflows/testing.yml?query=branch%3Amain)
 
