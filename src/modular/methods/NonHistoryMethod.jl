@@ -1,4 +1,4 @@
-using .FiniteLineSource: SegmentToSegment, SegmentToPoint, Constants, DiscretizationParameters, f_guess, precompute_coefficients, initialize_containers
+using .FiniteLineSource: SegmentToSegment, SegmentToPoint, Constants, DiscretizationParameters, f_guess, precompute_coefficients, initialize_containers, make_DiscretizationParameters
 
 """
     NonHistoryMethod{T} <: TimeSuperpositionMethod 
@@ -65,7 +65,8 @@ function precompute_auxiliaries!(method::NonHistoryMethod, options)
 
     constants = Constants(Δt=Δt, α=α, rb=rb, kg=kg, b=b)
     _, _, segments = quadgk_segbuf(f_guess(setup(approximation, borefield, 1, 1), constants), 0., b)
-    dps = [DiscretizationParameters(s.a, s.b, n_disc) for s in segments]
+    xt, w = gausslegendre(n_disc+1)  
+    dps = [make_DiscretizationParameters(s.a, s.b, n_disc, xt=xt, w=w) for s in segments]
     ζ = reduce(vcat, (dp.x for dp in dps)) 
     expΔt = @. exp(-ζ^2 * Δt̃)
 
@@ -91,10 +92,10 @@ function precompute_auxiliaries!(method::NonHistoryMethod, options)
 
     perm = sortperm(ζ)
 
+    @views method.ζ = ζ[perm]
+    @views method.w = w[perm, :]
+    @views method.expΔt = expΔt[perm]
     method.F = zeros(n, Ns*Ns)
-    method.ζ = ζ[perm]
-    method.w = w[perm, :]
-    method.expΔt = expΔt[perm]
     method.aux = zeros(n)
 end
 
