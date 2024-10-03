@@ -14,7 +14,7 @@ struct EthanolMix <: Fluid
     stored_properties::ThermophysicalProperties{Float64}
 end
 function EthanolMix()
-    EthanolMix(load_properties("INCOMP::MEA-20%"))
+    EthanolMix(load_properties(fluid_names[:ethanol20]))
 end
 
 cpf(::EthanolMix) = 4182.
