@@ -10,6 +10,9 @@ include("mocks/buffer.jl")
 # Check interface implementations
 include("test_interfaces.jl")
 
+# Run smoke tests
+include("api/api.jl")
+
 # Run unit tests
 include("mediums/test_GroundMedium.jl")
 include("mediums/test_FlowInPorousMedium.jl")
@@ -25,9 +28,7 @@ include("boreholes/test_SingleUPipeBorehole.jl")
 include("methods/test_ConvolutionMethod.jl")
 include("methods/test_NonHistoryMethod.jl")
 
-# Run examples
-#include("$(dirname(pwd()))/examples/Braedstrup/main.jl")
-
 # Run tutorials
-include("$(dirname(pwd()))/docs/src/tutorial.jl")
-include("$(dirname(pwd()))/docs/src/nonhistory.jl")
+project_dir = dirname(pwd())
+include("$project_dir/docs/src/tutorial.jl")
+include("$project_dir/docs/src/nonhistory.jl")

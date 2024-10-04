@@ -90,5 +90,5 @@ end
 weekly = plot_weekly_Q()
 yearly = plot_Q()
 
-#save("examples/tekniska/plots/Q_week.png", weekly)
-#save("examples/tekniska/plots/Q_year.png", yearly)
+# save("examples/tekniska/plots/Q_week.png", weekly)
+# save("examples/tekniska/plots/Q_year.png", yearly)
