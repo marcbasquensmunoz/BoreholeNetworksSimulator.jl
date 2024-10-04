@@ -22,8 +22,8 @@ jobs:
           version: '1.10'
       - uses: julia-actions/cache@v2
       - name: Install dependencies
-        run: julia --project=$(mktemp -d) test/examples/runexamples.jl
+        run: julia --color=yes test/examples/runexamples.jl
       - name: Run examples
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
-        run: julia --color=yes --project=$(mktemp -d) examples/Braedstrup/main.jl
+        run: julia --color=yes examples/Braedstrup/main.jl
