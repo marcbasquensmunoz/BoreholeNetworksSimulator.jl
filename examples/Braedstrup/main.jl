@@ -1,12 +1,12 @@
 using BoreholeNetworksSimulator
 using BNSPlots
 using CSV
-using Statistics
 using Colors
 using Parameters
+using WGLMakie
 
 function load_positions_from_file(file)
-    data = CSV.read(file, values, header=true, decimal=',')
+    data = CSV.read(file, values, header=true, decimal=',', delim=';')
     data = reduce(hcat, data)
     [(data[i, 2], data[i, 3]) for i in 1:size(data)[1]]
 end
@@ -48,7 +48,6 @@ options = SimulationOptions(
     borefield = borefield,
     fluid = fluid,
     medium = medium,
-    approximation = MidPointApproximation(),
     Δt = Δt,
     Nt = Nt,
     configurations = configurations
