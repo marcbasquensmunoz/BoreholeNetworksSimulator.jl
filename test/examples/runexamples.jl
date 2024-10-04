@@ -10,5 +10,6 @@ cd(project_directory) do
     Pkg.Registry.add("General")
     Pkg.develop(PackageSpec(path = plots_directory))
     Pkg.develop(PackageSpec(path = project_directory))
+    Pkg.activate()
     Pkg.instantiate()
 end
