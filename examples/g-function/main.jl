@@ -62,4 +62,4 @@ make_plot(axis, 0.5*10)
 fig[1, 2] = Legend(fig, axis, "", framevisible = false)
 
 fig
-save("examples/g-function/gfunction.png", fig)
+# save("examples/g-function/gfunction.png", fig)

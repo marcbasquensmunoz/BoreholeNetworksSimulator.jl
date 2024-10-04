@@ -26,4 +26,9 @@ jobs:
       - name: Run examples
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
-        run: julia --color=yes examples/Braedstrup/main.jl
+        run: "julia --color=yes examples/Braedstrup/main.jl
+              julia --color=yes examples/g-function/main.jl
+              julia --color=yes examples/tekniska/constant_m_week.jl
+              julia --color=yes examples/tekniska/prop_m.jl
+              julia --color=yes examples/tekniska/toggle.jl"
+          
