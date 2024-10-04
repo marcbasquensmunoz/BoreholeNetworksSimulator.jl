@@ -22,8 +22,7 @@ jobs:
           version: '1.10'
       - uses: julia-actions/cache@v2
       - name: Install dependencies
-        run: "julia --color=yes --project=docs/ docs/instantiate.jl
-              julia test/runexamples.jl"
+        run: "julia test/examples/runexamples.jl"
       - name: Run examples
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
