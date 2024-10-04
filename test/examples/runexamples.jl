@@ -2,7 +2,7 @@ using Pkg
 
 geothermal_registry = "https://github.com/marcbasquensmunoz/geothermal_registry"
 
-project_directory = joinpath(@__DIR__, "..")
+project_directory = joinpath(@__DIR__, "..", "..")
 plots_directory = joinpath(project_directory, "BNSPlots")
 
 cd(project_directory) do

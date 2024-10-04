@@ -22,7 +22,7 @@ jobs:
           version: '1.10'
       - uses: julia-actions/cache@v2
       - name: Install dependencies
-        run: "julia --project=BoreholeNetworksSimulator/ test/examples/runexamples.jl"
+        run: "julia --project=/ test/examples/runexamples.jl"
       - name: Run examples
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
