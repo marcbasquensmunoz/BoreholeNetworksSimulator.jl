@@ -1,6 +1,6 @@
 **/Manifest.toml
 .vscode
 .CondaPkg
-.pb.gz
+**.pb.gz
 /docs/build/*
 __pycache__/

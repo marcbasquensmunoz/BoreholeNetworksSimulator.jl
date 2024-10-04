@@ -13,3 +13,5 @@ cd(project_directory) do
     Pkg.activate()
     Pkg.instantiate()
 end
+
+Pkg.add(["CSV", "Colors", "Parameters", "WGLMakie"])
