@@ -5,8 +5,11 @@ import BoreholeNetworksSimulator: method_coeffs!, method_b!, precompute_auxiliar
     Nb = 2
     Nt = 10
     g = 4.5
-    borefield = BorefieldMock(Nb=Nb)
-    medium = MediumMock(g=g)
+    H = 100.
+    D = 0.
+    rb = 0.1
+    borefield = BorefieldMock(Nb=Nb, rb = rb .* ones(Nb), coordinates = [(0., 0.), (0., 5.)], H = H .* ones(Nb), D = D .* ones(Nb))
+    medium = MediumMock(step_response=g)
     constraint = ConstraintMock()
     options = SimulationOptions(
         method=method,
@@ -41,7 +44,7 @@ end
     method = ConvolutionMethod()
     g = 4.5
     borefield = BorefieldMock(Nb=Nb)
-    medium = MediumMock(g=g)
+    medium = MediumMock(step_response=g)
     constraint = ConstraintMock()
     boundary_condition = BoundaryConditionMock()
     options = SimulationOptions(
@@ -79,7 +82,7 @@ end
     end
 
     borefield = BorefieldMock(Nb=Nb)
-    medium = MediumMock(g=g, T0=10.)
+    medium = MediumMock(step_response=g, T0=10.)
     constraint = ConstraintMock()
     boundary_condition = BoundaryConditionMock()
     options = SimulationOptions(

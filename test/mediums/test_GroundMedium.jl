@@ -23,9 +23,10 @@ end
     borehole = SingleUPipeBorehole(H=10., D=0.)
     borefield = EqualBoreholesBorefield(borehole_prototype=borehole, positions=[(0., 0.), (0., r)])
     boundary_condition = NoBoundary()
+    approximation = MeanApproximation()
 
     g = zeros(2, 2)
-    compute_response!(g, medium, borefield, boundary_condition, t) 
+    compute_response!(g, medium, borefield, boundary_condition, approximation, t) 
 
     expected = [0.11246425360481815 0.0008175747207000824; 0.0008175747207000824 0.11246425360481815]
     @test isapprox(expected, g)
@@ -43,9 +44,10 @@ end
     borehole = SingleUPipeBorehole(H=10., D=0.)
     borefield = EqualBoreholesBorefield(borehole_prototype=borehole, positions=[(0., 0.), (0., r)])
     boundary_condition = DirichletBoundaryCondition()
+    approximation = MeanApproximation()
 
     g = zeros(2, 2)
-    compute_response!(g, medium, borefield, boundary_condition, t) 
+    compute_response!(g, medium, borefield, boundary_condition, approximation, t) 
 
     expected = [0.1116256193603268 0.0008037621082085207; 0.0008037621082085207 0.1116256193603268]
     @test isapprox(expected, g)

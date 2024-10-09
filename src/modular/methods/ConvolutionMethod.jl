@@ -16,11 +16,12 @@ end
 ConvolutionMethod() = ConvolutionMethod(zeros(0,0,0), zeros(0,0), zeros(0))
 
 function precompute_auxiliaries!(method::ConvolutionMethod, options)
-    @unpack Nb, Nt, t, borefield, medium, boundary_condition = options
+    @unpack Nb, Nt, t, borefield, medium, boundary_condition, approximation = options
+    @unpack λ, α = medium
     method.g = zeros(Nb, Nb, Nt)
     method.q = zeros(Nb, Nt)
     method.aux = zeros(Nb)
-    compute_response!(method.g, medium, options)
+    compute_response!(method.g, medium, borefield, boundary_condition, approximation, t)
     return method
 end
 

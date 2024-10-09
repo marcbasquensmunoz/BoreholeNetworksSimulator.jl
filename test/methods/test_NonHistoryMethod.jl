@@ -11,8 +11,8 @@ global const atol = eps()
     α = 1e-6
     λ = 3.
     borefield = BorefieldMock(Nb=Nb, rb=0.1 .* ones(Nb), 
-        coordinates=[(0., 0., 0., 100.), (0., 1., 0., 100.)])
-    medium = MediumMock(g=g, α=α, λ=λ)
+        coordinates=[(0., 0.), (0., 1.)], D = zeros(Nb), H = 100 .* ones(Nb))
+    medium = MediumMock(step_response=g, α=α, λ=λ)
     constraint = ConstraintMock()
     fluid = FluidMock()
     options = SimulationOptions(
@@ -60,9 +60,9 @@ end
     α = 1e-6
     λ = 3.
     W = 1.2
-    borefield = BorefieldMock(Nb=Nb, H=100 .* ones(Nb), rb=0.1 .* ones(Nb), 
-        coordinates=[(0., 0., 0., 100.), (0., 1., 0., 100.)])
-    medium = MediumMock(g=g, α=α, λ=λ, q_coef=W)
+    borefield = BorefieldMock(Nb=Nb, H=100 .* ones(Nb), D = zeros(Nb), rb=0.1 .* ones(Nb), 
+        coordinates=[(0., 0.), (0., 1.)])
+    medium = MediumMock(step_response=g, α=α, λ=λ, q_coef=W)
     constraint = ConstraintMock()
     boundary_condition = BoundaryConditionMock()
     fluid = FluidMock()
@@ -97,9 +97,9 @@ end
     α = 1e-6
     λ = 3.
     W = 1.2
-    borefield = BorefieldMock(Nb=Nb, H=100 .* ones(Nb), rb=0.1 .* ones(Nb), 
-        coordinates=[(0., 0., 0., 100.), (0., 1., 0., 100.)])
-    medium = MediumMock(g=g, α=α, λ=λ, q_coef=W)
+    borefield = BorefieldMock(Nb=Nb, H=100 .* ones(Nb), D=zeros(Nb), rb=0.1 .* ones(Nb), 
+        coordinates=[(0., 0.), (0., 1.)])
+    medium = MediumMock(step_response=g, α=α, λ=λ, q_coef=W)
     constraint = ConstraintMock()
     boundary_condition = NoBoundary()
     fluid = FluidMock()
