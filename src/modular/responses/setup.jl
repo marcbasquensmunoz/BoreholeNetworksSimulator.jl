@@ -1,4 +1,7 @@
 
+image(s::SegmentToSegment) = SegmentToSegment(D1=-s.D1, H1=-s.H1, D2=s.D2, H2=s.H2, σ=s.σ)
+image(s::SegmentToPoint) = SegmentToPoint(D=-s.D-s.H, H=s.H, z=s.z, σ=s.σ)
+
 function get_sts(borefield::Borefield, i, j)
     xi, yi, Di, Hi = segment_coordinates(borefield, i)
     xj, yj, Dj, Hj = segment_coordinates(borefield, j)
@@ -14,4 +17,7 @@ function get_stp(borefield::Borefield, i, j)
 end
 
 setup(::MeanApproximation, borefield::Borefield, i, j) = get_sts(borefield, i, j)
-#setup(::MidPointApproximation, borefield::Borefield, i, j) = get_stp(borefield, i, j)
+setup(::MidPointApproximation, borefield::Borefield, i, j) = get_stp(borefield, i, j)
+
+setup_type(::MeanApproximation) = SegmentToSegment{Float64}
+setup_type(::MidPointApproximation) = SegmentToPoint{Float64}

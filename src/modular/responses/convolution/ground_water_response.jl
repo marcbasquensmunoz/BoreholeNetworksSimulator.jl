@@ -1,6 +1,7 @@
 # TODO: Implement the different boundary conditions
-function compute_response!(g, medium::FlowInPorousMedium, borefield, boundary_condition, t) 
+function compute_response!(g, medium::FlowInPorousMedium, options) 
     @unpack θ, λ, vt, α = medium
+    @unpack  borefield, boundary_condition, t = options
     Ns = n_boreholes(borefield)
 
     coords = [segment_coordinates(borefield, i) for i in 1:Ns]

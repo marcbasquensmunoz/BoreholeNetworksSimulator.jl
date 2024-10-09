@@ -1,45 +1,33 @@
 
-function compute_response!(g, medium::GroundMedium, borefield, boundary_condition, t) 
+function compute_response!(g, medium::GroundMedium, options) 
     @unpack λ, α = medium
-    Ns = n_segments(borefield)
-
-    coords = [segment_coordinates(borefield, i) for i in 1:Ns]
+    @unpack borefield, boundary_condition, approximation, t = options
+    Nb = n_boreholes(borefield)
     
     for (k, tt) in enumerate(t)
-        for j in 1:Ns
-            for i in 1:Ns
-                x1, y1, D1, H1 = coords[i]
-                x2, y2, D2, H2 = coords[j]
+        for j in 1:Nb
+            for i in 1:Nb
                 rb = get_rb(borefield, i)
-                σ = i == j ? rb : sqrt((x2-x1)^2 + (y2-y1)^2)
-                s = SegmentToSegment(D1=D1, H1=H1, D2=D2, H2=H2, σ=σ)
-                g[i, j, k] = sts(boundary_condition, s, Constants(α=α, kg=λ, rb=rb), tt)
+                s = setup(approximation, borefield, i, j)
+                g[i, j, k] = response(boundary_condition, s, Constants(α=α, kg=λ, rb=rb), tt)
             end
         end
     end
 end
 
-point_step_response(t, r, α, kg) = erfc(r/(2*sqrt(t*α))) / (4*π*r*kg)    
-fls_step_response(t, σ, z, a, b, α, kg; atol=1e-8) = quadgk(ζ -> point_step_response(t, sqrt(σ^2 + (z-ζ)^2), α, kg), a, b, atol=atol)[1]
-
-function fls_adiabatic_surface(t, x, y, z, H, D, α, kg, atol = 1e-8)
-    σ = sqrt(x^2+y^2)
-    I1 = fls_step_response(t, σ, z, D, D+H, α, kg, atol=atol)
-    I2 = fls_step_response(t, σ, z, -D-H, -D, α, kg, atol=atol) 
-    return (I1 + I2)
+function response(::NoBoundary, setup, params::Constants, t)
+    step_response(setup, params, t)
 end
 
-function fls_dirichlet(t, x, y, z, H, D, α, kg, atol = 1e-8)
-    σ = sqrt(x^2+y^2)
-    I1 = fls_step_response(t, σ, z, D, D+H, α, kg, atol=atol)
-    I2 = fls_step_response(t, σ, z, -D-H, -D, α, kg, atol=atol) 
-    return (I1 - I2)
+function response(::DirichletBoundaryCondition, s, params::Constants, t)
+    s_image = image(s)
+    Ip = step_response(s, params, t)
+    In = step_response(s_image, params, t)
+    Ip - In
 end
 
-function fls(t, x, y, z, H, D, α, kg, atol = 1e-8)
-    σ = sqrt(x^2+y^2)
-    return fls_step_response(t, σ, z, D, D+H, α, kg, atol=atol)
-end
+step_response(s::SegmentToPoint,  params::Constants, t) = stp_response(s, params, t)
+step_response(s::SegmentToSegment,  params::Constants, t) = sts_response(s, params, t)
 
 function sts_response(s::SegmentToSegment, params::Constants, t)
     @unpack α, kg = params
@@ -47,16 +35,14 @@ function sts_response(s::SegmentToSegment, params::Constants, t)
     r_min, r_max = FiniteLineSource.h_mean_lims(params)
     f(r) = FiniteLineSource.h_mean_sts(r, params) * point_step_response(t, r, α, kg)
     x, w = FiniteLineSource.adaptive_nodes_and_weights(f, r_min, r_max)
-    dot(f.(x), w)
+    return dot(f.(x), w)
 end
 
-function sts(::NoBoundary, s::SegmentToSegment, params::Constants, t)
-    sts_response(s, params, t)
+function stp_response(s::SegmentToPoint, params::Constants, t)
+    @unpack σ, H, D, z = s
+    @unpack α, kg = params
+    return fls_step_response(t, σ, z, D, D+H, α, kg)
 end
 
-function sts(::DirichletBoundaryCondition, s::SegmentToSegment, params::Constants, t)
-    s_image = SegmentToSegment(D1=-s.D1, H1=-s.H1, D2=s.D2, H2=s.H2, σ=s.σ)
-    Ip = sts_response(s, params, t)
-    In = sts_response(s_image, params, t)
-    Ip - In
-end
+fls_step_response(t, σ, z, a, b, α, kg; atol=1e-8) = quadgk(ζ -> point_step_response(t, sqrt(σ^2 + (z-ζ)^2), α, kg), a, b, atol=atol)[1]
+point_step_response(t, r, α, kg) = erfc(r/(2*sqrt(t*α))) / (4*π*r*kg)    

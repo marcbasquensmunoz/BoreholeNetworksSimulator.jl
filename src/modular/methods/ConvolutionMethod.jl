@@ -20,7 +20,7 @@ function precompute_auxiliaries!(method::ConvolutionMethod, options)
     method.g = zeros(Nb, Nb, Nt)
     method.q = zeros(Nb, Nt)
     method.aux = zeros(Nb)
-    compute_response!(method.g, medium, borefield, boundary_condition, t)
+    compute_response!(method.g, medium, options)
     return method
 end
 
