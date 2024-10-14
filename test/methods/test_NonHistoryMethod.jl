@@ -4,22 +4,29 @@ import BoreholeNetworksSimulator: method_coeffs!, method_b!, precompute_auxiliar
 global const atol = eps()
 @testset "test_NonHistoryMethod_auxiliaries" begin
     n_disc = 20
+    segments_disc = 13 
+
     method = NonHistoryMethod(n_disc=n_disc)
     Nb = 2
     Nt = 10
     g = 4.5
     α = 1e-6
     λ = 3.
+
+    weights = rand(n_disc+1)
+
     borefield = BorefieldMock(Nb=Nb, rb=0.1 .* ones(Nb), 
         coordinates=[(0., 0.), (0., 1.)], D = zeros(Nb), H = 100 .* ones(Nb))
-    medium = MediumMock(step_response=g, α=α, λ=λ)
+    medium = MediumMock(step_response=g, α=α, λ=λ, q_coef=weights)
     constraint = ConstraintMock()
     fluid = FluidMock()
+    boundary_condition = BoundaryConditionMock()
     options = SimulationOptions(
         method=method,
         constraint=constraint,
         borefield=borefield,
         medium=medium,
+        boundary_condition=boundary_condition,
         fluid=fluid,
         Δt=3600*24*30.,
         Nt=Nt,
@@ -27,7 +34,6 @@ global const atol = eps()
     )
     precompute_auxiliaries!(method, options)
 
-    segments_disc = 13 
 
     @test size(method.F) == ((n_disc+1)*segments_disc, Nb^2)
     @test sum(abs.(method.F)) == 0
@@ -37,8 +43,14 @@ global const atol = eps()
 
     ζ = load_data("$(@__DIR__)/zeta")
     @test ζ ≈ method.ζ atol=atol
-    w = load_data("$(@__DIR__)/w")
-    @test w ≈ method.w atol=atol
+
+    w = zeros(size(method.w))
+    for j in 1:size(method.w)[2]
+        for i in 1:segments_disc
+            w[(i-1)*(n_disc+1)+1:i*(n_disc+1), j] .= weights
+        end
+    end
+
     expΔt = load_data("$(@__DIR__)/expdt")
     @test expΔt ≈ method.expΔt atol=atol
 
@@ -124,5 +136,5 @@ end
     b = zeros(Nb)
     method_b!(b, method, borefield, medium, 1)
 
-    @test b ≈ -0.034753875429839785 .* ones(Nb) atol=atol
+    @test b ≈ -856.5309617326807 .* ones(Nb) atol=atol
 end

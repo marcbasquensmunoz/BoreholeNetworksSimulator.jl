@@ -179,3 +179,7 @@ NoBoundary
 ```@docs
 DirichletBoundaryCondition
 ```
+
+```@docs
+AdiabaticBoundaryCondition
+```

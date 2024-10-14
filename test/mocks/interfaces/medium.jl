@@ -16,5 +16,5 @@ BoreholeNetworksSimulator.get_λ(m::MediumMock) = m.λ
 BoreholeNetworksSimulator.get_α(m::MediumMock) = m.α
 BoreholeNetworksSimulator.get_T0(m::MediumMock) = m.T0
 BoreholeNetworksSimulator.constant_integral(m::MediumMock, method, setup, λ, i) = m.constant_integral
-BoreholeNetworksSimulator.compute_response!(g, m::MediumMock, borefield, boundary_condition, approximation, t) = g .= m.step_response
+BoreholeNetworksSimulator.compute_response!(g, m::MediumMock, options) = g .= m.step_response
 BoreholeNetworksSimulator.q_coef(boundary_condition, m::MediumMock, method, s, i) = m.q_coef

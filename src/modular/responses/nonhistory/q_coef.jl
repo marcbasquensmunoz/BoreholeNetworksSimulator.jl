@@ -8,6 +8,11 @@ function q_coef(::DirichletBoundaryCondition, medium, method, setup, i)
     constant_integral(medium, method, setup, i) - constant_integral(medium, method, image(setup), i) + constant_coef(method, i)
 end
 
+function q_coef(::AdiabaticBoundaryCondition, medium, method, setup, i)
+    @unpack expΔt, w, ζ = method
+    constant_integral(medium, method, setup, i) + constant_integral(medium, method, image(setup), i) + constant_coef(method, i)
+end
+
 function constant_coef(method::NonHistoryMethod, i)
     @unpack expΔt, w, ζ, aux = method
     @. aux = expΔt / ζ
