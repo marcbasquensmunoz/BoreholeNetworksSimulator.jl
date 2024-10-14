@@ -32,6 +32,8 @@ BoreholeOperation(::Nothing) = BoreholeOperation(BoreholeNetwork([], 0), @view o
 
 """
     struct SimulationOptions{
+                    N <: Number,
+                    Tol <: Number,
                     TSM <: TimeSuperpositionMethod,
                     C <: Constraint,
                     B <: Borefield, 
@@ -50,23 +52,28 @@ BoreholeOperation(::Nothing) = BoreholeOperation(BoreholeNetwork([], 0), @view o
         configurations::Vector{BoreholeNetwork}
         Δt
         Nt::Int
+        atol::Tol = 0.
+        rtol::Tol = sqrt(eps())
     )
 
 Specifies all the options for the simulation.
 
 - `method`: time superposition method used to compute the response. Available options: `ConvolutionMethod`, `NonHistoryMethod`.
-- `constraint`: constraint that the system must satisfy. Can be variable with time. Available options: `HeatLoadConstraint`, `InletTempConstraint`.
+- `constraint`: constraint that the system must satisfy. Can be variable with time. Available options: `HeatLoadConstraint`, `InletTempConstraint`, `TotalHeatLoadConstraint`.
 - `borefield`: describes the geometrical properties and the boreholes of the borefield on which the simulation will be performed. Available options: `EqualBoreholesBorefield`.
 - `medium`: properties of the ground where the `borefield` is places. Available options: `GroundMedium`, `FlowInPorousMedium`.
-- `boundary_condition`: boundary condition of the domain where the simulation is performed. Available options: `NoBoundary`, `DirichletBoundaryCondition`.
-- `approximation`: determines how the approximate value for each segment is computed.
+- `boundary_condition`: boundary condition of the domain where the simulation is performed. Available options: `NoBoundary`, `DirichletBoundaryCondition`, `AdiabaticBoundaryCondition`.
+- `approximation`: determines how the approximate value for each segment is computed. Available options: `MeanApproximation`, `MidPointApproximation`.
 - `fluid`: properties of the fluid flowing through the hydraulic system.
 - `configurations`: possible hydraulic topologies possible in the system, including reverse flow.
 - `Δt`: time step used in the simulation.
 - `Nt`: total amount of time steps of the simulation.
+- `atol`: absolute tolerance used for the adaptive integration methods.
+- `rtol`: relative tolerance used for the adaptive integration methods.
 """
 @with_kw struct SimulationOptions{
                     N <: Number,
+                    Tol <: Number,
                     TSM <: TimeSuperpositionMethod,
                     C <: Constraint,
                     B <: Borefield, 
@@ -90,6 +97,8 @@ Specifies all the options for the simulation.
     Tmax = Δt * Nt
     t = Δt:Δt:Tmax
     configurations::Vector{BoreholeNetwork}
+    atol::Tol = 0.
+    rtol::Tol = sqrt(eps())
 end
 
 """

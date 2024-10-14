@@ -18,7 +18,6 @@ using LegendrePolynomials
 using SpecialFunctions
 using RequiredInterfaces
 
-using BoreholeResponseFunctions
 using FiniteLineSource
 
 include("utils.jl")
@@ -35,7 +34,7 @@ export Borefield, EqualBoreholesBorefield
 export Medium, GroundMedium, FlowInPorousMedium
 export Constraint, TotalHeatLoadConstraint, HeatLoadConstraint, InletTempConstraint, constant_HeatLoadConstraint, uniform_HeatLoadConstraint, constant_InletTempConstraint, uniform_InletTempConstraint
 export TimeSuperpositionMethod, ConvolutionMethod, NonHistoryMethod
-export BoundaryCondition, NoBoundary, DirichletBoundaryCondition
+export BoundaryCondition, NoBoundary, DirichletBoundaryCondition, AdiabaticBoundaryCondition
 export Approximation, MidPointApproximation, MeanApproximation
 export SimulationOptions, SimulationContainers, BoreholeNetwork
 export BoreholeOperation, Operator, SimpleOperator, operate

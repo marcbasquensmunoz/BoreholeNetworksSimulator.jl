@@ -1,11 +1,10 @@
 name = "BoreholeNetworksSimulator"
 uuid = "b11dda51-a240-44f0-a43d-fea4e1309b86"
 authors = ["Marc Basquens <marc5@kth.se>", "Alberto Lazzarotto <alberto.lazzarotto84@gmail.com>"]
-version = "0.1.13"
+version = "0.1.14"
 
 [deps]
 Bessels = "0e736298-9ec6-45e8-9647-e4fc86a2fe38"
-BoreholeResponseFunctions = "40984d4a-ff4b-5bb1-8527-cee9e1eb1c87"
 CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
 CoolProp = "e084ae63-2819-5025-826e-f8e611a84251"
 DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
@@ -34,8 +33,8 @@ Aqua = "4c88cf16-eb10-579e-8560-4a9242c79595"
 CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
 Literate = "98b081ad-f1c9-55d3-8b20-4c87d4299306"
-Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 Tables = "bd369af6-aec1-5ad0-b16a-f7cc5008161c"
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
 docs = ["Documenter", "Literate"]
