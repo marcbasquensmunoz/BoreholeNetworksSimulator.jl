@@ -15,18 +15,16 @@ function make_plot(axis, d)
     α = 1e-6
     λ = 3.
 
-    network = BoreholeNetwork([[i] for i in 1:n*m])
+    Q = H
+
+    network = all_parallel_network(n*m)
     configurations = [network]
 
-    function create_rectangular_field(n, m, d)
-        [((i-1)*d, (j-1)*d) for i in 1:n for j in 1:m]
-    end
-
     method = NonHistoryMethod()
-    medium = GroundMedium(λ = λ, α = α, T0 = 20.)
+    medium = GroundMedium(λ = λ, α = α, T0 = 0.)
     borehole = SingleUPipeBorehole(H = H, D = D, λg = 2.5, pipe_position = ((0.03, 0.0), (-0.03, 0.0)))
-    borefield = EqualBoreholesBorefield(borehole_prototype=borehole, positions=create_rectangular_field(n, m, d))
-    constraint = constant_HeatLoadConstraint(ones(n*m), Nt)
+    borefield = RectangularBorefield(n, m, d, d, borehole)
+    constraint = constant_HeatLoadConstraint(Q .* ones(n*m), Nt)
     fluid = Water()
 
     options = SimulationOptions(
@@ -41,13 +39,13 @@ function make_plot(axis, d)
         configurations = configurations
     )
 
-    operator = SimpleOperator(mass_flow = 1., branches =  n_branches(network))
+    operator = SimpleOperator(mass_flow = 1., branches = n_branches(network))
     containers = @time initialize(options)
 
     @time simulate!(operator=operator, options=options, containers=containers)
 
-    bh = Int(2Nb+1 + Nb/2)
-    lines!(axis, log.(options.t ./ (H^2 / 9α)) , containers.X[bh, :], label=L"\frac{d}{L} = %$(d/H)")
+    gfunc = sum(containers.X[2Nb+1:3Nb, :], dims=1) / Nb * (2π*λ)
+    lines!(axis, log.(options.t ./ (H^2 / 9α)) , gfunc[1,:], label=L"\frac{d}{L} = %$(d/H)")
 end
 
 

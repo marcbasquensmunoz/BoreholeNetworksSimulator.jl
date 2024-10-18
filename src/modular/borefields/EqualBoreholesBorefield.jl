@@ -1,13 +1,12 @@
 
 """
-    EqualBoreholesBorefield{T <: Borehole, R <: Medium, S <: Real} <: Borefield
-    EqualBoreholesBorefield(borehole_prototype::T, positions::Vector{Point2{S}}), medium::R)
+    EqualBoreholesBorefield{T <: Borehole, S <: Number} <: Borefield
+    EqualBoreholesBorefield(borehole_prototype::T, positions::Vector{Point2{S}}))
 
 Model a borefield with boreholes all identical to the prototype `borehole_prototype`, placed at `positions`.
 Note that the length of `positions` determines the amount of boreholes in the field.
-`medium` contains the properties of the ground.
 """
-@with_kw struct EqualBoreholesBorefield{T <: Borehole, S <: Real} <: Borefield
+@with_kw struct EqualBoreholesBorefield{T <: Borehole, S <: Number} <: Borefield
     borehole_prototype::T
     positions::Vector{Tuple{S, S}}
 end
