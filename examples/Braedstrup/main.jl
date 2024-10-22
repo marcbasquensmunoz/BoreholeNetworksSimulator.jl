@@ -58,7 +58,7 @@ options = SimulationOptions(
     seasonal_configuration
 end
 
-function BoreholeNetworksSimulator.operate(operator::SeasonalOperator, i, options, Tfin, Tfout, Tb, q)
+function BoreholeNetworksSimulator.operate(operator::SeasonalOperator, i, options, X)
     active_network = options.configurations[operator.seasonal_configuration[i]]
     BoreholeOperation(active_network, operator.mass_flows)
 end
