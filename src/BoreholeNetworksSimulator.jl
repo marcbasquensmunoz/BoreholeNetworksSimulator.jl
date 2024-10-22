@@ -41,5 +41,6 @@ export BoreholeOperation, Operator, SimpleOperator, operate
 export simulate!, compute_parameters, load_cache!, save_cache, initialize
 export n_branches
 export ThermophysicalProperties
+export extract_Tfin, extract_Tfout, extract_Tb, extract_q
 
 end # module

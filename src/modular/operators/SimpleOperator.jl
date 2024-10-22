@@ -11,7 +11,7 @@ struct SimpleOperator{T <: Number} <: Operator
 end
 SimpleOperator(;mass_flow, branches) = SimpleOperator(mass_flow .* ones(eltype(mass_flow), branches))
 
-function operate(operator::SimpleOperator, i, options, Tin, Tout, Tb, q)
+function operate(operator::SimpleOperator, i, options, X)
     network = options.configurations[1]
     BoreholeOperation(network, operator.mass_flows)
 end
