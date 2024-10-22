@@ -1,36 +1,5 @@
 
 """
-    BoreholeNetwork(branches::Vector{Vector{Int}})
-
-Representation of the hydraulic connections of the boreholes in the network.
-Each element in `branches` should be a vector representing a branch of boreholes connected in series, specified by their identifiers.
-The first borehole of each branch is assumed to be connected in parallel. 
-"""
-struct BoreholeNetwork
-    branches::Vector{Vector{Int}}
-    n_boreholes::Int
-end
-BoreholeNetwork(branches::Vector{Vector{Int}}) = BoreholeNetwork(branches, sum([length(branch) for branch in branches]))
-Base.reverse(network::BoreholeNetwork) = BoreholeNetwork(map(branch -> Base.reverse(branch), network.branches))
-n_branches(network::BoreholeNetwork) = length(network.branches)
-n_boreholes(network::BoreholeNetwork) = network.n_boreholes
-first_boreholes(network::BoreholeNetwork) = map(first, network.branches)
-
-"""
-    BoreholeOperation{Arr <: AbstractArray}(
-        network::BoreholeNetwork         
-        mass_flows::Arr
-    )
-
-Represents a operation state of the network, with `network` representing the hydraulic configuration and `mass_flows` a `Vector` containing the mass flow rate of each branch.
-"""
-@with_kw struct BoreholeOperation{Arr <: AbstractArray}
-    network::BoreholeNetwork         
-    mass_flows::Arr
-end
-BoreholeOperation(::Nothing) = BoreholeOperation(BoreholeNetwork([], 0), @view ones(1)[1:1])
-
-"""
     struct SimulationOptions{
                     N <: Number,
                     Tol <: Number,
@@ -49,7 +18,7 @@ BoreholeOperation(::Nothing) = BoreholeOperation(BoreholeNetwork([], 0), @view o
         boundary_condition::BoundaryCondition = DirichletBoundaryCondition()
         approximation::A = MeanApproximation()
         fluid::Fluid{N} = Fluid(cpf=4182., name="INCOMP::MEA-20%")
-        configurations::Vector{BoreholeNetwork}
+        network::BoreholeNetwork
         Δt
         Nt::Int
         atol::Tol = 0.
@@ -96,7 +65,7 @@ Specifies all the options for the simulation.
     Ts::Int = 1
     Tmax = Δt * Nt
     t = Δt:Δt:Tmax
-    configurations::Vector{BoreholeNetwork}
+    netowrk::BoreholeNetwork
     atol::Tol = 0.
     rtol::Tol = sqrt(eps())
 end
