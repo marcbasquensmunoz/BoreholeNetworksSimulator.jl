@@ -52,6 +52,9 @@ get_n_segments(bh::SingleUPipeBorehole) = bh.n_segments
 function uniform_Tb_coeffs(borehole::SingleUPipeBorehole, λ, mass_flow, Tref, fluid)
     @unpack λg, λp, rb, rp, rpo, dpw, H, R_cache, A, method, exp_cache = borehole
 
+    #KK = -0.690665
+    #return KK, 1., -1 - KK
+
     if mass_flow == 0.
         return 1., -1., 0.
     end 
@@ -62,7 +65,9 @@ function uniform_Tb_coeffs(borehole::SingleUPipeBorehole, λ, mass_flow, Tref, f
         x1, y1 = borehole.pipe_position[1]
         x2, y2 = borehole.pipe_position[2]
 
+        #Rp = 1/(2*π*λp)*log(rpo/rp)
         Rp = 1/(2*π*λp)*log(rp/(rp-dpw))
+
 
         d12 = sqrt( (1 - (x1^2+y1^2) / rb^2) * (1 - (x2^2+y2^2) / rb^2) + ( (x1 - x2)^2 + (y1 - y2)^2) / rb^2 )
 
@@ -85,6 +90,8 @@ function uniform_Tb_coeffs(borehole::SingleUPipeBorehole, λ, mass_flow, Tref, f
     exponential!(A, method, exp_cache)
 
     EoutH = A[1, 2] - A[2, 2]
-    EinH  = A[2, 1] - A[1, 1]      
-    return EinH, -EoutH, EoutH - EinH
+    EinH  = A[2, 1] - A[1, 1]     
+
+    @show EinH
+    return EinH, -EoutH, EoutH - EinH 
 end

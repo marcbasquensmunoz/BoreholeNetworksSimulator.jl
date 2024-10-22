@@ -26,8 +26,8 @@ dt = 3600*24*30.
 l = 10.
 
 # High error: 
-#positions = [(0.,0.), (l,0.), (5*l,5*l)]
-positions = [(i*l, j*l) for i in range(2) for j in range(2)]
+positions = [(0.,0.), (l,0.), (5*l,5*l)]
+#positions = [(i*l, j*l) for i in range(2) for j in range(2)]
 
 boreholes = [ gt.boreholes.Borehole(H=H, D=D, r_b=r_b, x=x[0], y=x[1]) for x in positions]
 Utubes = [gt.pipes.SingleUTube(pos=[pos1, pos2], r_in=r_in, r_out=r_out,
