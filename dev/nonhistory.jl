@@ -15,7 +15,7 @@ using BoreholeNetworksSimulator
 #
 
 Δt = 3600.
-Nt = 8760
+Nt = 2#8760
 
 medium = GroundMedium(α=1e-6, λ=3., T0=10.)
 borehole = SingleUPipeBorehole(H=100., D=10.)
