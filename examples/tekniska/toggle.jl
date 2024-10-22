@@ -13,7 +13,7 @@ include("defs.jl")
     mass_flow_containers::Vector{T}
 end
 
-function BoreholeNetworksSimulator.operate(operator::ToggleOperator, step, options, Tin, Tout, Tb, q)
+function BoreholeNetworksSimulator.operate(operator::ToggleOperator, step, options, X)
     @unpack mass_flow, Q_threshold, single_branch, hours_used, toggle, mass_flow_containers = operator
     current_load = options.constraint.Q_tot[step]
 

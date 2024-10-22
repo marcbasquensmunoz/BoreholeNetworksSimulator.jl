@@ -34,7 +34,7 @@ function simulate!(;operator, options::SimulationOptions, containers::Simulation
 
     # Simulation loop
     for i = Ts:Nt
-        operation = @views operate(operator, i, options, X[1:2:2Nb, 1:i], X[2:2:2Nb, 1:i], X[2Nb+1:3Nb, 1:i], X[3Nb+1:end, 1:i])
+        operation = @views operate(operator, i, options, X[:, 1:i-1])
         operation = unwrap(operation)
 
         for (j, branch) in enumerate(operation.network.branches)
