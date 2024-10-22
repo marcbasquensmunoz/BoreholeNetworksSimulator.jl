@@ -1,8 +1,9 @@
+using Graphs
 
 make_color_range(color_pair, n) = n == 1 ? [color_pair[1]] : range(color_pair[1], stop=color_pair[2], length=n)
 
 """
-    plot_borefield(network, positions; distinguished_branches = [], colors = [])
+    plot_borefield(network, positions; distinguished_boreholes = [])
 
 Makes a plot of the borefield, showing the boreholes numbered and their connections.
 # Arguments
@@ -10,10 +11,10 @@ Makes a plot of the borefield, showing the boreholes numbered and their connecti
 - `positions`: The positions of each borehole.
 
 # Optional arguments
-- `distinguished_branches`: Vector of `Int`. If specified, the branches corresponding to the given values will be highlighted with the colors of `colors`.
-- `colors`: Vector of `Tuples` of `Color`. If specified, uses each pair of colors to define a color gradient to color each of the branches of `distinguished_branches`.
+- `distinguished_boreholes`: Vector of `Tuple{Int, Color}`. If specified, the boreholes corresponding to the given values will be highlighted with each of the colors provided.
 """
-function plot_borefield(network, positions; distinguished_branches = [], colors = [])
+function plot_borefield(network, positions; distinguished_boreholes = [])
+
 
     scene = Figure()
     axis = scene[1, 1] = Axis(scene, ylabel = "y [m]", xlabel = "x[m]", aspect = DataAspect())
@@ -21,36 +22,25 @@ function plot_borefield(network, positions; distinguished_branches = [], colors 
     max_x = maximum(map(x->x[1], positions))
     min_y = minimum(map(x->x[2], positions))
     max_y = maximum(map(x->x[2], positions))
-    
+
     margin = max(max_x-min_x, max_y-min_y) * 0.1
 
     xlims!(axis, min_x-margin, max_x+margin)
     ylims!(axis, min_y-margin, max_y+margin)
 
-    scatter!(axis,  Makie.Point2.(positions), markersize = 15.)
+    N = nv(network.graph)
+    borefield = SimpleGraph(network.graph)
+    rem_vertex!(borefield, N)
+    rem_vertex!(borefield, N - 1)
 
-    # Draw boreholes
-    for (i, n_branch) in enumerate(distinguished_branches)
-        branch = network.branches[n_branch]
-        branch_colors = make_color_range(colors[i], length(branch))
-        for (borehole, color) in zip(branch, branch_colors)
-            point =  [ Makie.Point(positions[borehole]) ]
-            scatter!(axis, point, color = color, markersize = 24)
-        end
+    Nb = nv(borefield)
+    borehole_colors = [:black for i in 1:Nb]
+    borehole_sizes = 12 * ones(Int, Nb)
+    for (bh, color) in distinguished_boreholes
+        borehole_colors[bh] = color
+        borehole_sizes[bh] = 16
     end
-
-    # Write labels with borehole numbers
-    for i in eachindex(1:length(positions))
-        text!(axis, "$i", fontsize = 9, position  = (positions[i] .+  (0.7 , -0.7)) , color = :blue)
-    end
-
-    # Draw lines representing connections
-    for branch in network.branches
-        for k in 2:length(branch)
-            s = Makie.Point.([ positions[branch][k-1], positions[branch][k] ] )
-            linesegments!(axis, s, color = :red, linewidth = 1.5)
-        end
-    end
+    graphplot!(axis, borefield, layout=positions, nlabels=["$i" for i in 1:Nb], node_color = borehole_colors, node_size = borehole_sizes, nlabels_distance = 5.)
 
     hidespines!(axis)
 
