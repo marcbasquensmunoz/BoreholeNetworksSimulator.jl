@@ -30,20 +30,19 @@ function simulate!(;operator, options::SimulationOptions, containers::Simulation
     @unpack M, b, X, mf = containers 
     
     last_operation = BoreholeOperation(nothing)
+    mass_flows = zeros(Nb+2)
     fluid_T = get_T0(medium) .* ones(2Nb)
 
     # Simulation loop
     for i = Ts:Nt
         operation = @views operate(operator, i, options, X[:, 1:i-1])
         operation = unwrap(operation)
+        @unpack network = operation
+        compute_mass_flows!(mass_flows, network, operation)
 
-        for (j, branch) in enumerate(operation.network.branches)
-            for borehole in branch
-                mf[borehole, i] = operation.mass_flows[j]
-            end
-        end
+        @views @. mf[:, i] = mass_flows[1:Nb]
 
-        Nbr = n_branches(operation.network)
+        Nbr = n_branches(network)
 
         internal_model_eqs = 1:Nb
         topology_eqs = Nb+1:2Nb-Nbr
@@ -52,16 +51,14 @@ function simulate!(;operator, options::SimulationOptions, containers::Simulation
         balance_eqs = 3Nb+1:4Nb
 
         # Update M
-        @views internal_model_coeffs!(M[internal_model_eqs, :], borefield, medium, operation, fluid_T, fluid)
-        if last_operation.network != operation.network
-            @views topology_coeffs!(M[topology_eqs, :], operation)
-        end
-        @views constraints_coeffs!(M[constraints_eqs, :], constraint, operation, borefield)
+        @views internal_model_coeffs!(M[internal_model_eqs, :], borefield, medium, mass_flows, fluid_T, fluid)
+        @views topology_coeffs!(M[topology_eqs, :], network, mass_flows)
+        @views constraints_coeffs!(M[constraints_eqs, :], constraint, borefield, network, mass_flows)
         if i == Ts
             @views method_coeffs!(M[method_eqs, :], method, options)
         end
         #if last_operation.mass_flows != operation.mass_flows
-            @views heat_balance_coeffs!(M[balance_eqs, :], borefield, operation, fluid)
+            @views heat_balance_coeffs!(M[balance_eqs, :], borefield, mass_flows, fluid)
         #end
 
         # Update b

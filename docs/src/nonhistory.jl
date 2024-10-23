@@ -15,7 +15,7 @@ using BoreholeNetworksSimulator
 #
 
 Δt = 3600.
-Nt = 2#8760
+Nt = 8760
 
 medium = GroundMedium(α=1e-6, λ=3., T0=10.)
 borehole = SingleUPipeBorehole(H=100., D=10.)
@@ -24,8 +24,9 @@ borefield = EqualBoreholesBorefield(borehole_prototype=borehole, positions=posit
 constraint = constant_HeatLoadConstraint(5 .* ones(BoreholeNetworksSimulator.n_boreholes(borefield)), Nt)
 fluid = Water()
 
-configurations = [BoreholeNetwork([[1], [2]])]
-operator = SimpleOperator(mass_flow = 2., branches = 2)
+network = all_parallel_network(2)
+configurations = [network]
+operator = ConstantOperator(network, mass_flows = 2 * ones(2))
 
 # Now, we define two different options using different `method` parameters, 
 # one with `ConvolutionMethod` corresponding to the convolution,

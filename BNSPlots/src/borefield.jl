@@ -14,8 +14,6 @@ Makes a plot of the borefield, showing the boreholes numbered and their connecti
 - `distinguished_boreholes`: Vector of `Tuple{Int, Color}`. If specified, the boreholes corresponding to the given values will be highlighted with each of the colors provided.
 """
 function plot_borefield(network, positions; distinguished_boreholes = [])
-
-
     scene = Figure()
     axis = scene[1, 1] = Axis(scene, ylabel = "y [m]", xlabel = "x[m]", aspect = DataAspect())
     min_x = minimum(map(x->x[1], positions))

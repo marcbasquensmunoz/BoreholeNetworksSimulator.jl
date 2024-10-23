@@ -10,19 +10,20 @@ struct TotalHeatLoadConstraint{T <: Number} <: Constraint
 end
 
 
-function constraints_coeffs!(M, ::TotalHeatLoadConstraint, operation, borefield)
+function constraints_coeffs!(M, ::TotalHeatLoadConstraint, borefield::Borefield, network, mass_flows)
     M .= zero(eltype(M))
 
-    Nb = n_boreholes(operation.network)
+    Nb = n_boreholes(network)
 
-    first_bh = operation.network.branches[1][1]
-    for i in 1:(length(operation.network.branches)-1)
-        M[i+1, 2*first_bh-1] = -1.
-        bh_in = 2*operation.network.branches[i+1][1]-1
-        M[i+1, bh_in] = 1.
+    first_bhs = first_bhs_in_branch(network)
+    first_bh = first_bhs[1]
+    for i in 2:n_branches(network)
+        M[i, 2*first_bh-1] = -1.
+        bh_in = 2*first_bhs[i]-1
+        M[i, bh_in] = 1.
     end
 
-    if sum(operation.mass_flows) == 0
+    if sum(mass_flows) == 0
         M[1, 2*first_bh-1] = 1.
         M[1, 2Nb+first_bh] = -1.
         return

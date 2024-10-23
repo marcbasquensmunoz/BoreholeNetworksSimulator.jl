@@ -18,7 +18,7 @@
         boundary_condition::BoundaryCondition = DirichletBoundaryCondition()
         approximation::A = MeanApproximation()
         fluid::Fluid{N} = Fluid(cpf=4182., name="INCOMP::MEA-20%")
-        network::BoreholeNetwork
+        configurations::Vector{BoreholeNetwork}
         Δt
         Nt::Int
         atol::Tol = 0.
@@ -65,7 +65,7 @@ Specifies all the options for the simulation.
     Ts::Int = 1
     Tmax = Δt * Nt
     t = Δt:Δt:Tmax
-    netowrk::BoreholeNetwork
+    configurations::Vector{BoreholeNetwork}
     atol::Tol = 0.
     rtol::Tol = sqrt(eps())
 end

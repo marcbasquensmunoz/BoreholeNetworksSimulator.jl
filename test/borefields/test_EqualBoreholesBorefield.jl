@@ -37,12 +37,13 @@ end
     fluid = FluidMock(cpf = 1000.)
     T_fluid = 10 * ones(2*Nb)
 
-    network = BoreholeNetwork([[1], [2], [3]])
-    mass_flows = ones(Nb)
-    operation = BoreholeOperation(network=network, mass_flows=mass_flows)
+    network = all_parallel_network(Nb)
+    mass_flows = initialize_mass_flows(network)
+    operation = BoreholeOperation(network=network, mass_flows=ones(Nb))
+    compute_mass_flows!(mass_flows, network, operation)
 
     M = zeros(Nb, 4*Nb)
-    internal_model_coeffs!(M, borefield, medium, operation, T_fluid, fluid)
+    internal_model_coeffs!(M, borefield, medium, mass_flows, T_fluid, fluid)
 
     expected = [
         (1, 1, Ci), (1, 2, Co), (1, 2Nb+1, Cb),

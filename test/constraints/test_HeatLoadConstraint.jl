@@ -12,11 +12,14 @@ import BoreholeNetworksSimulator: constraints_coeffs!, constraints_b!
 
     M = zeros(Nbr, 4*Nb)
 
-    network = BoreholeNetwork([[1], [2], [3]])
+    network = all_parallel_network(Nb)
+    mass_flows = initialize_mass_flows(network)
     operation = BoreholeOperation(network=network, mass_flows=ones(Nbr))
+    compute_mass_flows!(mass_flows, network, operation)
+
     borefield = BorefieldMock(H = H * ones(3))
 
-    constraints_coeffs!(M, constraint, operation, borefield)
+    constraints_coeffs!(M, constraint, borefield, network, mass_flows)
 
     expected = [(1, 3Nb+1, H), (2, 3Nb+2, H), (3, 3Nb+3, H)]
     @test test_sparse_matrix(M, expected)
@@ -34,11 +37,14 @@ end
 
     M = zeros(Nbr, 4*Nb)
 
-    network = BoreholeNetwork([[1, 2, 3]])
-    operation = BoreholeOperation(network=network, mass_flows=ones(Nbr))
     borefield = BorefieldMock(H = H * ones(3))
 
-    constraints_coeffs!(M, constraint, operation, borefield)
+    network = all_series_network(Nb)
+    mass_flows = initialize_mass_flows(network)
+    operation = BoreholeOperation(network=network, mass_flows=ones(Nbr))
+    compute_mass_flows!(mass_flows, network, operation)
+
+    constraints_coeffs!(M, constraint, borefield, network, mass_flows)
 
     expected = [(1, 3Nb+1, H), (1, 3Nb+2, H), (1, 3Nb+3, H)]
     @test test_sparse_matrix(M, expected)
@@ -56,11 +62,18 @@ end
 
     M = zeros(Nbr, 4*Nb)
 
-    network = BoreholeNetwork([[1, 2], [3, 4], [5]])
+    network = BoreholeNetwork(5)
+    connect_to_source!(network, [1, 3, 5])
+    connect!(network, 1, 2)
+    connect!(network, 3, 4)
+    connect_to_sink!(network, [2, 4, 5])
     operation = BoreholeOperation(network=network, mass_flows=ones(Nbr))
+    mass_flows = initialize_mass_flows(network)
+    compute_mass_flows!(mass_flows, network, operation)
+
     borefield = BorefieldMock(H = H * ones(5))
 
-    constraints_coeffs!(M, constraint, operation, borefield)
+    constraints_coeffs!(M, constraint, borefield, network, mass_flows)
 
     expected = [(1, 3Nb+1, H), (1, 3Nb+2, H), (2, 3Nb+3, H), (2, 3Nb+4, H), (3, 3Nb+5, H)]
     @test test_sparse_matrix(M, expected)
@@ -79,7 +92,7 @@ end
 
     b = zeros(Nbr)
 
-    network = BoreholeNetwork([[1], [2], [3]])
+    network = all_parallel_network(Nb)
     operation = BoreholeOperation(network=network, mass_flows=ones(Nbr))
 
     b_time = zeros(Nbr, Nt)

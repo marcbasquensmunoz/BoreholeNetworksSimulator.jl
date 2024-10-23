@@ -30,5 +30,5 @@ end
 end
 
 @testset "test_Operator_interfaces" begin
-    @test RI.check_interface_implemented(Operator, SimpleOperator)
+    @test RI.check_interface_implemented(Operator, ConstantOperator)
 end
