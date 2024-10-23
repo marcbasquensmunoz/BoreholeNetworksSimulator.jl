@@ -15,16 +15,18 @@ borehole_locations = "$(@__DIR__)/data/Braedstrup_borehole_coordinates.txt"
 Δt = 8760*3600/12.
 Nt = 120
 
-network = BoreholeNetwork([
-    [35, 36, 29, 37, 30, 22],
-    [43, 48, 42, 41, 40, 34],
-    [47, 46, 45, 39, 32, 33],
-    [44, 38, 31, 24, 25, 26],
-    [18, 12, 11, 17, 16, 23],
-    [19, 13, 7, 6, 5, 10],
-    [20, 14, 8, 3, 2, 1],
-    [27, 28, 21, 15, 9, 4]
-])
+network = BoreholeNetwork(48)
+connect_to_source!(network, [35, 43, 47, 44, 18, 19, 20, 27])
+connect_in_series!(network, [35, 36, 29, 37, 30, 22])
+connect_in_series!(network, [43, 48, 42, 41, 40, 34])
+connect_in_series!(network, [47, 46, 45, 39, 32, 33])
+connect_in_series!(network, [44, 38, 31, 24, 25, 26])
+connect_in_series!(network, [18, 12, 11, 17, 16, 23])
+connect_in_series!(network, [19, 13, 7, 6, 5, 10])
+connect_in_series!(network, [20, 14, 8, 3, 2, 1])
+connect_in_series!(network, [27, 28, 21, 15, 9, 4])
+connect_to_sink!(network, [22, 34, 33, 26, 23, 10, 1, 4])
+
 configurations = [  
     network,            # Heat extraction
     reverse(network)    # Heat injection

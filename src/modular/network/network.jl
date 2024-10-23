@@ -22,6 +22,24 @@ function BoreholeOperation(;network::BoreholeNetwork, mass_flows::Vector{T}) whe
     BoreholeOperation(Dict(source(network) => source_valve), sum(mass_flows), network)
 end
 # Maybe do something if a branch receives 0 mass flow
+function Base.reverse(network::BoreholeNetwork) 
+    inlets = outneighbors(network.graph, source(network))
+    outlets = inneighbors(network.graph, sink(network))
+    reverse_graph = Base.reverse(network.graph)
+    for inlet in inlets 
+        rem_edge!(reverse_graph, inlet, source(network))
+    end
+    for outlet in outlets 
+        rem_edge!(reverse_graph, sink(network), outlet)
+    end
+    for inlet in inlets 
+        add_edge!(reverse_graph, inlet, sink(network))
+    end
+    for outlet in outlets 
+        add_edge!(reverse_graph, source(network), outlet)
+    end
+    BoreholeNetwork(reverse_graph)
+end
 n_boreholes(n::BoreholeNetwork) = nv(n.graph) - 2
 n_branches(n::BoreholeNetwork) = length(neighbors(n.graph, source(n)))
 initialize_mass_flows(network::BoreholeNetwork) = zeros(nv(network.graph))
@@ -113,3 +131,4 @@ function compute_mass_flows!(mass_flows, network::BoreholeNetwork, operation::Bo
         end
     end
 end
+
