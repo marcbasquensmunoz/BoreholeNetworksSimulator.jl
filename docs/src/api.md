@@ -31,7 +31,7 @@ Operator
 ### Prewritten operator strategies
 
 ```@docs
-SimpleOperator
+ConstantOperator
 ```
 
 ## Simulation Options
