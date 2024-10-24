@@ -104,11 +104,7 @@ function initialize(options::SimulationOptions)
 end
 function SimulationContainers(options::SimulationOptions) 
     @unpack Nb, Nt = options
-    if Nb > 50
-        SimulationContainers(M = spzeros(4Nb, 4Nb), b = zeros(4Nb), X = zeros(4Nb, Nt), mf = zeros(Nb, Nt))
-    else 
-        SimulationContainers(M = zeros(4Nb, 4Nb), b = zeros(4Nb), X = zeros(4Nb, Nt), mf = zeros(Nb, Nt))
-    end
+    SimulationContainers(M =  Nb > 100 ? spzeros(4Nb, 4Nb) : zeros(4Nb, 4Nb), b = zeros(4Nb), X = zeros(4Nb, Nt), mf = zeros(Nb, Nt))
 end
 
 function branch_of_borehole(operation::BoreholeOperation, borehole)

@@ -6,7 +6,7 @@ using WGLMakie
 Δt = 3600.
 Nt = 8760*5
 
-network = BoreholeNetwork([[i] for i in 1:10])
+network = all_parallel_network(10)
 configurations = [  
     network
 ]
@@ -60,7 +60,7 @@ options = SimulationOptions(
 )
 
 group1 = [1, 6, 2, 7, 3, 8]
-borefield_fig = plot_borefield(network, borehole_positions, distinguished_branches=collect(1:10), colors=[i in group1 ? (colorant"red", colorant"red") : (colorant"green", colorant"green") for i in 1:10])
+borefield_fig = plot_borefield(network, borehole_positions, distinguished_boreholes=[(i, i in group1 ? colorant"red" : colorant"green") for i in 1:10])
 
 function plot_weekly_Q()
     fig = Figure(size=(1500, 400))

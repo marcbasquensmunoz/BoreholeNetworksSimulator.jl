@@ -62,7 +62,7 @@ end
 
 function BoreholeNetworksSimulator.operate(operator::SeasonalOperator, i, options, X)
     active_network = options.configurations[operator.seasonal_configuration[i]]
-    BoreholeOperation(active_network, operator.mass_flows)
+    BoreholeOperation(network=active_network, mass_flows=operator.mass_flows)
 end
 
 operator = SeasonalOperator(mass_flows=0.5 .* ones(n_branches(network)), seasonal_configuration=[i%12 in 1:6 ? 2 : 1 for i in 1:Nt])
@@ -76,11 +76,10 @@ containers.X
 ############
 # Draw plots
 
-monitored_branches = [3, 8]
-color_ranges = [(colorant"darkorange", colorant"blue"), (colorant"red", colorant"green")]
+monitoring = [(27, colorant"darkorange"), (28, colorant"green")]
 
-borefiled_plot = plot_borefield(network, borehole_positions, distinguished_branches = monitored_branches, colors = color_ranges)
-branch1 = monitor(containers, network.branches[monitored_branches[1]], options.t, display = [:Tfin], color_pair=color_ranges[1])
+borefield_plot = plot_borefield(network, borehole_positions, distinguished_boreholes = monitoring)
+branch1 = monitor(containers, boreholes_in_branch(network, first_bh=19), options.t, display = [:Tfin])
 
 # save("examples/Braedstrup/plots/Braedstrup_borefield.png", borefiled_plot)
 # save("examples/Braedstrup/plots/branch1.png", branch1)

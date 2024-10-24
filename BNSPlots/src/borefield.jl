@@ -26,13 +26,12 @@ function plot_borefield(network, positions; distinguished_boreholes = [])
     xlims!(axis, min_x-margin, max_x+margin)
     ylims!(axis, min_y-margin, max_y+margin)
 
-    N = nv(network.graph)
     borefield = SimpleGraph(network.graph)
-    rem_vertex!(borefield, N)
-    rem_vertex!(borefield, N - 1)
+    rem_vertex!(borefield, nv(borefield))
+    rem_vertex!(borefield, nv(borefield))
 
     Nb = nv(borefield)
-    borehole_colors = [:black for i in 1:Nb]
+    borehole_colors = [colorant"black" for i in 1:Nb]
     borehole_sizes = 12 * ones(Int, Nb)
     for (bh, color) in distinguished_boreholes
         borehole_colors[bh] = color

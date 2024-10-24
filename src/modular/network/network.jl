@@ -40,6 +40,12 @@ function Base.reverse(network::BoreholeNetwork)
     end
     BoreholeNetwork(reverse_graph)
 end
+
+function boreholes_in_branch(n::BoreholeNetwork; first_bh::Int)
+    boreholes = neighborhood(n.graph, first_bh, nv(n.graph))
+    filter!(i -> i ≠ sink(n), boreholes)
+    boreholes
+end
 n_boreholes(n::BoreholeNetwork) = nv(n.graph) - 2
 n_branches(n::BoreholeNetwork) = length(neighbors(n.graph, source(n)))
 initialize_mass_flows(network::BoreholeNetwork) = zeros(nv(network.graph))
@@ -81,7 +87,7 @@ function absolute_valve(nodes::Vector{Int}, mass_flows::Vector{T}) where {T <: N
     valve = Valve(Dict{Int, T}())
     total_mass_flow = sum(mass_flows)
     for (i, n) in enumerate(nodes)
-        valve.split[n] = mass_flows[i] / total_mass_flow
+        valve.split[n] = total_mass_flow != 0 ? mass_flows[i] / total_mass_flow : 0.
     end
     return valve
 end

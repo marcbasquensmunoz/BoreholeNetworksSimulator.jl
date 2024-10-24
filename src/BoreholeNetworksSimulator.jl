@@ -39,7 +39,7 @@ export BoundaryCondition, NoBoundary, DirichletBoundaryCondition, AdiabaticBound
 export Approximation, MidPointApproximation, MeanApproximation
 export SimulationOptions, SimulationContainers
 export BoreholeNetwork, Valve, BoreholeOperation
-export connect_to_source!, connect_to_sink!, connect!, all_series_network, all_parallel_network, compute_mass_flows!, source, sink, connect_in_series!, equal_valve, valve, absolute_valve, initialize_mass_flows
+export connect_to_source!, connect_to_sink!, connect!, all_series_network, all_parallel_network, compute_mass_flows!, source, sink, connect_in_series!, equal_valve, valve, absolute_valve, initialize_mass_flows, boreholes_in_branch
 export Operator, SimpleOperator, operate
 export ConstantOperator
 export simulate!, compute_parameters, load_cache!, save_cache, initialize
