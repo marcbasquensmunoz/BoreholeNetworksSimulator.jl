@@ -27,6 +27,11 @@ BoreholeNetwork(n::Int) = BoreholeNetwork(graph=SimpleDiGraph(n+2))
 n_boreholes(n::BoreholeNetwork) = nv(n.graph) - 2
 n_branches(n::BoreholeNetwork) = length(neighbors(n.graph, source(n)))
 initialize_mass_flows(network::BoreholeNetwork) = zeros(nv(network.graph))
+"""
+    first_bhs_in_branch(network::BoreholeNetwork)
+
+Return the first borehole in each branch of the borefield.
+"""
 first_bhs_in_branch(network::BoreholeNetwork) = outneighbors(network.graph, source(network))
 
 """

@@ -22,10 +22,6 @@ BoreholeNetwork
 
 Some relevant network related functions:
 ```@docs
-initialize_mass_flows
-```
-
-```@docs
 boreholes_in_branch
 ```
 
