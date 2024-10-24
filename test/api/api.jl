@@ -1,7 +1,7 @@
 
 @testset "test_Approximations" begin
     @test MeanApproximation() isa Any
-    #@test MidPointApproximation() isa Any
+    @test MidPointApproximation() isa Any
 end
 
 @testset "test_Boreholes" begin
