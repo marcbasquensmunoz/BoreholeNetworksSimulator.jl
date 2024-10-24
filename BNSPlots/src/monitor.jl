@@ -14,7 +14,7 @@ end
 Creates a plot of the result of the simulation.
 # Arguments
 - `containers`: The containers (`SimulationContainers`) containing the result of the simulation through `simulate!`.
-- `branch`: A vector containing the IDs of the boreholes whose data will be displayed. 
+- `boreholes`: A vector containing the IDs of the boreholes whose data will be displayed. 
 - `t`: The times at which the data corresponds. It should normally be `options.t`.
 
 # Optional arguments
@@ -22,9 +22,9 @@ Creates a plot of the result of the simulation.
 - `display`: A vector describing which plots that will be generated. If `:Tfin`, `:Tfout` or `:Tb` are specified, a temperature plot will be created showing the inlet fluid temperature, 
     the outlet fluid temperature, and the borehole wall temperature, respectively. If `:q` is specified, a separate power plot will be created shwoing the heat extracted per meter.
 - `Δt`: The scale of the x-axis in the plot. Possible options: `:year`, `:month`, `:hour`.
-- `color_pair`: A pair of colors used as extrema to generate a range of colors for each borehole. 
+- `colors`: A list of colors used for each borehole. If not specified, the colors used will be between colorant"navajowhite2" and colorant"darkgreen".
 """
-function monitor(containers, branch, t; steps = 1:length(t), display = [:Tfin, :Tfout, :Tb, :q, :mf], Δt = :year, color_pair = (colorant"navajowhite2", colorant"darkgreen"))
+function monitor(containers, boreholes, t; steps = 1:length(t), display = [:Tfin, :Tfout, :Tb, :q, :mf], Δt = :year, colors = [])
     if isempty(display)
         return
     end
@@ -36,8 +36,12 @@ function monitor(containers, branch, t; steps = 1:length(t), display = [:Tfin, :
     grid = scene[1, 1] = GridLayout()
     axes = []
 
-    color_range = make_color_range(color_pair, length(branch)) 
-    
+    if !isempty(colors)
+        color_range = colors
+    else
+        color_range = make_color_range((colorant"navajowhite2", colorant"darkgreen"), length(boreholes)) 
+    end
+
     if anyin([:Tfin, :Tfout, :Tb], display)
         axis_T = Axis(grid[length(axes)+1, 1], ylabel = L"T \, \left[ °C \right]")
         push!(axes, axis_T)
@@ -51,11 +55,11 @@ function monitor(containers, branch, t; steps = 1:length(t), display = [:Tfin, :
         push!(axes, axis_m)
     end
 
-    Tfin = get_Tfin(containers, branch)  
-    Tfout = get_Tfout(containers, branch)  
-    Tb = get_Tb(containers, branch)    
-    q = get_q(containers, branch)
-    mf = get_mf(containers, branch)
+    Tfin = get_Tfin(containers, boreholes)  
+    Tfout = get_Tfout(containers, boreholes)  
+    Tb = get_Tb(containers, boreholes)    
+    q = get_q(containers, boreholes)
+    mf = get_mf(containers, boreholes)
 
     secs_in_year = 8760*3600
     conversion = Dict(:year => 1, :month => 12, :hour => 8760)
@@ -79,10 +83,9 @@ function monitor(containers, branch, t; steps = 1:length(t), display = [:Tfin, :
         end
     end
 
-
     group_color = [PolyElement(color = color, strokecolor = :transparent) for color in color_range]
     group_marker = [LineElement(color = :black), LineElement(color = :black, linestyle = :dash), MarkerElement(marker = :circle, color = :black, strokecolor = :transparent, markersize = 5.)]
-    legend = Legend(scene, [group_color, group_marker], [string.(branch), ["Tfin", "Tfout", "Tb"]], ["Boreholes", "Temperatures"], tellheight = true, tellwidth = false)
+    legend = Legend(scene, [group_color, group_marker], [string.(boreholes), ["Tfin", "Tfout", "Tb"]], ["Boreholes", "Temperatures"], tellheight = true, tellwidth = false)
     legend.titleposition = :top
     legend.orientation = :horizontal
     legend.nbanks = 1

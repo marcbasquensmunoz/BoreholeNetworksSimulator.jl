@@ -33,22 +33,21 @@ function segment_coordinates(bf::EqualBoreholesBorefield, segment)
     (position[1], position[2], z_ref, h)
 end
 
-function internal_model_coeffs!(M, borefield::EqualBoreholesBorefield, medium, operation, T_fluid, fluid)
+function internal_model_coeffs!(M, borefield::EqualBoreholesBorefield, medium, mass_flows, T_fluid, fluid)
     Nb = n_boreholes(borefield)
     λ = get_λ(medium)
 
-    for (i, branch) in enumerate(operation.network.branches)
-        mass_flow = operation.mass_flows[i]
+    # TODO: Optimize for boreholes with same mass_flow
+    for i in 1:Nb
+        mass_flow = mass_flows[i]
 
-        for j in branch
-            Tref = (T_fluid[2*j - 1] + T_fluid[2*j]) / 2
+        Tref = (T_fluid[2i - 1] + T_fluid[2i]) / 2
 
-            k_in, k_out, k_b = uniform_Tb_coeffs(borefield.borehole_prototype, λ, mass_flow, Tref, fluid)
+        k_in, k_out, k_b = uniform_Tb_coeffs(borefield.borehole_prototype, λ, mass_flow, Tref, fluid)
 
-            M[j, j*2 - 1]  = k_in
-            M[j, j*2]      = k_out
-            M[j, Nb*2 + j] = k_b    
-        end
+        M[i, 2i - 1]  = k_in
+        M[i, 2i]      = k_out
+        M[i, 2Nb + i] = k_b    
     end
 end
 

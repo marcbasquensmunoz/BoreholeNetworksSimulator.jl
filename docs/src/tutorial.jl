@@ -72,7 +72,7 @@ borefield = EqualBoreholesBorefield(borehole_prototype=borehole, positions=posit
 # In our example, we want to simulate two independent boreholes, so each of them must be in a separate branch.
 # Also, for the moment, we are only interested in this configuration, so we define:
 
-configurations = [BoreholeNetwork([[1], [2]])]
+network = all_parallel_network(2)
 
 # Even with all these specifications, the evolution of the system is still not fully determined.
 # The missing conditions are referred to as constraints, and are modeled by subtypes of [`Constraint`](@ref).
@@ -80,8 +80,8 @@ configurations = [BoreholeNetwork([[1], [2]])]
 # impose that their inlet temperatures be equal. In our example, since we want out boreholes to be independent, 
 # we will impose the total amount of heat that we want to extract from each borehole. We will impose a constant
 # load, equal for both boreholes. This is specified by
-q1 = 5.
-q2 = 5.
+q1 = H
+q2 = H
 constraint = constant_HeatLoadConstraint([q1, q2], Nt)
 
 # We can finally create the object with all the options:
@@ -94,7 +94,7 @@ options = SimulationOptions(
     fluid = Water(),
     Δt = Δt,
     Nt = Nt,
-    configurations = configurations
+    configurations = [network]
 )
 
 # As we have mentioned, the simulation is designed to allow for a controllable opeartion during its duration.
@@ -105,9 +105,10 @@ options = SimulationOptions(
 # configuration will be used for the next time step. In our case, we only want a static, simple configuration.
 # The second specifies the mass flow rate through each branch of the selected configuration, provided as 
 # a vector. In our example, we will keep this constant through the simulation.
-# For this purpose, there exists the type [`SimpleOperator`](@ref), that implements precisely this strategy.
+# For this purpose, there exists the type [`ConstantOperator`](@ref), that implements precisely this strategy.
 
-operator = SimpleOperator(mass_flow = 2., branches = 2)
+# TODO: Update tutorial with new operation and network
+operator = ConstantOperator(network, mass_flows = 2 * ones(2))
 
 # Before simulating, we first need to call [`initialize`](@ref) to run some precomputations
 # that will be used throught the simulation and to instantiate containers where the result will be written.

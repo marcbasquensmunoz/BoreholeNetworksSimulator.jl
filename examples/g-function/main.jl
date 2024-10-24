@@ -15,7 +15,7 @@ function make_plot(axis, d)
     α = 1e-6
     λ = 3.
 
-    network = BoreholeNetwork([[i] for i in 1:n*m])
+    network = all_parallel_network(n*m)
     configurations = [network]
 
     function create_rectangular_field(n, m, d)
@@ -41,7 +41,7 @@ function make_plot(axis, d)
         configurations = configurations
     )
 
-    operator = SimpleOperator(mass_flow = 1., branches =  n_branches(network))
+    operator = ConstantOperator(network, mass_flows = ones(n*m))
     containers = @time initialize(options)
 
     @time simulate!(operator=operator, options=options, containers=containers)

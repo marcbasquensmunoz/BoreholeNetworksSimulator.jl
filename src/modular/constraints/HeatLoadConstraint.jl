@@ -42,13 +42,16 @@ function uniform_HeatLoadConstraint(Q_tot::Vector{T}, Nbr) where {T <: Number}
     HeatLoadConstraint(Q)
 end
 
-function constraints_coeffs!(M, ::HeatLoadConstraint, operation, borefield)
+function constraints_coeffs!(M, ::HeatLoadConstraint, borefield::Borefield, network, mass_flows)
     M .= zero(eltype(M))
 
-    for (i, branch) in enumerate(operation.network.branches)
-        Nb = n_boreholes(operation.network)
-        for j in branch
-            M[i, 3Nb + j] = one(eltype(M)) * get_H(borefield, j)
+    Nb = n_boreholes(network)
+    for (i, first_bh) in enumerate(first_bhs_in_branch(network))
+        for bh in neighborhood(network.graph, first_bh, Nb)
+            if bh == source(network) || bh == sink(network) 
+                continue
+            end
+            M[i, 3Nb + bh] = one(eltype(M)) * get_H(borefield, bh)
         end
     end
 end

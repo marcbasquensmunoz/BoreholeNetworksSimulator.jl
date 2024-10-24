@@ -1,36 +1,5 @@
 
 """
-    BoreholeNetwork(branches::Vector{Vector{Int}})
-
-Representation of the hydraulic connections of the boreholes in the network.
-Each element in `branches` should be a vector representing a branch of boreholes connected in series, specified by their identifiers.
-The first borehole of each branch is assumed to be connected in parallel. 
-"""
-struct BoreholeNetwork
-    branches::Vector{Vector{Int}}
-    n_boreholes::Int
-end
-BoreholeNetwork(branches::Vector{Vector{Int}}) = BoreholeNetwork(branches, sum([length(branch) for branch in branches]))
-Base.reverse(network::BoreholeNetwork) = BoreholeNetwork(map(branch -> Base.reverse(branch), network.branches))
-n_branches(network::BoreholeNetwork) = length(network.branches)
-n_boreholes(network::BoreholeNetwork) = network.n_boreholes
-first_boreholes(network::BoreholeNetwork) = map(first, network.branches)
-
-"""
-    BoreholeOperation{Arr <: AbstractArray}(
-        network::BoreholeNetwork         
-        mass_flows::Arr
-    )
-
-Represents a operation state of the network, with `network` representing the hydraulic configuration and `mass_flows` a `Vector` containing the mass flow rate of each branch.
-"""
-@with_kw struct BoreholeOperation{Arr <: AbstractArray}
-    network::BoreholeNetwork         
-    mass_flows::Arr
-end
-BoreholeOperation(::Nothing) = BoreholeOperation(BoreholeNetwork([], 0), @view ones(1)[1:1])
-
-"""
     struct SimulationOptions{
                     N <: Number,
                     Tol <: Number,
@@ -135,11 +104,7 @@ function initialize(options::SimulationOptions)
 end
 function SimulationContainers(options::SimulationOptions) 
     @unpack Nb, Nt = options
-    if Nb > 50
-        SimulationContainers(M = spzeros(4Nb, 4Nb), b = zeros(4Nb), X = zeros(4Nb, Nt), mf = zeros(Nb, Nt))
-    else 
-        SimulationContainers(M = zeros(4Nb, 4Nb), b = zeros(4Nb), X = zeros(4Nb, Nt), mf = zeros(Nb, Nt))
-    end
+    SimulationContainers(M =  Nb > 100 ? spzeros(4Nb, 4Nb) : zeros(4Nb, 4Nb), b = zeros(4Nb), X = zeros(4Nb, Nt), mf = zeros(Nb, Nt))
 end
 
 function branch_of_borehole(operation::BoreholeOperation, borehole)
