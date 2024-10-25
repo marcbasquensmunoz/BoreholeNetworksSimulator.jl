@@ -16,6 +16,6 @@ Required functions:
 abstract type Constraint end
 
 @required Constraint begin
-    constraints_coeffs!(M, ::Constraint, operation, borefield)
+    constraints_coeffs!(M, ::Constraint, ::Borefield, network, mass_flows)
     constraints_b!(b, ::Constraint, operation, step)
 end

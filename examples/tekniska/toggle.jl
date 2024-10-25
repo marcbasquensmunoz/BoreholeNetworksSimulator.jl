@@ -13,7 +13,7 @@ include("defs.jl")
     mass_flow_containers::Vector{T}
 end
 
-function BoreholeNetworksSimulator.operate(operator::ToggleOperator, step, options, Tin, Tout, Tb, q)
+function BoreholeNetworksSimulator.operate(operator::ToggleOperator, step, options, X)
     @unpack mass_flow, Q_threshold, single_branch, hours_used, toggle, mass_flow_containers = operator
     current_load = options.constraint.Q_tot[step]
 
@@ -39,7 +39,7 @@ function BoreholeNetworksSimulator.operate(operator::ToggleOperator, step, optio
     mass_flow_containers[branch2] .= mf2
 
     @pack! operator = single_branch, hours_used, toggle, mass_flow_containers
-    BoreholeOperation(options.configurations[1], mass_flow_containers)
+    BoreholeOperation(network = options.configurations[1], mass_flows = mass_flow_containers)
 end
 
 operator = ToggleOperator(Q_threshold = 20000., mass_flow = 0.5, mass_flow_containers = zeros(n_branches(network)))
@@ -47,6 +47,6 @@ containers = @time initialize(options)
 @time simulate!(operator=operator, options=options, containers=containers)
 
 t_range = (5*8760-24*7):5*8760
-toggle_plot = monitor(containers, [4, 7], options.t, steps = t_range, color_pair = (colorant"darkgreen", colorant"red")) 
+toggle_plot = monitor(containers, [4, 7], options.t, steps = t_range, colors = [colorant"darkgreen", colorant"red"]) 
 
 # save("examples/tekniska/plots/toggle.png", toggle_plot)

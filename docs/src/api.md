@@ -20,9 +20,56 @@ See [Basic tutorial](@ref) for more details.
 BoreholeNetwork
 ```
 
+Some relevant network related functions:
+```@docs
+boreholes_in_branch
+```
+
+```@docs
+first_bhs_in_branch
+```
+
+```@docs
+source
+```
+```@docs
+sink
+```
+```@docs
+connect!
+```
+```@docs
+connect_to_source!
+```
+```@docs
+connect_to_sink!
+```
+```@docs
+connect_in_series!
+```
+```@docs
+connect_in_parallel!
+```
+
 ```@docs
 BoreholeOperation
 ```
+
+```@docs
+Valve
+```
+
+Valve creation:
+```@docs
+valve
+```
+```@docs
+equal_valve
+```
+```@docs
+absolute_valve
+```
+
 
 ```@docs
 Operator
@@ -31,7 +78,7 @@ Operator
 ### Prewritten operator strategies
 
 ```@docs
-SimpleOperator
+ConstantOperator
 ```
 
 ## Simulation Options

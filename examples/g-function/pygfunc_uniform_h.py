@@ -56,7 +56,6 @@ import sys, os
 sys.path.insert(1, "/".join(os.path.realpath(__file__).split("/")[0:-3]))
 import BNSPythonAdapter.src.adapter
 from juliacall import Main as jl
-jl.seval("using FiniteLineSource")
 import numpy as np
 import pandas as pd
 
@@ -84,7 +83,7 @@ options = jl.SimulationOptions(
     configurations = jl.Array[jl.BoreholeNetwork]([network])
 )
 
-operator = jl.SimpleOperator(mass_flow = m_flow_network, branches = jl.n_branches(network))
+operator = jl.ConstantOperator(network, mass_flows = jl.Array[jl.Float64](m_flow_network * np.ones(n)))
 
 containers = jl.initialize(options)
 jl.simulate_b(operator=operator, options=options, containers=containers)

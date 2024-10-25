@@ -81,7 +81,7 @@ options = jl.SimulationOptions(
     configurations = jl.Array[jl.BoreholeNetwork]([network])
 )
 
-operator = jl.SimpleOperator(mass_flow = m_flow_network, branches = jl.n_branches(network))
+operator = jl.ConstantOperator(network, mass_flows = jl.Array[jl.Float64](m_flow_network * np.ones(n)))
 
 containers = jl.initialize(options)
 jl.simulate_b(operator=operator, options=options, containers=containers)
