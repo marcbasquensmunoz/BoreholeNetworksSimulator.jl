@@ -42,7 +42,7 @@ step_response(s::MovingSegmentToSegment, params::Constants, t; atol, rtol) = mst
 function stp_response(s::SegmentToPoint, params::Constants, t; atol, rtol)
     @unpack σ, H, D, z = s
     @unpack α, kg = params
-    return fls_step_response(t, σ, z, D, D+H, α, kg, atol=atol, rtol=rtol)
+    return fls_step_response(t, σ, z, D, H, α, kg, atol=atol, rtol=rtol)
 end
 
 function sts_response(s::SegmentToSegment, params::Constants, t; atol, rtol)
@@ -73,5 +73,5 @@ end
 point_step_response(t, r, α, kg) = erfc(r/(2*sqrt(t*α))) / (4*π*r*kg)   
 moving_point_step_response(t, r, x, v, α, kg) = exp(-v * (r-x)/ (2α)) * (erfc( (r-t*v) / sqrt(4t*α)) + erfc((r+t*v) / sqrt(4t*α)) * exp(v*r/α) ) / (8π*r*kg)
 
-fls_step_response(t, σ, z, a, b, α, kg; atol, rtol) = quadgk(ζ -> point_step_response(t, sqrt(σ^2 + (z-ζ)^2), α, kg), a, b, atol=atol, rtol=rtol)[1]
+fls_step_response(t, σ, z, D, H, α, kg; atol, rtol) = 1 / (4π * kg) * quadgk(x -> exp(-σ^2*x^2) / x * (erf(x * (z-D)) - erf(x * (z-D-H))), 1/sqrt(4*α*t), Inf, rtol = rtol, atol = atol)[1]
 mfls_step_response(t, x, y, z, v, a, b, α, kg; atol, rtol) = quadgk(ζ -> moving_point_step_response(t, sqrt(x^2 + y^2 + (z-ζ)^2), x, v, α, kg), a, b, atol=atol, rtol=rtol)[1]

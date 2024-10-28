@@ -63,8 +63,8 @@ Specifies all the options for the simulation.
     Nb::Int = n_boreholes(borefield)
     Ns::Int = n_segments(borefield)
     Ts::Int = 1
-    Tmax = Δt * Nt
-    t = Δt:Δt:Tmax
+    Tmax::N = Δt * Nt
+    t::Vector{N} = collect(Δt:Δt:Tmax)
     configurations::Vector{BoreholeNetwork}
     atol::Tol = 0.
     rtol::Tol = sqrt(eps())
