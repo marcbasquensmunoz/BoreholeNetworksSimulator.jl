@@ -228,5 +228,5 @@ DirichletBoundaryCondition
 ```
 
 ```@docs
-AdiabaticBoundaryCondition
+NeumannBoundaryCondition
 ```

@@ -31,7 +31,7 @@ Specifies all the options for the simulation.
 - `constraint`: constraint that the system must satisfy. Can be variable with time. Available options: `HeatLoadConstraint`, `InletTempConstraint`, `TotalHeatLoadConstraint`.
 - `borefield`: describes the geometrical properties and the boreholes of the borefield on which the simulation will be performed. Available options: `EqualBoreholesBorefield`.
 - `medium`: properties of the ground where the `borefield` is places. Available options: `GroundMedium`, `FlowInPorousMedium`.
-- `boundary_condition`: boundary condition of the domain where the simulation is performed. Available options: `NoBoundary`, `DirichletBoundaryCondition`, `AdiabaticBoundaryCondition`.
+- `boundary_condition`: boundary condition of the domain where the simulation is performed. Available options: `NoBoundary`, `DirichletBoundaryCondition`, `NeumannBoundaryCondition`.
 - `approximation`: determines how the approximate value for each segment is computed. Available options: `MeanApproximation`, `MidPointApproximation`.
 - `fluid`: properties of the fluid flowing through the hydraulic system.
 - `configurations`: possible hydraulic topologies possible in the system, including reverse flow.
