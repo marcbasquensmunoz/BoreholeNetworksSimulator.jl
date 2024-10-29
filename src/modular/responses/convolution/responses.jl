@@ -21,8 +21,8 @@ end
 
 function response(::DirichletBoundaryCondition, setup, params::Constants, t; atol, rtol)
     setup_image = image(setup)
-    Ip = step_response(setup, params, t, atol=atol, rtol=rtol)
-    In = step_response(setup_image, params, t, atol=atol, rtol=rtol)
+    Ip = @time step_response(setup, params, t, atol=atol, rtol=rtol)
+    In = @time step_response(setup_image, params, t, atol=atol, rtol=rtol)
     Ip - In
 end
 
@@ -31,6 +31,18 @@ function response(::AdiabaticBoundaryCondition, setup, params::Constants, t; ato
     Ip = step_response(setup, params, t, atol=atol, rtol=rtol)
     In = step_response(setup_image, params, t, atol=atol, rtol=rtol)
     Ip + In
+end
+
+function response(::DirichletBoundaryCondition, s::SegmentToSegment, params::Constants, t; atol, rtol)
+    @unpack rb, α, kg = params
+    @unpack σ = s
+    1 / (4π *s.H2 * kg) * quadgk(x -> exp(-σ^2*x^2) / x^2 * I_fls_dir(s, x), 1/sqrt(4*α*t), Inf, rtol = rtol, atol = atol)[1]
+end
+
+function response(::AdiabaticBoundaryCondition, s::SegmentToSegment, params::Constants, t; atol, rtol)
+    @unpack rb, α, kg = params
+    @unpack σ = s
+    1 / (4π *s.H2 * kg) * quadgk(x -> exp(-σ^2*x^2) / x^2 * I_fls_neu(s, x), 1/sqrt(4*α*t), Inf, rtol = rtol, atol = atol)[1]
 end
 
 step_response(s::SegmentToPoint, params::Constants, t; atol, rtol) = stp_response(s, params, t, atol=atol, rtol=rtol)
@@ -46,12 +58,9 @@ function stp_response(s::SegmentToPoint, params::Constants, t; atol, rtol)
 end
 
 function sts_response(s::SegmentToSegment, params::Constants, t; atol, rtol)
-    @unpack α, kg = params
-    params = FiniteLineSource.MeanSegToSegEvParams(s)
-    r_min, r_max = FiniteLineSource.h_mean_lims(params)
-    f(r) = FiniteLineSource.h_mean_sts(r, params) * point_step_response(t, r, α, kg)
-    x, w = FiniteLineSource.adaptive_nodes_and_weights(f, r_min, r_max, atol=atol, rtol=rtol)
-    return dot(f.(x), w)
+    @unpack rb, α, kg = params
+    @unpack σ = s
+    1 / (4π *s.H2 * kg) * quadgk(x -> exp(-σ^2*x^2) / x^2 * I_fls(s, x), 1/sqrt(4*α*t), Inf, rtol = rtol, atol = atol)[1]
 end
 
 function mstp_response(s::MovingSegmentToPoint, params::Constants, t; atol, rtol)
@@ -69,6 +78,11 @@ function msts_response(s::MovingSegmentToSegment, params::Constants, t; atol, rt
     X, W = FiniteLineSource.adaptive_nodes_and_weights(f, r_min, r_max, atol=atol, rtol=rtol)
     return dot(f.(X), W)
 end
+
+ierf(x) = x*erf(x) - (1- exp(-x^2)) / sqrt(π)
+I_fls(s::SegmentToSegment, x) = ierf((s.D2 - s.D1 + s.H2)*x) + ierf((s.D2 - s.D1 - s.H1)*x) - ierf((s.D2 - s.D1)*x) - ierf((s.D2 - s.D1 + s.H2 - s.H1)*x)
+I_fls_dir(s::SegmentToSegment, x) = ierf((s.D2 - s.D1 + s.H2)*x) + ierf((s.D2 - s.D1 - s.H1)*x) - ierf((s.D2 - s.D1)*x) - ierf((s.D2 - s.D1 + s.H2 - s.H1)*x) + ierf((s.D2 + s.D1 + s.H2)*x) + ierf((s.D2 + s.D1 + s.H1)*x) - ierf((s.D2 + s.D1)*x) - ierf((s.D2 + s.D1 + s.H2 + s.H1)*x)
+I_fls_neu(s::SegmentToSegment, x) = ierf((s.D2 - s.D1 + s.H2)*x) + ierf((s.D2 - s.D1 - s.H1)*x) - ierf((s.D2 - s.D1)*x) - ierf((s.D2 - s.D1 + s.H2 - s.H1)*x) - ierf((s.D2 + s.D1 + s.H2)*x) - ierf((s.D2 + s.D1 + s.H1)*x) + ierf((s.D2 + s.D1)*x) + ierf((s.D2 + s.D1 + s.H2 + s.H1)*x)
 
 point_step_response(t, r, α, kg) = erfc(r/(2*sqrt(t*α))) / (4*π*r*kg)   
 moving_point_step_response(t, r, x, v, α, kg) = exp(-v * (r-x)/ (2α)) * (erfc( (r-t*v) / sqrt(4t*α)) + erfc((r+t*v) / sqrt(4t*α)) * exp(v*r/α) ) / (8π*r*kg)
