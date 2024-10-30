@@ -57,8 +57,8 @@ function precompute_auxiliaries!(method::NonHistoryMethod, options)
 
     constants = Constants(Δt=Δt, α=α, rb=rb, kg=kg, b=b)
     _, _, segments = quadgk_segbuf(f_guess(setup(approximation, medium, borefield, 1, 1), constants), 0., b, atol=atol, rtol=rtol)
-    xt, w = gausslegendre(n_disc+1)  
-    dps = [make_DiscretizationParameters(s.a, s.b, n_disc, xt=xt, w=w) for s in segments]
+    xt, wt = gausslegendre(n_disc+1)  
+    dps = [make_DiscretizationParameters(s.a, s.b, n_disc, xt=xt, w=wt) for s in segments]
     ζ = reduce(vcat, (dp.x for dp in dps)) 
     expΔt = @. exp(-ζ^2 * Δt̃)
 
@@ -78,7 +78,7 @@ function precompute_auxiliaries!(method::NonHistoryMethod, options)
     for i in 1:Ns
         for j in 1:Ns
             k = distances_map[setup(approximation, medium, borefield, i, j)]
-            @views @. w[:, (i-1)*Ns+j] = w_buffer[:, k]
+            @inbounds @views @. w[:, (i-1)*Ns+j] = w_buffer[:, k]
         end
     end
 
