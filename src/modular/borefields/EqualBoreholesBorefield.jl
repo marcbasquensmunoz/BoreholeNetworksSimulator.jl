@@ -10,10 +10,11 @@ Note that the length of `positions` determines the amount of boreholes in the fi
 @with_kw struct EqualBoreholesBorefield{T <: Borehole, S <: Real} <: Borefield
     borehole_prototype::T
     positions::Vector{Tuple{S, S}}
+    Nb::Int = length(positions)
 end
 
-n_boreholes(bf::EqualBoreholesBorefield) = length(bf.positions)
-n_segments(bf::EqualBoreholesBorefield) = length(bf.positions)
+n_boreholes(bf::EqualBoreholesBorefield) = bf.Nb
+n_segments(bf::EqualBoreholesBorefield) = bf.Nb
 get_H(bf::EqualBoreholesBorefield, i) = get_H(bf.borehole_prototype)
 get_h(bf::EqualBoreholesBorefield, i) = get_h(bf.borehole_prototype)
 get_rb(bf::EqualBoreholesBorefield, i) = get_rb(bf.borehole_prototype)

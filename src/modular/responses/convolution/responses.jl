@@ -15,72 +15,40 @@ function compute_response!(g, medium::Medium, options)
     end
 end
 
-function response(::NoBoundary, setup, params::Constants, t; atol, rtol)
-    step_response(setup, params, t, atol=atol, rtol=rtol)
-end
+# TODO: Might be able to improve performance by explicitly writing the integrand in each case
+integrand(::NoBoundary, setup, s) = integrand(setup, s)
+integrand(::DirichletBoundaryCondition, setup, s) = integrand(setup, s) - integrand(image(setup), s)
+integrand(::NeumannBoundaryCondition, setup, s) = integrand(setup, s) + integrand(image(setup), s)
 
-function response(::DirichletBoundaryCondition, setup, params::Constants, t; atol, rtol)
-    setup_image = image(setup)
-    Ip = step_response(setup, params, t, atol=atol, rtol=rtol)
-    In = step_response(setup_image, params, t, atol=atol, rtol=rtol)
-    Ip - In
-end
+integrand(setup::SegmentToPoint, s) = I_stp(s, setup.D, setup.H, setup.z)
+integrand(setup::SegmentToSegment, s) = I_sts(s, setup.D1, setup.D2, setup.H1, setup.H2) 
+integrand(setup::MovingSegmentToPoint, s) = I_stp(s, setup.D, setup.H, setup.z)
+integrand(setup::MovingSegmentToSegment, s) = I_sts(s, setup.D1, setup.D2, setup.H1, setup.H2) 
 
-function response(::NeumannBoundaryCondition, setup, params::Constants, t; atol, rtol)
-    setup_image = image(setup)
-    Ip = step_response(setup, params, t, atol=atol, rtol=rtol)
-    In = step_response(setup_image, params, t, atol=atol, rtol=rtol)
-    Ip + In
-end
-
-function response(::DirichletBoundaryCondition, s::SegmentToSegment, params::Constants, t; atol, rtol)
-    @unpack rb, α, kg = params
-    @unpack σ = s
-    1 / (4π *s.H2 * kg) * quadgk(x -> exp(-σ^2*x^2) / x^2 * I_fls_dir(s, x), 1/sqrt(4*α*t), Inf, rtol = rtol, atol = atol)[1]
-end
-
-function response(::NeumannBoundaryCondition, s::SegmentToSegment, params::Constants, t; atol, rtol)
-    @unpack rb, α, kg = params
-    @unpack σ = s
-    1 / (4π *s.H2 * kg) * quadgk(x -> exp(-σ^2*x^2) / x^2 * I_fls_neu(s, x), 1/sqrt(4*α*t), Inf, rtol = rtol, atol = atol)[1]
-end
-
-step_response(s::SegmentToPoint, params::Constants, t; atol, rtol) = stp_response(s, params, t, atol=atol, rtol=rtol)
-step_response(s::SegmentToSegment, params::Constants, t; atol, rtol) = sts_response(s, params, t, atol=atol, rtol=rtol)
-
-step_response(s::MovingSegmentToPoint, params::Constants, t; atol, rtol) = mstp_response(s, params, t, atol=atol, rtol=rtol)
-step_response(s::MovingSegmentToSegment, params::Constants, t; atol, rtol) = msts_response(s, params, t, atol=atol, rtol=rtol)
-
-function stp_response(s::SegmentToPoint, params::Constants, t; atol, rtol)
-    @unpack σ, H, D, z = s
+function response(boundary_condition, setup::SegmentToPoint, params::Constants, t; atol, rtol)
     @unpack α, kg = params
-    1 / (4π * kg) * quadgk(x -> exp(-σ^2*x^2) / x * (erf(x * (z-D)) - erf(x * (z-D-H))), 1/sqrt(4*α*t), Inf, rtol = rtol, atol = atol)[1]
+    @unpack σ, H, D, z = setup
+    1 / (4π * kg) * quadgk(s -> exp(-σ^2*s^2) / s * integrand(boundary_condition, setup, s), 1/sqrt(4*α*t), Inf, rtol = rtol, atol = atol)[1]
 end
 
-function sts_response(s::SegmentToSegment, params::Constants, t; atol, rtol)
-    @unpack rb, α, kg = params
-    @unpack σ = s
-    1 / (4π *s.H2 * kg) * quadgk(x -> exp(-σ^2*x^2) / x^2 * I_fls(s, x), 1/sqrt(4*α*t), Inf, rtol = rtol, atol = atol)[1]
-end
-
-function mstp_response(s::MovingSegmentToPoint, params::Constants, t; atol, rtol)
-    @unpack x, y, H, D, z, v = s
+function response(boundary_condition, setup::SegmentToSegment, params::Constants, t; atol, rtol)
     @unpack α, kg = params
-    quadgk(ζ -> moving_point_step_response(t, sqrt(x^2 + y^2 + (z-ζ)^2), x, v, α, kg), D, D+H, atol=atol, rtol=rtol)[1]
+    @unpack σ, H2 = setup
+    1 / (4π * H2 * kg) * quadgk(s -> exp(-σ^2*s^2) / s^2 * integrand(boundary_condition, setup, s), 1/sqrt(4*α*t), Inf, rtol = rtol, atol = atol)[1]
 end
 
-function msts_response(s::MovingSegmentToSegment, params::Constants, t; atol, rtol)
+function response(boundary_condition, setup::MovingSegmentToPoint, params::Constants, t; atol, rtol)
     @unpack α, kg = params
-    @unpack x, v, D1, H1, D2, H2 = s
-    params = FiniteLineSource.MeanSegToSegEvParams(s)
-    r_min, r_max = FiniteLineSource.h_mean_lims(params)
-    f(r) = FiniteLineSource.h_mean_sts(r, params) * moving_point_step_response(t, r, x, v, α, kg)
-    return quadgk(f, r_min, r_max, atol=atol, rtol=rtol)[1]
+    @unpack x, y, H, D, z, v = setup
+    1 / (4π * kg) * quadgk(s -> exp(-((x-v/(4α*s^2))^2 + y^2)*s^2) / s * integrand(boundary_condition, setup, s), 1/sqrt(4*α*t), Inf, rtol = rtol, atol = atol)[1]
 end
 
-ierf(x) = x*erf(x) - (1- exp(-x^2)) / sqrt(π)
-I_fls(s::SegmentToSegment, x) = ierf((s.D2 - s.D1 + s.H2)*x) + ierf((s.D2 - s.D1 - s.H1)*x) - ierf((s.D2 - s.D1)*x) - ierf((s.D2 - s.D1 + s.H2 - s.H1)*x)
-I_fls_dir(s::SegmentToSegment, x) = ierf((s.D2 - s.D1 + s.H2)*x) + ierf((s.D2 - s.D1 - s.H1)*x) - ierf((s.D2 - s.D1)*x) - ierf((s.D2 - s.D1 + s.H2 - s.H1)*x) + ierf((s.D2 + s.D1 + s.H2)*x) + ierf((s.D2 + s.D1 + s.H1)*x) - ierf((s.D2 + s.D1)*x) - ierf((s.D2 + s.D1 + s.H2 + s.H1)*x)
-I_fls_neu(s::SegmentToSegment, x) = ierf((s.D2 - s.D1 + s.H2)*x) + ierf((s.D2 - s.D1 - s.H1)*x) - ierf((s.D2 - s.D1)*x) - ierf((s.D2 - s.D1 + s.H2 - s.H1)*x) - ierf((s.D2 + s.D1 + s.H2)*x) - ierf((s.D2 + s.D1 + s.H1)*x) + ierf((s.D2 + s.D1)*x) + ierf((s.D2 + s.D1 + s.H2 + s.H1)*x)
+function response(boundary_condition, setup::MovingSegmentToSegment, params::Constants, t; atol, rtol)
+    @unpack α, kg = params
+    @unpack x, y, v, D1, H1, D2, H2 = setup
+    1 / (4π * H2 * kg) * quadgk(s -> exp(-s^2*((x - v/(4α*s^2))^2 + y^2)) / s^2 * integrand(boundary_condition, setup, s), 1/sqrt(4*α*t), Inf, rtol = rtol, atol = atol)[1]
+end
 
-moving_point_step_response(t, r, x, v, α, kg) = exp(-v * (r-x)/ (2α)) * (erfc( (r-t*v) / sqrt(4t*α)) + erfc((r+t*v) / sqrt(4t*α)) * exp(v*r/α) ) / (8π*r*kg)
+ierf(x) = x*erf(x) - (1 - exp(-x^2)) / sqrt(π)
+I_sts(s, D1, D2, H1, H2) = ierf((D2 - D1 + H2)*s) + ierf((D2 - D1 - H1)*s) - ierf((D2 - D1)*s) - ierf((D2 - D1 + H2 - H1)*s)
+I_stp(s, D, H, z) = erf(s * (z-D)) - erf(s * (z-D-H))
