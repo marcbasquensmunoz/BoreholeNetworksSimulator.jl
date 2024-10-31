@@ -10,12 +10,17 @@ function topology_coeffs!(M, network::BoreholeNetwork, mass_flows)
         end
         parents = inneighbors(network.graph, bh_in)
         filter!(i -> i ≠ source(network), parents)
+
         for bh_out in parents
             if bh_out == source(network)
                 continue
             end
             M[j, 2*bh_in-1] = 1.
-            M[j, 2*bh_out] = - mass_flows[bh_out] / mass_flows[bh_in]
+            if mass_flows[bh_in] == 0.
+                M[j, 2*bh_in] = -1.
+            else
+                M[j, 2*bh_out] = - mass_flows[bh_out] / mass_flows[bh_in]
+            end
         end
         if !isempty(parents)
             j += 1
