@@ -17,5 +17,5 @@ abstract type Constraint end
 
 @required Constraint begin
     constraints_coeffs!(M, ::Constraint, ::Borefield, network, mass_flows)
-    constraints_b!(b, ::Constraint, operation, step)
+    constraints_b!(b, ::Constraint, network, mass_flows, step)
 end

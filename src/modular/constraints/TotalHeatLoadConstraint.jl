@@ -13,28 +13,22 @@ end
 function constraints_coeffs!(M, ::TotalHeatLoadConstraint, borefield::Borefield, network, mass_flows)
     M .= zero(eltype(M))
     Nb = n_boreholes(network)
+    j = 1
 
     first_bhs = first_bhs_in_branch(network)
     first_bh = findfirst(i-> mass_flows[i] != 0., first_bhs)
 
-    for (i, bh) in enumerate(first_bhs)
+    for bh in first_bhs
         if mass_flows[bh] == 0.
-            M[i, 2*bh] = -1.
+            M[j, 2*bh] = -1.
         else 
-            if i == first_bh
+            if bh == first_bh
                 continue
             end
-            M[i, 2*first_bh-1] = -1.
+            M[j, 2*first_bh-1] = -1.
         end
-        M[i, 2*bh-1] = 1.
-    end
-
-    if !isnothing(first_bh)
-        for i in 2:n_branches(network)
-            M[i, 2*first_bh-1] = -1.
-            bh_in = 2*first_bhs[i]-1
-            M[i, bh_in] = 1.
-        end
+        M[j, 2*bh-1] = 1.
+        j += 1
     end
 
     if sum(mass_flows) != 0

@@ -54,8 +54,8 @@ end
 
 function constraints_b!(b, constraint::InletTempConstraint, network, mass_flows, step)
     for (i, borehole) in enumerate(first_bhs_in_branch(network))
-        if mass_flows[borehole] == zero(eltype(M))
-            b[i] = zero(eltype(M))
+        if mass_flows[borehole] == zero(eltype(b))
+            b[i] = zero(eltype(b))
         else
             b[i] = constraint.T_in[i, step]
         end

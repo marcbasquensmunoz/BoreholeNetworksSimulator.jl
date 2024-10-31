@@ -52,6 +52,7 @@ function constraints_coeffs!(M, ::HeatLoadConstraint, borefield::Borefield, netw
             if mass_flows[bh] == 0.
                 M[i, 2bh - 1] = 1.
                 M[i, 2bh] = -1.
+                break
             else 
                 if bh == source(network) || bh == sink(network) 
                     continue
