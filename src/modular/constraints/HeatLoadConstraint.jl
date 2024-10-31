@@ -47,17 +47,29 @@ function constraints_coeffs!(M, ::HeatLoadConstraint, borefield::Borefield, netw
 
     Nb = n_boreholes(network)
     for (i, first_bh) in enumerate(first_bhs_in_branch(network))
-        for bh in neighborhood(network.graph, first_bh, Nb)
-            if bh == source(network) || bh == sink(network) 
-                continue
-            end
-            M[i, 3Nb + bh] = one(eltype(M)) * get_H(borefield, bh)
+        bhs_in_branch = neighborhood(network.graph, first_bh, Nb)
+        for bh in bhs_in_branch
+            if mass_flows[bh] == 0.
+                M[i, 2bh - 1] = 1.
+                M[i, 2bh] = -1.
+            else 
+                if bh == source(network) || bh == sink(network) 
+                    continue
+                end
+                M[i, 3Nb + bh] = one(eltype(M)) * get_H(borefield, bh)
+            end 
         end
     end
 end
 
-function constraints_b!(b, constraint::HeatLoadConstraint, operation, step)
-    b .= @view constraint.Q_tot[:, step]
+function constraints_b!(b, constraint::HeatLoadConstraint, network, mass_flows, step)
+    for (i, borehole) in enumerate(first_bhs_in_branch(network))
+        if mass_flows[borehole] == 0.
+            b[i] = 0.
+        else
+            b[i] = constraint.Q_tot[i, step]
+        end
+    end
 end
 
 function branch_of_borehole(network, borehole)

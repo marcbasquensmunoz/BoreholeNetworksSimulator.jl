@@ -64,7 +64,7 @@ function simulate!(;operator, options::SimulationOptions, containers::Simulation
         # Update b
         @views internal_model_b!(b[internal_model_eqs], borefield)
         @views topology_b!(b[topology_eqs], operation)
-        @views constraints_b!(b[constraints_eqs], constraint, operation, i)
+        @views constraints_b!(b[constraints_eqs], constraint, network, mass_flows, i)
         @views method_b!(b[method_eqs], method, borefield, medium, i)
         @views heat_balance_b!(b[balance_eqs], borefield)  
 
