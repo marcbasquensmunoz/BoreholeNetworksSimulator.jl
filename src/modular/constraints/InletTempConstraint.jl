@@ -46,9 +46,18 @@ function constraints_coeffs!(M, ::InletTempConstraint, borefield::Borefield, net
 
     for (i, borehole) in enumerate(first_bhs_in_branch(network))
         M[i, 2*borehole - 1] = one(eltype(M))
+        if mass_flows[borehole] == zero(eltype(M))
+            M[i, 2*borehole ] = -one(eltype(M))
+        end
     end
 end
 
-function constraints_b!(b, constraint::InletTempConstraint, operation, step)
-    b .= @view constraint.T_in[:, step]
+function constraints_b!(b, constraint::InletTempConstraint, network, mass_flows, step)
+    for (i, borehole) in enumerate(first_bhs_in_branch(network))
+        if mass_flows[borehole] == zero(eltype(b))
+            b[i] = zero(eltype(b))
+        else
+            b[i] = constraint.T_in[i, step]
+        end
+    end
 end

@@ -53,7 +53,7 @@ function uniform_Tb_coeffs(borehole::SingleUPipeBorehole, λ, mass_flow, Tref, f
     @unpack λg, λp, rb, rp, rpo, dpw, H, R_cache, A, method, exp_cache = borehole
 
     if mass_flow == 0.
-        return 1., -1., 0.
+        return 1., 0., -1.
     end 
 
     hp = heat_transfer_coefficient(mass_flow, Tref, borehole, fluid)
