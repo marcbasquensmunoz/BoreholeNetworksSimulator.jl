@@ -25,7 +25,6 @@ dt = 3600*24*30.
 
 l = 10.
 
-# High error: 
 positions = [(0.,0.), (l,0.), (5*l,5*l)]
 #positions = [(i*l, j*l) for i in range(2) for j in range(2)]
 
@@ -40,7 +39,7 @@ tts = np.log(time / ts)
 cp_f = 4182.
 network = gt.networks.Network(boreholes, Utubes, bore_connectivity, m_flow_network, cp_f)
 
-method = 'detailed'#'similarities'
+method = 'detailed'
 options = {'nSegments': 1}
 
 gfunc = gt.gfunction.gFunction(

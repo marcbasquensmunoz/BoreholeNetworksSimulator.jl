@@ -92,6 +92,6 @@ function uniform_Tb_coeffs(borehole::SingleUPipeBorehole, λ, mass_flow, Tref, f
     EoutH = A[1, 2] - A[2, 2]
     EinH  = A[2, 1] - A[1, 1]     
 
-    @show EinH
+    #@show EinH
     return EinH, -EoutH, EoutH - EinH 
 end
