@@ -15,7 +15,7 @@ ImageQuadGKBuffer(s, rb::T) where {T <: Number} = ImageQuadGKBuffer(Buffer(initi
 
 get_buffers(::NoBoundary) = Vector{SimpleQuadGKBuffer}()
 get_buffers(::DirichletBoundaryCondition) = Vector{ImageQuadGKBuffer}()
-get_buffers(::AdiabaticBoundaryCondition) = Vector{ImageQuadGKBuffer}()
+get_buffers(::NeumannBoundaryCondition) = Vector{ImageQuadGKBuffer}()
 
 function add_buffer!(buffers, ::NoBoundary, s, rb)
     push!(buffers, SimpleQuadGKBuffer(s, rb))
@@ -25,6 +25,6 @@ function add_buffer!(buffers, ::DirichletBoundaryCondition, s, rb)
     push!(buffers, ImageQuadGKBuffer(s, rb))
 end
 
-function add_buffer!(buffers, ::AdiabaticBoundaryCondition, s, rb)
+function add_buffer!(buffers, ::NeumannBoundaryCondition, s, rb)
     push!(buffers, ImageQuadGKBuffer(s, rb))
 end

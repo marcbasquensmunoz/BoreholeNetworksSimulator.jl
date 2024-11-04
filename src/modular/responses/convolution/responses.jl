@@ -15,63 +15,40 @@ function compute_response!(g, medium::Medium, options)
     end
 end
 
-function response(::NoBoundary, setup, params::Constants, t; atol, rtol)
-    step_response(setup, params, t, atol=atol, rtol=rtol)
-end
+# TODO: Might be able to improve performance by explicitly writing the integrand in each case
+integrand(::NoBoundary, setup, s) = integrand(setup, s)
+integrand(::DirichletBoundaryCondition, setup, s) = integrand(setup, s) - integrand(image(setup), s)
+integrand(::NeumannBoundaryCondition, setup, s) = integrand(setup, s) + integrand(image(setup), s)
 
-function response(::DirichletBoundaryCondition, setup, params::Constants, t; atol, rtol)
-    setup_image = image(setup)
-    Ip = step_response(setup, params, t, atol=atol, rtol=rtol)
-    In = step_response(setup_image, params, t, atol=atol, rtol=rtol)
-    Ip - In
-end
+integrand(setup::SegmentToPoint, s) = I_stp(s, setup.D, setup.H, setup.z)
+integrand(setup::SegmentToSegment, s) = I_sts(s, setup.D1, setup.D2, setup.H1, setup.H2) 
+integrand(setup::MovingSegmentToPoint, s) = I_stp(s, setup.D, setup.H, setup.z)
+integrand(setup::MovingSegmentToSegment, s) = I_sts(s, setup.D1, setup.D2, setup.H1, setup.H2) 
 
-function response(::AdiabaticBoundaryCondition, setup, params::Constants, t; atol, rtol)
-    setup_image = image(setup)
-    Ip = step_response(setup, params, t, atol=atol, rtol=rtol)
-    In = step_response(setup_image, params, t, atol=atol, rtol=rtol)
-    Ip + In
-end
-
-step_response(s::SegmentToPoint, params::Constants, t; atol, rtol) = stp_response(s, params, t, atol=atol, rtol=rtol)
-step_response(s::SegmentToSegment, params::Constants, t; atol, rtol) = sts_response(s, params, t, atol=atol, rtol=rtol)
-
-step_response(s::MovingSegmentToPoint, params::Constants, t; atol, rtol) = mstp_response(s, params, t, atol=atol, rtol=rtol)
-step_response(s::MovingSegmentToSegment, params::Constants, t; atol, rtol) = msts_response(s, params, t, atol=atol, rtol=rtol)
-
-function stp_response(s::SegmentToPoint, params::Constants, t; atol, rtol)
-    @unpack σ, H, D, z = s
+function response(boundary_condition, setup::SegmentToPoint, params::Constants, t; atol, rtol)
     @unpack α, kg = params
-    return fls_step_response(t, σ, z, D, D+H, α, kg, atol=atol, rtol=rtol)
+    @unpack σ, H, D, z = setup
+    1 / (4π * kg) * quadgk(s -> exp(-σ^2*s^2) / s * integrand(boundary_condition, setup, s), 1/sqrt(4*α*t), Inf, rtol = rtol, atol = atol)[1]
 end
 
-function sts_response(s::SegmentToSegment, params::Constants, t; atol, rtol)
+function response(boundary_condition, setup::SegmentToSegment, params::Constants, t; atol, rtol)
     @unpack α, kg = params
-    params = FiniteLineSource.MeanSegToSegEvParams(s)
-    r_min, r_max = FiniteLineSource.h_mean_lims(params)
-    f(r) = FiniteLineSource.h_mean_sts(r, params) * point_step_response(t, r, α, kg)
-    x, w = FiniteLineSource.adaptive_nodes_and_weights(f, r_min, r_max, atol=atol, rtol=rtol)
-    return dot(f.(x), w)
+    @unpack σ, H2 = setup
+    1 / (4π * H2 * kg) * quadgk(s -> exp(-σ^2*s^2) / s^2 * integrand(boundary_condition, setup, s), 1/sqrt(4*α*t), Inf, rtol = rtol, atol = atol)[1]
 end
 
-function mstp_response(s::MovingSegmentToPoint, params::Constants, t; atol, rtol)
-    @unpack x, y, H, D, z, v = s
+function response(boundary_condition, setup::MovingSegmentToPoint, params::Constants, t; atol, rtol)
     @unpack α, kg = params
-    return mfls_step_response(t, x, y, z, v, D, D+H, α, kg, atol=atol, rtol=rtol)
+    @unpack x, y, H, D, z, v = setup
+    1 / (4π * kg) * quadgk(s -> exp(-((x-v/(4α*s^2))^2 + y^2)*s^2) / s * integrand(boundary_condition, setup, s), 1/sqrt(4*α*t), Inf, rtol = rtol, atol = atol)[1]
 end
 
-function msts_response(s::MovingSegmentToSegment, params::Constants, t; atol, rtol)
+function response(boundary_condition, setup::MovingSegmentToSegment, params::Constants, t; atol, rtol)
     @unpack α, kg = params
-    @unpack x, v, D1, H1, D2, H2 = s
-    params = FiniteLineSource.MeanSegToSegEvParams(s)
-    r_min, r_max = FiniteLineSource.h_mean_lims(params)
-    f(r) = FiniteLineSource.h_mean_sts(r, params) * moving_point_step_response(t, r, x, v, α, kg)
-    X, W = FiniteLineSource.adaptive_nodes_and_weights(f, r_min, r_max, atol=atol, rtol=rtol)
-    return dot(f.(X), W)
+    @unpack x, y, v, D1, H1, D2, H2 = setup
+    1 / (4π * H2 * kg) * quadgk(s -> exp(-s^2*((x - v/(4α*s^2))^2 + y^2)) / s^2 * integrand(boundary_condition, setup, s), 1/sqrt(4*α*t), Inf, rtol = rtol, atol = atol)[1]
 end
 
-point_step_response(t, r, α, kg) = erfc(r/(2*sqrt(t*α))) / (4*π*r*kg)   
-moving_point_step_response(t, r, x, v, α, kg) = exp(-v * (r-x)/ (2α)) * (erfc( (r-t*v) / sqrt(4t*α)) + erfc((r+t*v) / sqrt(4t*α)) * exp(v*r/α) ) / (8π*r*kg)
-
-fls_step_response(t, σ, z, a, b, α, kg; atol, rtol) = quadgk(ζ -> point_step_response(t, sqrt(σ^2 + (z-ζ)^2), α, kg), a, b, atol=atol, rtol=rtol)[1]
-mfls_step_response(t, x, y, z, v, a, b, α, kg; atol, rtol) = quadgk(ζ -> moving_point_step_response(t, sqrt(x^2 + y^2 + (z-ζ)^2), x, v, α, kg), a, b, atol=atol, rtol=rtol)[1]
+ierf(x) = x*erf(x) - (1 - exp(-x^2)) / sqrt(π)
+I_sts(s, D1, D2, H1, H2) = ierf((D2 - D1 + H2)*s) + ierf((D2 - D1 - H1)*s) - ierf((D2 - D1)*s) - ierf((D2 - D1 + H2 - H1)*s)
+I_stp(s, D, H, z) = erf(s * (z-D)) - erf(s * (z-D-H))
