@@ -35,7 +35,7 @@ export Borefield, EqualBoreholesBorefield
 export Medium, GroundMedium, FlowInPorousMedium
 export Constraint, TotalHeatLoadConstraint, HeatLoadConstraint, InletTempConstraint, constant_HeatLoadConstraint, uniform_HeatLoadConstraint, constant_InletTempConstraint, uniform_InletTempConstraint
 export TimeSuperpositionMethod, ConvolutionMethod, NonHistoryMethod
-export BoundaryCondition, NoBoundary, DirichletBoundaryCondition, AdiabaticBoundaryCondition
+export BoundaryCondition, NoBoundary, DirichletBoundaryCondition, NeumannBoundaryCondition
 export Approximation, MidPointApproximation, MeanApproximation
 export SimulationOptions, SimulationContainers
 export BoreholeNetwork, Valve, BoreholeOperation

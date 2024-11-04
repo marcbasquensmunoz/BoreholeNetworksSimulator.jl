@@ -14,7 +14,7 @@ end
 end
 
 @testset "test_Boundary_Conditions" begin
-    @test AdiabaticBoundaryCondition() isa Any
+    @test NeumannBoundaryCondition() isa Any
     @test DirichletBoundaryCondition() isa Any
     @test NoBoundary() isa Any
 end
