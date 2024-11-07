@@ -12,8 +12,8 @@ H = 150.
 D = 4.
 rb = 0.075
 
-m_flow_network = 0.25
-alpha = 1.0e-6
+mass_flow_per_branch = 0.25
+α = 1.0e-6
 k_s = 2.
 k_g = 1.
 r_in = 0.015
@@ -24,13 +24,10 @@ pos = -0.05
 pos1 = (pos, 0.)
 pos2 = (0., pos)
 
-B = 7.5
-n = 3
-m = 2
-
-
 
 function compute_uniform_heat(Nt, Δt, positions)
+    n = length(positions)
+
     ########################################################
     # pygfunction version
     ########################################################
@@ -42,13 +39,13 @@ function compute_uniform_heat(Nt, Δt, positions)
     bore_connectivity = -1 .* ones(length(positions))
     times = np.array(Δt .* collect(1:Nt))
     cp_f = 4182.
-    network = gt.networks.Network(boreholes, Utubes, bore_connectivity, m_flow_network, cp_f)
+    network = gt.networks.Network(boreholes, Utubes, bore_connectivity, n * mass_flow_per_branch, cp_f)
 
     method = "detailed"
     options = Dict( "nSegments" => 1 )
 
     gfunc = gt.gfunction.gFunction(
-        network, alpha, time=times, boundary_condition="UHTR",
+        network, α, time=times, boundary_condition="UHTR",
         options=options, method=method)
 
     gfunc_res = pyconvert(Vector, gfunc.gFunc)
@@ -60,15 +57,14 @@ function compute_uniform_heat(Nt, Δt, positions)
 
     T0 = 10.
     Q = H 
-    n = length(positions)
 
     network = all_parallel_network(n)
 
-    borehole = SingleUPipeBorehole(H=H, D=D, rb=rb, rp=r_in, dpw = r_out-r_in, λg=k_g, pipe_position=(pos1, pos2))
+    borehole = SingleUPipeBorehole(H=H, D=D, rb=rb, rpi=r_in, rpo=r_out, λg=k_g, pipe_position=(pos1, pos2))
     borefield = EqualBoreholesBorefield(borehole_prototype=borehole, positions=positions)
-    medium = GroundMedium(α = alpha, λ = k_s, T0 = T0)
+    medium = GroundMedium(α = α, λ = k_s, T0 = T0)
     constraint = uniform_HeatLoadConstraint([Q for i in range(1, Nt+1)], n_branches(network))
-    method = NonHistoryMethod()
+    method = ConvolutionMethod()#NonHistoryMethod()
     fluid = EthanolMix()
 
     options = SimulationOptions(
@@ -82,14 +78,14 @@ function compute_uniform_heat(Nt, Δt, positions)
         configurations = [network]
     )
 
-    operator = ConstantOperator(network, mass_flows = m_flow_network .* ones(n))
+    operator = ConstantOperator(network, mass_flows = mass_flow_per_branch .* ones(n))
 
     containers = initialize(options)
     simulate!(operator=operator, options=options, containers=containers)
 
     Tbm = (mean(containers.X[2*n+1:3*n, :], dims=1) .- T0)[:] * 2π * k_s 
 
-    ts = H^2/(9alpha)           
+    ts = H^2/(9α)           
     tts = @. log(options.t / ts)
     error_gfunc = abs.(gfunc_res - Tbm)
 
@@ -121,11 +117,14 @@ for (n, m, B) in scenarios
     Tbm = vcat(early[2], mid[2], late[2], far_late[2])
     error_gfunc = vcat(early[3], mid[3], late[3], far_late[3])
 
+    zero_error = findall(x -> x==0., error_gfunc)
+    error_gfunc[zero_error] .= eps()
+
     lines!(axis_gfunc, tts, Tbm)
     lines!(axis_error, tts, log10.(error_gfunc))
 end
 
-ylims!(axis_error, -15, 0)
+ylims!(axis_error, -18, 0)
 
 linkxaxes!(axis_gfunc, axis_error)
 hidexdecorations!(axis_gfunc, grid = false)

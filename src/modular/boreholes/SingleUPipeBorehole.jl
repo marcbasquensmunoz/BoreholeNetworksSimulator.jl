@@ -21,10 +21,10 @@ Model a borehole with a single U-pipe with burial depth `D` and length `H`.
     Cg = 2000. * 1550.                  # grout capacity
     αg = λg/Cg	                        # grout thermal diffusivity
 
-    rp = 0.02                           # pipe radius
+    rpi = 0.02                          # inner pipe radius
     λp = 0.42                           # pipe material conductivity
-    dpw = 0.0023                        # pipe thickness
-    rpo = rp + dpw                      # equivalent pipe radius
+    rpo = 0.0223                        # outer pipe radius
+    dpw = rpo-rpi                       # pipe thickness
     hp = 725.                           # heat transfer coefficient fluid to pipe ?
     pipe_position::NTuple{2, Tuple{T, T}} = ((0.03, 0.0), (-0.03, 0.0))
         
@@ -44,16 +44,13 @@ get_H(bh::SingleUPipeBorehole{T}) where {T <: Real} = bh.H
 get_D(bh::SingleUPipeBorehole{T}) where {T <: Real} = bh.D
 get_h(bh::SingleUPipeBorehole{T}) where {T <: Real} = bh.H / bh.n_segments
 get_rb(bh::SingleUPipeBorehole{T}) where {T <: Real} = bh.rb
-get_rp(bh::SingleUPipeBorehole{T}) where {T <: Real} = bh.rp
+get_rp(bh::SingleUPipeBorehole{T}) where {T <: Real} = bh.rpi
 get_default_hp(bh::SingleUPipeBorehole{T}) where {T <: Real} = bh.hp
 get_n_segments(bh::SingleUPipeBorehole) = bh.n_segments
 
 
 function uniform_Tb_coeffs(borehole::SingleUPipeBorehole, λ, mass_flow, Tref, fluid)
-    @unpack λg, λp, rb, rp, rpo, dpw, H, R_cache, A, method, exp_cache = borehole
-
-    #KK = -0.690665
-    #return KK, 1., -1 - KK
+    @unpack λg, λp, rb, rpi, rpo, dpw, H, R_cache, A, method, exp_cache = borehole
 
     if mass_flow == 0.
         return 1., 0., -1.
@@ -65,15 +62,18 @@ function uniform_Tb_coeffs(borehole::SingleUPipeBorehole, λ, mass_flow, Tref, f
         x1, y1 = borehole.pipe_position[1]
         x2, y2 = borehole.pipe_position[2]
 
-        #Rp = 1/(2*π*λp)*log(rpo/rp)
-        Rp = 1/(2*π*λp)*log(rp/(rp-dpw))
+        Rp = 1/(2*π*λp)*log(rpo/rpi)
 
+        k = (λg - λ)/(λg + λ)
+        r2_1 = x1^2+y1^2
+        r2_2 = x2^2+y2^2
+        r2 = (x1 - x2)^2 + (y1 - y2)^2
+        d12 = sqrt( (1 - r2_1 / rb^2) * (1 - r2_2 / rb^2) + r2 / rb^2 )
 
-        d12 = sqrt( (1 - (x1^2+y1^2) / rb^2) * (1 - (x2^2+y2^2) / rb^2) + ( (x1 - x2)^2 + (y1 - y2)^2) / rb^2 )
+        R11 =  1/(2*π*λg) * (log(rb/rpo) - k * log(1 - r2_1 / rb^2) ) + Rp
+        R12 = -1/(2*π*λg) * (log(sqrt(r2) / rb ) + k * log(d12))
+        R22 =  1/(2*π*λg) * (log(rb/rpo) - k * log(1 - r2_2 / rb^2) ) + Rp 
 
-        R11 =  1/(2*π*λg) * (log(rb/rpo) - (λg - λ)/(λg + λ) * log(1 - (x1^2 + y1^2) / rb^2) ) + Rp
-        R12 = -1/(2*π*λg) * (log(( (x1 - x2)^2 + (y1 - y2)^2) / rb^2 ) + (λg - λ)/(λg + λ) * log(d12))
-        R22 =  1/(2*π*λg) * (log(rb/rpo) - (λg - λ)/(λg + λ) * log(1 - (x2^2 + y2^2) / rb^2) ) + Rp 
         R_cache = @SMatrix [R11 R12; R12 R22]
     end
 
@@ -92,6 +92,5 @@ function uniform_Tb_coeffs(borehole::SingleUPipeBorehole, λ, mass_flow, Tref, f
     EoutH = A[1, 2] - A[2, 2]
     EinH  = A[2, 1] - A[1, 1]     
 
-    #@show EinH
     return EinH, -EoutH, EoutH - EinH 
 end

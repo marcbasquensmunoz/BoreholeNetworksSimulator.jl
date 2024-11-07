@@ -8,7 +8,7 @@ D = 4.
 r_b = 0.075
 
 
-m_flow_network = 0.25
+mass_flow_per_branch = 0.25
 alpha = 1.0e-6
 k_s = 2.
 k_g = 1.
@@ -28,16 +28,18 @@ l = 10.
 positions = [(0.,0.), (l,0.), (5*l,5*l)]
 #positions = [(i*l, j*l) for i in range(2) for j in range(2)]
 
+n = len(positions)
+
 boreholes = [ gt.boreholes.Borehole(H=H, D=D, r_b=r_b, x=x[0], y=x[1]) for x in positions]
 Utubes = [gt.pipes.SingleUTube(pos=[pos1, pos2], r_in=r_in, r_out=r_out,
-                                borehole=bh, k_s=k_s, k_g=k_g, R_fp=R_fp) for bh in boreholes]
+                                borehole=bh, k_s=k_s, k_g=k_g, R_fp=R_fp, J=0) for bh in boreholes]
 
 bore_connectivity = list(-1 * np.ones(len(positions)))
 time = np.array([dt*(i+1) for i in range(Nt)])
 ts = H**2/(9.*alpha)           
 tts = np.log(time / ts)
 cp_f = 4182.
-network = gt.networks.Network(boreholes, Utubes, bore_connectivity, m_flow_network, cp_f)
+network = gt.networks.Network(boreholes, Utubes, bore_connectivity, n * mass_flow_per_branch, cp_f)
 
 method = 'detailed'
 options = {'nSegments': 1}
@@ -56,17 +58,15 @@ sys.path.insert(1, "/".join(os.path.realpath(__file__).split("/")[0:-3]))
 import BNSPythonAdapter.src.adapter
 from juliacall import Main as jl
 import numpy as np
-import pandas as pd
 
-n = len(positions)
 T0 = 10.
 Q = H 
 
 network = jl.all_parallel_network(n)
 
-borehole = jl.SingleUPipeBorehole(H=H, D=D, rb=r_b, rp=r_in, dpw = r_out-r_in, λg=k_g, pipe_position=(pos1, pos2))
+borehole = jl.SingleUPipeBorehole(H=H, D=D, rb=r_b, rpi=r_in, rpo=r_out, λg=k_g, pipe_position=(pos1, pos2))
 borefield = jl.EqualBoreholesBorefield(borehole_prototype=borehole, positions=jl.Array[jl.Tuple[jl.Float64, jl.Float64]](positions))
-medium = jl.GroundMedium(α = alpha, λ = k_s, T0 = T0)
+medium = jl.GroundMedium(α=alpha, λ=k_s, T0=T0)
 constraint = jl.uniform_HeatLoadConstraint(jl.Array[jl.Float64]([Q for i in range(1, Nt+1)]), jl.n_branches(network))
 method = jl.ConvolutionMethod()
 fluid = jl.EthanolMix()
@@ -82,7 +82,7 @@ options = jl.SimulationOptions(
     configurations = jl.Array[jl.BoreholeNetwork]([network])
 )
 
-operator = jl.ConstantOperator(network, mass_flows = jl.Array[jl.Float64](m_flow_network * np.ones(n)))
+operator = jl.ConstantOperator(network, mass_flows = jl.Array[jl.Float64](mass_flow_per_branch * np.ones(n)))
 
 containers = jl.initialize(options)
 jl.simulate_b(operator=operator, options=options, containers=containers)
@@ -110,7 +110,7 @@ plt.plot(tts, err)
 # ---------------
 # Internal model
 # ---------------
-kk = Utubes[0].coefficients_outlet_temperature(m_flow_network, cp_f, 1)
+kk = Utubes[0].coefficients_outlet_temperature(mass_flow_per_branch, cp_f, 1)
 # T_{f,out}} = a_{in} T_{f,in} + a_{b} T_b
 #  pipes.py, ln 1066: def coefficients_outlet_temperature
 
