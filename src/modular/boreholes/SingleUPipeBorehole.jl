@@ -53,10 +53,11 @@ function uniform_Tb_coeffs(borehole::SingleUPipeBorehole, λ, mass_flow, Tref, f
     @unpack λg, λp, rb, rpi, rpo, dpw, H, R_cache, A, method, exp_cache = borehole
 
     if mass_flow == 0.
-        return 1., 0., -1.
+        return 0., -1., 1.
     end 
 
     hp = heat_transfer_coefficient(mass_flow, Tref, borehole, fluid)
+    Rhp = 1/(2*π*rpi*hp)
 
     if iszero(R_cache)
         x1, y1 = borehole.pipe_position[1]
@@ -76,21 +77,20 @@ function uniform_Tb_coeffs(borehole::SingleUPipeBorehole, λ, mass_flow, Tref, f
 
         R_cache = @SMatrix [R11 R12; R12 R22]
     end
+    R11 = R_cache[1, 1] + Rhp
+    R12 = R_cache[1, 2]
+    R22 = R_cache[2, 2] + Rhp
 
-    Rhp = 1/(2*π*rp*hp)
+    mfc = mass_flow * cpf(fluid)
+    det = (R11*R22 - R12^2)
 
-    A .= R_cache
-    A[1, 1] += Rhp
-    A[2, 2] += Rhp
+    β1β2 = (R22 - R12 + R11 - R12) / (det * mfc)
+    β12 = R12 / (det * mfc)
 
-    C = H / (cpf(fluid) * mass_flow)
-    In = @SMatrix [-1 0; 0 1]
-    A .= C .* In * inv(A)
+    γ = sqrt(β1β2^2 / 4 + β1β2 * β12)
 
-    exponential!(A, method, exp_cache)
+    L = β1β2/(2γ) * tanh(γ * H)
 
-    EoutH = A[1, 2] - A[2, 2]
-    EinH  = A[2, 1] - A[1, 1]     
-
-    return EinH, -EoutH, EoutH - EinH 
+    k_i = (1-L)/(1+L)
+    return k_i, -1., 1 - k_i
 end

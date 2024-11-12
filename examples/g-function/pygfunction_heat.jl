@@ -20,6 +20,8 @@ r_in = 0.015
 r_out = 0.02
 R_fp = 0.109
 
+ts = H^2/(9α)           
+
 pos = -0.05
 pos1 = (pos, 0.)
 pos2 = (0., pos)
@@ -85,7 +87,6 @@ function compute_uniform_heat(Nt, Δt, positions)
 
     Tbm = (mean(containers.X[2*n+1:3*n, :], dims=1) .- T0)[:] * 2π * k_s 
 
-    ts = H^2/(9α)           
     tts = @. log(options.t / ts)
     error_gfunc = abs.(gfunc_res - Tbm)
 
@@ -96,16 +97,20 @@ end
 # Figure
 ########################################################
 
-#scenarios = [(2, 2, B) for B in (7.5, 15., 22.5, 30., 45., 10000000.)]
-scenarios = [(10, 10, B) for B in (7.5)]
+scenarios = (2, 2, [7.5, 15., 22.5, 30., 45., 1e15])
+
+
+n = scenarios[1]
+m = scenarios[2]
+BB = scenarios[3]
 
 fig = Figure()
 grid = fig[1, 1] = GridLayout()
 
-axis_gfunc = Axis(grid[1, 1], ylabel = L" g_{BNS}", title = "Uniform heat exchange rate")
+axis_gfunc = Axis(grid[1, 1], ylabel = L" g_{BNS}", title = "Uniform heat exchange rate; $n x $m grid")
 axis_error = Axis(grid[2, 1], ylabel = L"\log_{10} \mid g_{pyg} - g_{BNS}\mid ", xlabel = L"\text{ln} \, \frac{t}{t_s}")
 
-for (n, m, B) in scenarios
+for B in BB
     positions = [(B*(i-1), B*(j-1)) for i in 1:n for j in 1:m]
 
     early = compute_uniform_heat(30, 3600*24., positions)
@@ -120,7 +125,8 @@ for (n, m, B) in scenarios
     zero_error = findall(x -> x==0., error_gfunc)
     error_gfunc[zero_error] .= eps()
 
-    lines!(axis_gfunc, tts, Tbm)
+    legend_value = B > 1e8 ? "\\infty" : B/H
+    lines!(axis_gfunc, tts, Tbm, label = L"%$(legend_value)")
     lines!(axis_error, tts, log10.(error_gfunc))
 end
 
@@ -130,6 +136,16 @@ linkxaxes!(axis_gfunc, axis_error)
 hidexdecorations!(axis_gfunc, grid = false)
 rowgap!(grid, 15)
 
+rbH = rb/H
+DH = round(D/H, digits=2)
+
+legend = fig[1, 2] = GridLayout()
+
+Label(legend[1, 1], L"t_s = 2.5 \times 10^{9} \ \text{s}")
+Label(legend[2, 1], L"\frac{r_b}{H} = %$(rbH)")
+Label(legend[3, 1], L"\frac{D}{H} = %$(DH)")
+Legend(legend[4, 1], axis_gfunc, L"B/H")
+
 fig
 
-# save("examples/g-function/plots/uniform_heat.png", fig)
+save("examples/g-function/plots/uniform_heat_$(n)x$(m).png", fig)

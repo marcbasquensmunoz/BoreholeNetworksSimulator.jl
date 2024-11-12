@@ -3,7 +3,7 @@
 
 Constrain the inlet temperature of the first borehole in each branch.
 
-The inlet temperature `T_in` must be a `Matrix`, whose column `i` are the inlet temperatures per branch at the 
+The inlet temperature `T_in` must be a ``N_{br}\times N_t`` `Matrix`, whose column `i` are the inlet temperatures per branch at the 
 time step `i`. The amount of rows of `T_in` must equal to the amount of branches specified 
 in [`BoreholeNetwork`](@ref).
 """
