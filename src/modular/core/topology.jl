@@ -28,4 +28,6 @@ function topology_coeffs!(M, network::BoreholeNetwork, mass_flows)
     end
 end
 
-function topology_b!(b, ::BoreholeOperation) end
+function topology_b!(b, ::BoreholeOperation) 
+    b .= zero(eltype(b))
+end
