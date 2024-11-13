@@ -31,7 +31,7 @@ include("CoolProp/interpolate.jl")
 
 export Fluid, Water, EthanolMix
 export Borehole, SingleUPipeBorehole
-export Borefield, EqualBoreholesBorefield
+export Borefield, EqualBoreholesBorefield, RectangularBorefield
 export Medium, GroundMedium, FlowInPorousMedium
 export Constraint, TotalHeatLoadConstraint, HeatLoadConstraint, InletTempConstraint, constant_HeatLoadConstraint, uniform_HeatLoadConstraint, constant_InletTempConstraint, uniform_InletTempConstraint
 export TimeSuperpositionMethod, ConvolutionMethod, NonHistoryMethod
@@ -43,7 +43,7 @@ export connect_to_source!, connect_to_sink!, connect!, all_series_network, all_p
 export Operator, SimpleOperator, operate
 export ConstantOperator
 export simulate!, compute_parameters, load_cache!, save_cache, initialize
-export n_branches
+export n_branches, all_parallel_network, all_series_network
 export ThermophysicalProperties
 export extract_Tfin, extract_Tfout, extract_Tb, extract_q
 

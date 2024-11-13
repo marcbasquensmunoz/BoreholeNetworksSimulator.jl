@@ -3,7 +3,7 @@
 # knowledge on whether the fluid is heated or cooled. The choosen default is that the fluid is heated.
 function evaluate_nusselt(Re, Pr; mode = "heating")
     if Re < 2300
-        Nu = 3.66
+        Nu = 3.657
     elseif (Re >= 2300) && (Re < 10000)        
         f =  (1.58*log(Re) - 3.28)^(-2)
         Nu = (0.5*f*(Re - 1000.) * Pr)/(1 + 12.7*sqrt(0.5*f) * (Pr^(2/3) - 1))
@@ -26,12 +26,11 @@ end
 
 # Evaluate the heat transfer coefficient 
 function heat_transfer_coefficient(mf, Tref, borehole::Borehole, fluid::Fluid)
-    T0 = 273.15
     rp = get_rp(borehole)
-    μ, ρ, cp, k = thermophysical_properties(fluid, Tref + T0)
+    μ, ρ, cp, k = thermophysical_properties(fluid, Tref)
     w = mf/(ρ * π * rp^2)
-    Re = 2 * ρ * w * rp/ μ
-    Pr = μ * cp/(2*rp)
+    Re = 2 * ρ * w * rp / μ
+    Pr = μ * cp / k
     Nu = evaluate_nusselt(Re, Pr)
     return Nu * k /(2*rp)
 end
