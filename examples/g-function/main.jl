@@ -18,14 +18,10 @@ function make_plot(axis, d)
     network = all_parallel_network(n*m)
     configurations = [network]
 
-    function create_rectangular_field(n, m, d)
-        [((i-1)*d, (j-1)*d) for i in 1:n for j in 1:m]
-    end
-
     method = NonHistoryMethod()
     medium = GroundMedium(λ = λ, α = α, T0 = 20.)
     borehole = SingleUPipeBorehole(H = H, D = D, λg = 2.5, pipe_position = ((0.03, 0.0), (-0.03, 0.0)))
-    borefield = EqualBoreholesBorefield(borehole_prototype=borehole, positions=create_rectangular_field(n, m, d))
+    borefield = RectangularBorefield(n, m, d, d, borehole)
     constraint = constant_HeatLoadConstraint(ones(n*m), Nt)
     fluid = Water()
 
