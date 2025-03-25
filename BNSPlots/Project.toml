@@ -1,7 +1,7 @@
 name = "BNSPlots"
 uuid = "bee248e1-b98f-493a-9b88-5d838671920e"
 authors = ["Marc Basquens <marc5@kth.se> and contributors"]
-version = "1.0.0-DEV"
+version = "1.0.1"
 
 [deps]
 GraphMakie = "1ecd5474-83a3-4783-bb4f-06765db800d2"
