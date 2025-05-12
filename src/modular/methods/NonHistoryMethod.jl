@@ -129,3 +129,8 @@ function method_b!(b, method::NonHistoryMethod, borefield, medium, step)
         end
     end
 end
+
+function reset!(method::NonHistoryMethod) 
+    method.F .= 0
+    method.aux .= 0
+end

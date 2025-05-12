@@ -2,30 +2,11 @@ using PythonCall
 using CondaPkg
 using BoreholeNetworksSimulator
 using Statistics
-using WGLMakie
+
 CondaPkg.add("pygfunction")
 
 gt = pyimport("pygfunction")
 np = pyimport("numpy")
-
-H = 150.
-D = 4.
-rb = 0.075
-
-mass_flow_per_branch = 0.25
-α = 1.0e-6
-k_s = 2.
-k_g = 1.
-r_in = 0.015
-r_out = 0.02
-R_fp = 0.109
-
-ts = H^2/(9α)           
-
-pos = -0.05
-pos1 = (pos, 0.)
-pos2 = (0., pos)
-
 
 function compute_uniform_heat(Nt, Δt, positions)
     n = length(positions)
@@ -66,7 +47,7 @@ function compute_uniform_heat(Nt, Δt, positions)
     borefield = EqualBoreholesBorefield(borehole_prototype=borehole, positions=positions)
     medium = GroundMedium(α = α, λ = k_s, T0 = T0)
     constraint = uniform_HeatLoadConstraint([Q for i in range(1, Nt+1)], n_branches(network))
-    method = ConvolutionMethod()#NonHistoryMethod()
+    method = ConvolutionMethod()
     fluid = EthanolMix()
 
     options = SimulationOptions(
@@ -92,60 +73,3 @@ function compute_uniform_heat(Nt, Δt, positions)
 
     return (tts, Tbm, error_gfunc)
 end
-
-########################################################
-# Figure
-########################################################
-
-scenarios = (2, 2, [7.5, 15., 22.5, 30., 45., 1e15])
-
-
-n = scenarios[1]
-m = scenarios[2]
-BB = scenarios[3]
-
-fig = Figure()
-grid = fig[1, 1] = GridLayout()
-
-axis_gfunc = Axis(grid[1, 1], ylabel = L" g_{BNS}", title = "Uniform heat exchange rate; $n x $m grid")
-axis_error = Axis(grid[2, 1], ylabel = L"\log_{10} \mid g_{pyg} - g_{BNS}\mid ", xlabel = L"\text{ln} \, \frac{t}{t_s}")
-
-for B in BB
-    positions = [(B*(i-1), B*(j-1)) for i in 1:n for j in 1:m]
-
-    early = compute_uniform_heat(30, 3600*24., positions)
-    mid = compute_uniform_heat(12*10, 3600*24*30., positions)
-    late = compute_uniform_heat(100, 3600*8760*10., positions)
-    far_late = compute_uniform_heat(20, 3600*8760*1000., positions)
-
-    tts = vcat(early[1], mid[1], late[1], far_late[1])
-    Tbm = vcat(early[2], mid[2], late[2], far_late[2])
-    error_gfunc = vcat(early[3], mid[3], late[3], far_late[3])
-
-    zero_error = findall(x -> x==0., error_gfunc)
-    error_gfunc[zero_error] .= eps()
-
-    legend_value = B > 1e8 ? "\\infty" : B/H
-    lines!(axis_gfunc, tts, Tbm, label = L"%$(legend_value)")
-    lines!(axis_error, tts, log10.(error_gfunc))
-end
-
-ylims!(axis_error, -18, 0)
-
-linkxaxes!(axis_gfunc, axis_error)
-hidexdecorations!(axis_gfunc, grid = false)
-rowgap!(grid, 15)
-
-rbH = rb/H
-DH = round(D/H, digits=2)
-
-legend = fig[1, 2] = GridLayout()
-
-Label(legend[1, 1], L"t_s = 2.5 \times 10^{9} \ \text{s}")
-Label(legend[2, 1], L"\frac{r_b}{H} = %$(rbH)")
-Label(legend[3, 1], L"\frac{D}{H} = %$(DH)")
-Legend(legend[4, 1], axis_gfunc, L"B/H")
-
-fig
-
-save("examples/g-function/plots/uniform_heat_$(n)x$(m).png", fig)

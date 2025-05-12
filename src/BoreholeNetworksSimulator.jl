@@ -42,7 +42,7 @@ export BoreholeNetwork, Valve, BoreholeOperation
 export connect_to_source!, connect_to_sink!, connect!, all_series_network, all_parallel_network, compute_mass_flows!, source, sink, connect_in_series!, equal_valve, valve, absolute_valve, initialize_mass_flows, boreholes_in_branch, first_bhs_in_branch, connect_in_parallel!
 export Operator, SimpleOperator, operate
 export ConstantOperator
-export simulate!, compute_parameters, load_cache!, save_cache, initialize
+export simulate!, compute_parameters, load_cache!, save_cache, initialize, reset!
 export n_branches, all_parallel_network, all_series_network
 export ThermophysicalProperties
 export extract_Tfin, extract_Tfout, extract_Tb, extract_q
