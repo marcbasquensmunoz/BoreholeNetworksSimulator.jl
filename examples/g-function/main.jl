@@ -1,61 +1,33 @@
 using BoreholeNetworksSimulator
-using WGLMakie
+using CairoMakie
+include("make_figure.jl")
+include("pygfunction_heat.jl")
+include("pygfunction_mixed.jl")
 
-function make_plot(axis, d)
-    Δt = 3600.
-    Nt = 8760*100
+H = 150.
+D = 4.
+rb = 0.075
 
-    D = 10.
-    H = 10.
+mass_flow_per_branch = 0.25
+α = 1e-6
+k_s = 2.
+k_g = 1.
+k_p = 0.42
+r_in = 0.015
+r_out = 0.02
+R_fp = 0.109
 
-    n = 2
-    m = 2
-    Nb = n*m
+ts = H^2/(9α)           
 
-    α = 1e-6
-    λ = 3.
+pos = -0.05
+pos1 = (pos, 0.)
+pos2 = (0., pos)
 
-    network = all_parallel_network(n*m)
-    configurations = [network]
+spacings = [7.5, 15., 22.5, 30., 45., 1e15]
+scenarios = [(2, 2), (4, 4)]
 
-    method = NonHistoryMethod()
-    medium = GroundMedium(λ = λ, α = α, T0 = 20.)
-    borehole = SingleUPipeBorehole(H = H, D = D, λg = 2.5, pipe_position = ((0.03, 0.0), (-0.03, 0.0)))
-    borefield = RectangularBorefield(n, m, d, d, borehole)
-    constraint = constant_HeatLoadConstraint(ones(n*m), Nt)
-    fluid = Water()
+fig_unif_heat = make_figure(scenarios, spacings, compute_uniform_heat, "Uniform heat exchange rate", ts=ts, H=H, D=D, rb=rb)
+fig_total_heat = make_figure(scenarios, spacings, compute_constant_total_heat, "Constant total heat exchange rate", ts=ts, H=H, D=D, rb=rb)
 
-    options = SimulationOptions(
-        method = method,
-        constraint = constraint,
-        borefield = borefield,
-        fluid = fluid,
-        medium = medium,
-        boundary_condition = DirichletBoundaryCondition(),
-        Δt = Δt,
-        Nt = Nt,
-        configurations = configurations
-    )
-
-    operator = ConstantOperator(network, mass_flows = ones(n*m))
-    containers = @time initialize(options)
-
-    @time simulate!(operator=operator, options=options, containers=containers)
-
-    bh = Int(2Nb+1 + Nb/2)
-    lines!(axis, log.(options.t ./ (H^2 / 9α)) , containers.X[bh, :], label=L"\frac{d}{L} = %$(d/H)")
-end
-
-
-fig = Figure()
-axis = fig[1, 1] = Axis(fig, ylabel = "g-function", xlabel = L"\ln \ \frac{t}{t_s}")
-
-make_plot(axis, 0.05*10)
-make_plot(axis, 0.1*10)
-make_plot(axis, 0.25*10)
-make_plot(axis, 0.5*10)
-
-fig[1, 2] = Legend(fig, axis, "", framevisible = false)
-
-fig
-# save("examples/g-function/gfunction.png", fig)
+save("$(@__DIR__)/plots/uniform_heat.png", fig_unif_heat)
+save("$(@__DIR__)/plots/mixed.png", fig_total_heat)

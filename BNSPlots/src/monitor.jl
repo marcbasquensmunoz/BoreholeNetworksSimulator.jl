@@ -84,8 +84,25 @@ function monitor(containers, boreholes, t; steps = 1:length(t), display = [:Tfin
     end
 
     group_color = [PolyElement(color = color, strokecolor = :transparent) for color in color_range]
-    group_marker = [LineElement(color = :black), LineElement(color = :black, linestyle = :dash), MarkerElement(marker = :circle, color = :black, strokecolor = :transparent, markersize = 5.)]
-    legend = Legend(scene, [group_color, group_marker], [string.(boreholes), ["Tfin", "Tfout", "Tb"]], ["Boreholes", "Temperatures"], tellheight = true, tellwidth = false)
+    group_marker = []
+    legend_markers = []
+    if :Tfin in display
+        push!(legend_markers, L"T_{f, \text{in}}")
+        push!(group_marker, LineElement(color = :black, linestyle = :solid))
+    end
+    if :Tfout in display
+        push!(legend_markers, L"T_{f, \text{out}}")
+        push!(group_marker, LineElement(color = :black, linestyle = :dash))
+    end
+    if :Tb in display
+        push!(legend_markers, L"T_b")
+        push!(group_marker, MarkerElement(marker = :circle, color = :black, strokecolor = :transparent, markersize = 5.))
+    end
+    legend = Legend(scene, 
+        [group_color, group_marker], [string.(boreholes), legend_markers], ["Boreholes", "Temperatures"], 
+        tellheight = true, 
+        tellwidth = false
+    )
     legend.titleposition = :top
     legend.orientation = :horizontal
     legend.nbanks = 1

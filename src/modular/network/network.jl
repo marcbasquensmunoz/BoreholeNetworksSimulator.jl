@@ -20,7 +20,7 @@ Create a network of `n` boreholes connected in parallel.
 Create a network of `n` boreholes connected in series.
 """
 @with_kw struct BoreholeNetwork
-    graph::SimpleDiGraph = SimpleDiGraph()
+    graph::SimpleDiGraph{Int} = SimpleDiGraph{Int}()
 end
 
 BoreholeNetwork(n::Int) = BoreholeNetwork(graph=SimpleDiGraph(n+2))

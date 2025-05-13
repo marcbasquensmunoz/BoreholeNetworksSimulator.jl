@@ -38,6 +38,8 @@ Model a borehole with a single U-pipe with burial depth `D` and length `H`.
     A::MMatrix{2, 2, T, 4} = @MMatrix zeros(2, 2)
     method::ExpMethodHigham2005 = ExpMethodHigham2005(false)
     exp_cache::Tuple{Vector{MMatrix{2, 2, T, 4}}, Vector{T}} = ExponentialUtilities.alloc_mem(A, method)
+
+    use_heat_transfer_resistance::Bool = true 
 end
 
 get_H(bh::SingleUPipeBorehole{T}) where {T <: Real} = bh.H
@@ -50,14 +52,18 @@ get_n_segments(bh::SingleUPipeBorehole) = bh.n_segments
 
 
 function uniform_Tb_coeffs(borehole::SingleUPipeBorehole, λ, mass_flow, Tref, fluid)
-    @unpack λg, λp, rb, rpi, rpo, dpw, H, R_cache, A, method, exp_cache = borehole
+    @unpack λg, λp, rb, rpi, rpo, dpw, H, R_cache, A, method, exp_cache, use_heat_transfer_resistance = borehole
 
     if mass_flow == 0.
         return 0., -1., 1.
     end 
 
-    hp = heat_transfer_coefficient(mass_flow, Tref, borehole, fluid)
-    Rhp = 1/(2*π*rpi*hp)
+    if use_heat_transfer_resistance
+        hp = heat_transfer_coefficient(mass_flow, Tref, borehole, fluid)
+        Rhp = 1/(2*π*rpi*hp)
+    else 
+        Rhp = 0.
+    end
 
     if iszero(R_cache)
         x1, y1 = borehole.pipe_position[1]

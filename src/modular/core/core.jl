@@ -87,6 +87,8 @@ Each column of `X` contains the solution of `M X = b` for each time step of the 
     mf::Matrix{T}
 end
 
+Base.copy(c::SimulationContainers) = SimulationContainers(c.M, copy(c.X), copy(c.b), copy(c.mf))
+
 """
     initialize(options::SimulationOptions) 
 
@@ -104,7 +106,7 @@ function initialize(options::SimulationOptions)
 end
 function SimulationContainers(options::SimulationOptions) 
     @unpack Nb, Nt = options
-    SimulationContainers(M =  Nb > 100 ? spzeros(4Nb, 4Nb) : zeros(4Nb, 4Nb), b = zeros(4Nb), X = zeros(4Nb, Nt), mf = zeros(Nb, Nt))
+    SimulationContainers(M = Nb > 100 ? spzeros(4Nb, 4Nb) : zeros(4Nb, 4Nb), b = zeros(4Nb), X = zeros(4Nb, Nt), mf = zeros(Nb, Nt))
 end
 
 function branch_of_borehole(operation::BoreholeOperation, borehole)
@@ -126,3 +128,9 @@ function solve_step!(X, A, b)
 end
 
 unwrap(x::Any) = x
+
+function reset!(options::SimulationOptions)
+    reset!(options.method)
+end
+
+reset!(::TimeSuperpositionMethod) = nothing

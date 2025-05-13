@@ -13,7 +13,7 @@ get_Tb(containers)                      = containers.X[get_Tb_range(containers),
 get_Tb(containers, borehole::Int)       = containers.X[get_Tb_range_start(containers) + borehole, :]
 get_Tb(containers, branch::Vector{Int}) = containers.X[get_Tb_range_start(containers) .+ branch, :]
 
-get_q(containers)                      = containers.X[get_q_range(containers):end,:]
+get_q(containers)                      = containers.X[get_q_range(containers), :]
 get_q(containers, borehole::Int)       = containers.X[get_q_range_start(containers) + borehole, :]
 get_q(containers, branch::Vector{Int}) = containers.X[get_q_range_start(containers) .+ branch, :]
 

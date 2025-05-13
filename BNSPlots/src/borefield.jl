@@ -43,3 +43,7 @@ function plot_borefield(network, positions; distinguished_boreholes = [])
 
     scene   
 end
+
+function title(figure, title) 
+    figure.current_axis.x.title = title
+end
