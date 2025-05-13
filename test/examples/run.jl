@@ -1,18 +1,19 @@
+examples_dir = "../../examples"
 
 @info "Running Braedstrup"
-include("../../examples/Braedstrup/main.jl")
+include("$examples_dir/Braedstrup/main.jl")
 @info "Running g-function"
-include("../../examples/g-function/main.jl")
+include("$examples_dir/g-function/main.jl")
 @info "Running Tekniska: constant m"
-include("../../examples/tekniska/constant_m.jl")
+include("$examples_dir/tekniska/constant_m.jl")
 @info "Running Tekniska: proportional m"
-include("../../examples/tekniska/prop_m.jl")
+include("$examples_dir/tekniska/prop_m.jl")
 @info "Running Tekniska: toggle"
-include("../../examples/tekniska/toggle.jl")
+include("$examples_dir/tekniska/toggle.jl")
 @info "Running partialization"
-include("../../examples/partialization/interval.jl")
-include("../../examples/partialization/temp_diff.jl")
+include("$examples_dir/partialization/interval.jl")
+include("$examples_dir/partialization/temp_diff.jl")
 @info "Running reversal"
-include("../../examples/partialization/main.jl")
+include("$examples_dir/reversal/main.jl")
 @info "Running turbulence"
-include("../../examples/turbulence/main.jl")
+include("$examples_dir/turbulence/main.jl")
