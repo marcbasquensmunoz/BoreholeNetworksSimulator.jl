@@ -30,4 +30,4 @@ fig_unif_heat = make_figure(scenarios, spacings, compute_uniform_heat, "Uniform 
 fig_total_heat = make_figure(scenarios, spacings, compute_constant_total_heat, "Constant total heat exchange rate", ts=ts, H=H, D=D, rb=rb)
 
 save("$(@__DIR__)/plots/uniform_heat.png", fig_unif_heat)
-save("$(@__DIR__)/plots/mixed.png", fig_total_heat)
+ssave("$(@__DIR__)/plots/mixed.png", fig_total_heat)
