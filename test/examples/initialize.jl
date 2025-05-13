@@ -14,4 +14,4 @@ cd(project_directory) do
     Pkg.instantiate()
 end
 
-Pkg.add(["CSV", "Colors", "Parameters", "WGLMakie", "CairoMakie"])
+Pkg.add(["CSV", "Colors", "Parameters", "WGLMakie", "CairoMakie", "PyhtonCall", "CondaPkg", "Statistics"])
