@@ -29,7 +29,7 @@ include.(modular)
 include("CoolProp/load_properties.jl")
 include("CoolProp/interpolate.jl")
 
-export Fluid, Water, EthanolMix
+export Fluid, Water, EthanolMix, GlycolMix
 export Borehole, SingleUPipeBorehole
 export Borefield, EqualBoreholesBorefield, RectangularBorefield
 export Medium, GroundMedium, FlowInPorousMedium
