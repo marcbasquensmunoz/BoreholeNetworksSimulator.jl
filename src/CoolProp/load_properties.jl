@@ -1,7 +1,14 @@
 
 global const fluid_names = Dict([
+    :water => "Water",
     :ethanol20 => "EthanolMix20",
-    :water => "Water"
+    :glycol30 => "GlycolMix30",
+])
+
+global const fluid_names_coolprop = Dict([
+    :water => "Water",
+    :ethanol20 => "INCOMP::MEA-20%",
+    :glycol30 => "INCOMP::MEG-30%",
 ])
 
 function load_properties(fluid_name)
