@@ -13,7 +13,7 @@ Makes a plot of the borefield, showing the boreholes numbered and their connecti
 # Optional arguments
 - `distinguished_boreholes`: Vector of `Tuple{Int, Color}`. If specified, the boreholes corresponding to the given values will be highlighted with each of the colors provided.
 """
-function plot_borefield(network, positions; distinguished_boreholes = [])
+function plot_borefield(network, positions; distinguished_boreholes = [], distinguished_marker_size = 16)
     scene = Figure()
     axis = scene[1, 1] = Axis(scene, ylabel = "y [m]", xlabel = "x[m]", aspect = DataAspect())
     min_x = minimum(map(x->x[1], positions))
@@ -35,7 +35,7 @@ function plot_borefield(network, positions; distinguished_boreholes = [])
     borehole_sizes = 12 * ones(Int, Nb)
     for (bh, color) in distinguished_boreholes
         borehole_colors[bh] = color
-        borehole_sizes[bh] = 16
+        borehole_sizes[bh] = distinguished_marker_size
     end
     graphplot!(axis, borefield, layout=positions, nlabels=["$i" for i in 1:Nb], node_color = borehole_colors, node_size = borehole_sizes, nlabels_distance = 5.)
 
