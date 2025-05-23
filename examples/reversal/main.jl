@@ -24,7 +24,7 @@ configurations = [network, reverse(network)]
 Q = H*Nb
 total_mass_flow = 1.
 
-method = NonHistoryMethod()
+method = OriginalNonHistoryMethod()
 medium = GroundMedium(λ=λ, α=α, T0=T0)
 borehole = SingleUPipeBorehole(H=H, D=D)
 borefield = EqualBoreholesBorefield(borehole_prototype=borehole, positions=positions)

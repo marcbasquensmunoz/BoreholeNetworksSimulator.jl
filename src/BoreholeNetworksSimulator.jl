@@ -18,6 +18,7 @@ using LegendrePolynomials
 using SpecialFunctions
 using RequiredInterfaces
 using Graphs
+using DataStructures
 
 using FiniteLineSource
 
@@ -34,7 +35,7 @@ export Borehole, SingleUPipeBorehole
 export Borefield, EqualBoreholesBorefield, RectangularBorefield
 export Medium, GroundMedium, FlowInPorousMedium
 export Constraint, TotalHeatLoadConstraint, HeatLoadConstraint, InletTempConstraint, constant_HeatLoadConstraint, uniform_HeatLoadConstraint, constant_InletTempConstraint, uniform_InletTempConstraint
-export TimeSuperpositionMethod, ConvolutionMethod, NonHistoryMethod
+export TimeSuperpositionMethod, ConvolutionMethod, OriginalNonHistoryMethod, NonHistoryMethod
 export BoundaryCondition, NoBoundary, DirichletBoundaryCondition, NeumannBoundaryCondition
 export Approximation, MidPointApproximation, MeanApproximation
 export SimulationOptions, SimulationContainers

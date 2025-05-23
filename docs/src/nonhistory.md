@@ -34,7 +34,7 @@ operator = SimpleOperator(mass_flow = 2., branches = 2)
 
 Now, we define two different options using different `method` parameters,
 one with `ConvolutionMethod` corresponding to the convolution,
-and the other with `NonHistoryMethod`, corresponding with the non-history method.
+and the other with `OriginalNonHistoryMethod`, corresponding with the non-history method.
 
 ````@example nonhistory
 options_convolution = SimulationOptions(
@@ -49,7 +49,7 @@ options_convolution = SimulationOptions(
 )
 
 options_nonhistory = SimulationOptions(
-    method = NonHistoryMethod(),
+    method = OriginalNonHistoryMethod(),
     constraint = constraint,
     borefield = borefield,
     medium = medium,

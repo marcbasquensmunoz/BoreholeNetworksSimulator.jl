@@ -26,7 +26,7 @@ include("borefields/test_EqualBoreholesBorefield.jl")
 include("boreholes/test_SingleUPipeBorehole.jl")
 
 include("methods/test_ConvolutionMethod.jl")
-include("methods/test_NonHistoryMethod.jl")
+include("methods/test_OriginalNonHistoryMethod.jl")
 
 # Run tutorials
 project_dir = dirname(pwd())

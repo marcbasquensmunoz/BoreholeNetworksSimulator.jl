@@ -30,7 +30,7 @@ operator = ConstantOperator(network, mass_flows = 2 * ones(2))
 
 # Now, we define two different options using different `method` parameters, 
 # one with `ConvolutionMethod` corresponding to the convolution,
-# and the other with `NonHistoryMethod`, corresponding with the non-history method.
+# and the other with `OriginalNonHistoryMethod`, corresponding with the non-history method.
 options_convolution = SimulationOptions(
     method = ConvolutionMethod(),
     constraint = constraint,
@@ -43,7 +43,7 @@ options_convolution = SimulationOptions(
 )
 
 options_nonhistory = SimulationOptions(
-    method = NonHistoryMethod(),
+    method = OriginalNonHistoryMethod(),
     constraint = constraint,
     borefield = borefield,
     medium = medium,

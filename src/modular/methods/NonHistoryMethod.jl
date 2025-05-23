@@ -1,102 +1,90 @@
-using .FiniteLineSource: SegmentToSegment, SegmentToPoint, Constants, DiscretizationParameters, f_guess, precompute_coefficients, initialize_containers, make_DiscretizationParameters
+using FiniteLineSource: prepare_containers, LineSource, AsymptoticContainers
 
-"""
-    NonHistoryMethod{T} <: TimeSuperpositionMethod 
-    NonHistoryMethod()
-
-Use the non-history method to compute the thermal response between boreholes. 
-See _A non-history dependent temporal superposition algorithm for the finite line source solution_.
-It should be initialized without arguments, but it contains the variables:
-- `F::Matrix{T}`: each column contains the `F` function (encoding the load history) for each borehole. It is initially 0.
-- `ζ::Vector{T}`: discretization nodes of the integration interval. Shared for all boreholes. Precomputed in [`initialize`](@ref).
-- `w::Matrix{T}`: weights of the ζ integration for each pair of boreholes. Precomputed in [`initialize`](@ref).
-- `expΔt::Vector{T}`: exp(-ζ^2*Δt). Precomputed in [`initialize`](@ref).
-
-This feature is experimental and might not work as expected in some cases. 
-"""
-mutable struct NonHistoryMethod{T} <: TimeSuperpositionMethod 
-    F::Matrix{T}
+mutable struct NonHistoryMethod{T <: Number} <: TimeSuperpositionMethod 
     ζ::Vector{T}
-    w::Matrix{T}
-    expΔt::Vector{T}
-    n_disc::Int
-    aux::Vector{T}
+    F::Matrix{T}
+    expt::Vector{T}
+    expNin::Vector{T}
+    expNout::Vector{T}
+    HM::Array{T, 3}
+    ranges::Vector{UnitRange{Int}}
+    Kranges::Vector{UnitRange{Int}}
+    K_min::Matrix{Int}
+    qaux::Vector{T}
+    N::Vector{Int}
+    sr_ζ::Vector{Vector{T}}
+    sr_w::Vector{Vector{T}}
+    sr_F::Vector{Vector{T}}
+    sr_expt::Vector{Vector{T}}
+    sr_expNout::Vector{Vector{T}}
+    sr_Ic::Vector{T}
+    sr_Icout::Vector{T}
+    q_N1::Vector{T}
 end
-NonHistoryMethod(;n_disc::Int=20) = NonHistoryMethod(zeros(0, 0), zeros(0), zeros(0, 0), zeros(0), n_disc, zeros(0))
+NonHistoryMethod() = NonHistoryMethod(zeros(0), zeros(0, 0), zeros(0), zeros(0), zeros(0), zeros(0, 0, 0), UnitRange{Int}[], UnitRange{Int}[], zeros(Int, 0, 0), zeros(0), zeros(Int, 0), Vector{Float64}[], Vector{Float64}[], Vector{Float64}[], Vector{Float64}[], Vector{Float64}[], zeros(0), zeros(0), zeros(0))
 
-function distances(borefield, boundary_condition, approximation, medium)
-    map = Dict{setup_type(approximation, medium), Int}()
-    buffers = get_buffers(boundary_condition)
-
-    k = 1
-    boreholes = 1:n_boreholes(borefield)
-    for i in boreholes
-        for j in boreholes
-            s = setup(approximation, medium, borefield, i, j)
-            if !haskey(map, s)
-                map[s] = k
-                k += 1
-
-                rb = get_rb(borefield, i)
-                add_buffer!(buffers, boundary_condition, s, rb)
-            end
-        end
-    end
-    return map, buffers
-end
+get_setup(::MidPointApproximation) = SegmentToPoint(H=0., D=0., z=0., σ=0.)
+get_setup(::MeanApproximation) = SegmentToSegment(H1=0., D1=0., H2=0., D2=0., σ=0.)
 
 function precompute_auxiliaries!(method::NonHistoryMethod, options)
-    @unpack Nb, Nt, Ns, Δt, borefield, medium, boundary_condition, approximation, atol, rtol = options
-    @unpack n_disc = method
-    α = get_α(medium)
-    rb = get_rb(borefield, 1) 
-    kg = get_λ(medium)
-    Δt̃ = α*Δt/rb^2
-    ϵ = 10^-18
-    b = ceil(erfcinv(ϵ / sqrt(π/Δt̃)) / sqrt(Δt̃))
+    constants = Constants(Δt=options.Δt, α=get_α(options.medium), rb=get_rb(options.borefield, 1), kg=get_λ(options.medium))
+    containers = AsymptoticContainers(10)
+    ϵ = options.atol != 0 ? options.atol : 1e-4
 
-    constants = Constants(Δt=Δt, α=α, rb=rb, kg=kg, b=b)
-    _, _, segments = quadgk_segbuf(f_guess(setup(approximation, medium, borefield, 1, 1), constants), 0., b, atol=atol, rtol=rtol)
-    xt, wt = gausslegendre(n_disc+1)  
-    dps = [make_DiscretizationParameters(s.a, s.b, n_disc, xt=xt, w=wt) for s in segments]
-    ζ = reduce(vcat, (dp.x for dp in dps)) 
-    expΔt = @. exp(-ζ^2 * Δt̃)
+    Nb = n_boreholes(options.borefield)
+    sources = [LineSource(segment_coordinates(options.borefield, i)..., get_rb(options.borefield, i)) for i in 1:Nb]
 
-    distances_map, quadgk_buffers = distances(borefield, boundary_condition, approximation, medium)
-    disc_map, containers = initialize_containers(setup(approximation, medium, borefield, 1, 1), dps)    
+    @show options.Nt, ϵ
+    @show containers
+    blocks = prepare_containers(SegmentToSegment(D1=0., D2=0., H1=100., H2=100., σ=0.5)#=get_setup(options.approximation)=#, sources, ϵ, options.Nt, constants, containers)
 
-    n = length(ζ)
-    w = zeros(n, Ns*Ns)
-    w_buffer = zeros(n, length(distances_map))
+    @show blocks.ζ
+    @show blocks.expNin
 
-    for (key, value) in pairs(distances_map)
-        for (k, dp) in enumerate(dps)
-            range = (n_disc+1)*(k-1)+1:(n_disc+1)*k
-            w_buffer[range, value] .= weights(boundary_condition, key, constants, dp, containers[disc_map[k]], quadgk_buffers[value], atol=atol, rtol=rtol)
-        end
-    end
-    for i in 1:Ns
-        for j in 1:Ns
-            k = distances_map[setup(approximation, medium, borefield, i, j)]
-            @inbounds @views @. w[:, (i-1)*Ns+j] = w_buffer[:, k]
-        end
-    end
-
-    perm = sortperm(ζ)
-
-    @views method.ζ = ζ[perm]
-    @views method.w = w[perm, :]
-    @views method.expΔt = expΔt[perm]
-    method.F = zeros(n, Ns*Ns)
-    method.aux = zeros(n)
+    method.F = blocks.F
+    method.ζ = blocks.ζ
+    method.expt = blocks.expt
+    method.expNin = blocks.expNin
+    method.expNout = blocks.expNout
+    method.HM = blocks.HM
+    method.ranges = blocks.ranges
+    method.Kranges = blocks.Kranges
+    method.K_min = blocks.K_min
+    method.qaux = blocks.qaux
+    method.N = blocks.N
+    method.sr_ζ = blocks.sr_ζ
+    method.sr_w = blocks.sr_w
+    method.sr_F = blocks.sr_F
+    method.sr_expt = blocks.sr_expt
+    method.sr_expNout = blocks.sr_expNout
+    method.sr_Ic = blocks.sr_Ic
+    method.sr_Icout = blocks.sr_Icout
+    method.q_N1 = zeros(Nb)
 end
 
 function update_auxiliaries!(method::NonHistoryMethod, X, borefield, step)
-    @unpack ζ, F, expΔt = method
-    Nb = n_boreholes(borefield)
+    @unpack sr_F, sr_expt, sr_expNout, sr_ζ, F, N, expt, expNin, expNout, qaux, ranges, q_N1 = method
 
-    for i in 1:size(F)[2]
-        @. @views F[:, i] = expΔt * F[:, i] + X[3Nb+(i-1)%Nb+1, step] * (1 - expΔt) / ζ
+    Nb = n_boreholes(borefield)
+    K = length(N) - 1
+    @views q = X[3Nb+1:4Nb, 1:step]
+    @views @. q_N1 = step - N[1] + 1 > 0 ? q[:, step - N[1] + 1] : zeros(Nb)
+
+    for i in 1:Nb
+        @. sr_F[i] = sr_expt[i] * sr_F[i] + (1 - sr_expt[i]) / sr_ζ[i] * (q[i, step] - sr_expNout[i] * q_N1[i])
+    end
+
+    for j in 1:Nb
+        qaux .= 0.
+        for i in 1:K
+            qin = step - N[i] + 1 > 0 ? q[j, step - N[i] + 1] : 0.
+            qout = step - N[i+1] + 1 > 0 ? q[j, step - N[i+1] + 1] : 0.
+            @show expNin
+            @show expNout
+            @views @inbounds @. qaux[ranges[i]] = qin * expNin[ranges[i]] - qout * expNout[ranges[i]]
+        end
+        @show qaux
+        @views @. F[:, j] = expt * F[:, j] + qaux
     end
 end
 
@@ -118,19 +106,27 @@ function method_coeffs!(M, method::NonHistoryMethod, options)
 end
 
 function method_b!(b, method::NonHistoryMethod, borefield, medium, step)
-    @unpack w, expΔt, F, aux = method
+    @unpack F, HM, Kranges, K_min, sr_F, sr_expt, sr_ζ, q_N1, sr_Icout, sr_expNout, sr_w = method
     b .= -get_T0(medium)
     Nb = n_boreholes(borefield)
 
-    @inbounds for i in eachindex(b)
-        @inbounds for j in 1:Nb
-            @views @. aux = expΔt * F[:, Nb*(i-1)+j]
-            @views b[i] -= dot(w[:, Nb*(i-1)+j], aux)
+    for i in 1:Nb
+        @views b[i] -= dot(sr_w[i], sr_expt[i] .* (sr_F[i] .+ q_N1[i] .* sr_expNout[i] ./ sr_ζ[i])) - q_N1[i] * sr_Icout[i]
+    end
+
+    for target in 1:Nb
+        for source in 1:Nb
+            isempty(Kranges) && continue
+            @inbounds range = Kranges[K_min[source, target]]
+            @inbounds @views b[target] -= dot(F[range, source], HM[range, target, source])
         end
     end
 end
 
 function reset!(method::NonHistoryMethod) 
-    method.F .= 0
-    method.aux .= 0
+    @unpack F, sr_F = method
+    F .= 0
+    for f in sr_F
+        f .= 0
+    end
 end

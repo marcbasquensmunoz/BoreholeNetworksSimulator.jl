@@ -207,7 +207,7 @@ ConvolutionMethod
 ```
 
 ```@docs
-NonHistoryMethod
+OriginalNonHistoryMethod
 ```
 
 ### Boundary Condition
