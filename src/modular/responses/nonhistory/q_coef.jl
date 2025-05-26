@@ -14,7 +14,6 @@ end
 function constant_coef(method::OriginalNonHistoryMethod, i)
     @unpack expΔt, w, ζ, aux = method
     @. aux = expΔt / ζ
-    @show -dot(w[:, i], aux)
     @views -dot(w[:, i], aux)
 end
 

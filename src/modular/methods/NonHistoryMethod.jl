@@ -34,12 +34,8 @@ function precompute_auxiliaries!(method::NonHistoryMethod, options)
     Nb = n_boreholes(options.borefield)
     sources = [LineSource(segment_coordinates(options.borefield, i)..., get_rb(options.borefield, i)) for i in 1:Nb]
 
-    @show options.Nt, ϵ
-    @show containers
-    blocks = prepare_containers(SegmentToSegment(D1=0., D2=0., H1=100., H2=100., σ=0.5)#=get_setup(options.approximation)=#, sources, ϵ, options.Nt, constants, containers)
-
-    @show blocks.ζ
-    @show blocks.expNin
+    rep_setup = FiniteLineSource.get_representative_ltl(sources)[1] 
+    blocks = prepare_containers(rep_setup, sources, ϵ, options.Nt, constants, containers)
 
     method.F = blocks.F
     method.ζ = blocks.ζ
@@ -68,22 +64,19 @@ function update_auxiliaries!(method::NonHistoryMethod, X, borefield, step)
     Nb = n_boreholes(borefield)
     K = length(N) - 1
     @views q = X[3Nb+1:4Nb, 1:step]
-    @views @. q_N1 = step - N[1] + 1 > 0 ? q[:, step - N[1] + 1] : zeros(Nb)
 
     for i in 1:Nb
         @. sr_F[i] = sr_expt[i] * sr_F[i] + (1 - sr_expt[i]) / sr_ζ[i] * (q[i, step] - sr_expNout[i] * q_N1[i])
     end
+    @views @. q_N1 = step - N[1] + 1 > 0 ? q[:, step - N[1] + 1] : zeros(Nb)
 
     for j in 1:Nb
         qaux .= 0.
         for i in 1:K
             qin = step - N[i] + 1 > 0 ? q[j, step - N[i] + 1] : 0.
             qout = step - N[i+1] + 1 > 0 ? q[j, step - N[i+1] + 1] : 0.
-            @show expNin
-            @show expNout
             @views @inbounds @. qaux[ranges[i]] = qin * expNin[ranges[i]] - qout * expNout[ranges[i]]
         end
-        @show qaux
         @views @. F[:, j] = expt * F[:, j] + qaux
     end
 end
@@ -111,7 +104,7 @@ function method_b!(b, method::NonHistoryMethod, borefield, medium, step)
     Nb = n_boreholes(borefield)
 
     for i in 1:Nb
-        @views b[i] -= dot(sr_w[i], sr_expt[i] .* (sr_F[i] .+ q_N1[i] .* sr_expNout[i] ./ sr_ζ[i])) - q_N1[i] * sr_Icout[i]
+        @views b[i] -= dot(sr_w[i], sr_expt[i] .* sr_F[i] .- q_N1[i] .* sr_expNout[i] .* (1 .- sr_expt[i]) ./ sr_ζ[i])
     end
 
     for target in 1:Nb

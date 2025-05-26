@@ -125,7 +125,6 @@ function method_b!(b, method::OriginalNonHistoryMethod, borefield, medium, step)
     @inbounds for i in eachindex(b)
         @inbounds for j in 1:Nb
             @views @. aux = expΔt * F[:, Nb*(i-1)+j]
-            @show i, j, dot(w[:, Nb*(i-1)+j], aux)
             @views b[i] -= dot(w[:, Nb*(i-1)+j], aux)
         end
     end
