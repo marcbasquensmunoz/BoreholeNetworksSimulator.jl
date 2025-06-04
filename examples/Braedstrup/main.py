@@ -9,16 +9,18 @@ borehole_positions_file = os.path.join(os.getcwd(), "data", "Braedstrup_borehole
 Δt = 8760*3600/12
 Nt = 120
 
-network = jl.BoreholeNetwork(jl.Vector[jl.Vector[jl.Int]]([
-    [35, 36, 29, 37, 30, 22],
-    [43, 48, 42, 41, 40, 34],
-    [47, 46, 45, 39, 32, 33],
-    [44, 38, 31, 24, 25, 26],
-    [18, 12, 11, 17, 16, 23],
-    [19, 13, 7, 6, 5, 10],
-    [20, 14, 8, 3, 2, 1],
-    [27, 28, 21, 15, 9, 4]
-]))
+network = jl.BoreholeNetwork(48)
+jl.connect_to_source_b(network, jl.Vector[jl.Int]([35, 43, 47, 44, 18, 19, 20, 27]))
+jl.connect_in_series_b(network, jl.Vector[jl.Int]([35, 36, 29, 37, 30, 22]))
+jl.connect_in_series_b(network, jl.Vector[jl.Int]([43, 48, 42, 41, 40, 34]))
+jl.connect_in_series_b(network, jl.Vector[jl.Int]([47, 46, 45, 39, 32, 33]))
+jl.connect_in_series_b(network, jl.Vector[jl.Int]([44, 38, 31, 24, 25, 26]))
+jl.connect_in_series_b(network, jl.Vector[jl.Int]([18, 12, 11, 17, 16, 23]))
+jl.connect_in_series_b(network, jl.Vector[jl.Int]([19, 13, 7, 6, 5, 10]))
+jl.connect_in_series_b(network, jl.Vector[jl.Int]([20, 14, 8, 3, 2, 1]))
+jl.connect_in_series_b(network, jl.Vector[jl.Int]([27, 28, 21, 15, 9, 4]))
+jl.connect_to_sink_b(network, jl.Vector[jl.Int]([22, 34, 33, 26, 23, 10, 1, 4]))
+
 configurations = jl.Vector([
     network,              # Heat extraction
     jl.reverse(network)   # Heat injection
@@ -57,9 +59,9 @@ class SeasonalOperator():
         self.mass_flows = mass_flows
         self.seasonal_configuration = seasonal_configuration
 
-    def operate(self, i, options, Tfin, Tfout, Tb, q):
+    def operate(self, i, options, X):
         active_network = options.configurations[operator.seasonal_configuration[i-1]]
-        return jl.BoreholeOperation(active_network, operator.mass_flows)
+        return jl.BoreholeOperation(network=active_network, mass_flows=operator.mass_flows)
 
 
 seasonal_configuration = [1 if i%12 in range(1, 7) else 0 for i in range(1,Nt+1)]
