@@ -32,7 +32,7 @@ configurations = [network_1, network_2]
 
 total_mass_flow = 1.
 
-method = OriginalNonHistoryMethod()
+method = NonHistoryMethod()
 medium = GroundMedium(λ=λ, α=α, T0=T0)
 borehole = SingleUPipeBorehole(H=H, D=D)
 borefield = EqualBoreholesBorefield(borehole_prototype=borehole, positions=positions)
