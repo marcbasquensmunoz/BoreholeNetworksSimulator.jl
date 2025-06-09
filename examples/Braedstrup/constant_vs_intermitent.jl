@@ -42,7 +42,7 @@ borehole_positions = load_positions_from_file(borehole_locations)
 year_in_dt = round(Int, 8670*3600 / Δt)
 half_year_in_dt = round(Int, 4380*3600 / Δt)
 
-method = OriginalNonHistoryMethod()
+method = NonHistoryMethod()
 medium = GroundMedium(α=3 / (1.7*1e6), λ = 3., T0 = 10.)
 borehole = SingleUPipeBorehole(H = 75., D = 4., λg = 1.5, pipe_position = ((0.03, 0.0), (-0.03, 0.0)))
 borefield = EqualBoreholesBorefield(borehole_prototype=borehole, positions=borehole_positions)

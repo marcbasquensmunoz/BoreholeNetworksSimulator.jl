@@ -4,7 +4,6 @@ using LinearAlgebra
 using GeometryTypes
 using Parameters
 using CoolProp
-using ExponentialUtilities
 using StaticArrays
 using SparseArrays
 using LinearSolve
@@ -31,7 +30,7 @@ include("CoolProp/interpolate.jl")
 
 export Fluid, Water, EthanolMix, GlycolMix
 export Borehole, SingleUPipeBorehole
-export Borefield, EqualBoreholesBorefield, RectangularBorefield
+export Borefield, EqualBoreholesBorefield, RectangularBorefield, HeterogeneousBorefield
 export Medium, GroundMedium, FlowInPorousMedium
 export Constraint, TotalHeatLoadConstraint, HeatLoadConstraint, InletTempConstraint, constant_HeatLoadConstraint, uniform_HeatLoadConstraint, constant_InletTempConstraint, uniform_InletTempConstraint
 export TimeSuperpositionMethod, ConvolutionMethod, NonHistoryMethod
