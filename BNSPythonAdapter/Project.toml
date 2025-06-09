@@ -1,7 +1,7 @@
 name = "BNSPythonAdapter"
 uuid = "4a85b913-23c3-4a93-8ceb-41888b61656c"
 authors = ["Marc Basquens <marc5@kth.se> and contributors"]
-version = "1.0.0-DEV"
+version = "1.0.1"
 
 [deps]
 BoreholeNetworksSimulator = "b11dda51-a240-44f0-a43d-fea4e1309b86"
