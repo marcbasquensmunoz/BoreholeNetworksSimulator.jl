@@ -26,10 +26,7 @@ function segment_coordinates(bf::EqualBoreholesBorefield, segment)
     position = bf.positions[where_is_segment(bf, segment)]
     i = mod((segment-1), get_n_segments(bf.borehole_prototype)) + 1
     z_ref = D + (i - 1) * h
-    z_eval = z_ref + h/2
-
-    # (x, y, z_ref, z_eval)
-    #return (position[1], position[2], z_ref, z_eval)
+    
     (position[1], position[2], z_ref, h)
 end
 
@@ -37,7 +34,6 @@ function internal_model_coeffs!(M, borefield::EqualBoreholesBorefield, medium, m
     Nb = n_boreholes(borefield)
     λ = get_λ(medium)
 
-    # TODO: Optimize for boreholes with same mass_flow
     for i in 1:Nb
         mass_flow = mass_flows[i]
 
