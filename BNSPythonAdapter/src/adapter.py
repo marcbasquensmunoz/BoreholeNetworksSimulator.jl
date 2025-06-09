@@ -5,8 +5,8 @@ import pathlib
 project_dir = str(pathlib.Path(__file__).parent.parent.resolve().absolute())
 
 jlPkg.activate(jl.pyconvert(jl.String, project_dir))
-jlPkg.update()
-jlPkg.resolve()
+# jlPkg.update()
+# jlPkg.resolve()
 jlPkg.instantiate()
 jl.seval("using BNSPythonAdapter")
 jl.seval("using BoreholeNetworksSimulator")
