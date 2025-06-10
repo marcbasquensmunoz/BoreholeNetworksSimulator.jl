@@ -43,11 +43,11 @@ function first_zero_column(M)
     return 1
 end
 
-
 """
     simulate_steps!(;n, initial_step = nothing, options::SimulationOptions, operator, containers::SimulationContainers)
 
 Similar to [`simulate!`](@ref), but only run `n` steps, starting at the step `initial_step`, of the simulation defined by `options`. 
+If `initial_step` is not specified, the index of first zero column of `containers.X` is taken as the initial step.
 """
 function simulate_steps!(;n, initial_step = nothing, operator, options::SimulationOptions, containers::SimulationContainers)
     @unpack X = containers
