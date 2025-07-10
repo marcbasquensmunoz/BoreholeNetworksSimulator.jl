@@ -1,16 +1,15 @@
 """
 This script simulates the operation of a geothermal borehole system in which a single borehole
-operates alone for the first 3 years, after which a second borehole is connected in parallel. 
-The two boreholes then continue operate for four more years. Both boreholes share the same
+operates alone for the first year, after which a second borehole is connected in parallel. 
+The two boreholes then continue operate for two more years. Both boreholes share the same
 geometric characteristics.
 
 The script  can be generalized to handle different numbers of initial and added boreholes
 by adjusting the relevant parameters and network definitions.
 
 Although this example uses equal mass flow rates for all boreholes, the script supports assigning
-independent mass flow rates to each one. Similarly, while the inlet temperature is set as constant
-throughout the simulation, the structure allows for implementation of time-varying inlet temperature
-profiles.
+independent mass flow rates to each one. The inlet temperature is time dependent, and in particular 
+it is set as equal to the outlet temperature - 3 K.
 
 Such simulations are particularly useful for scenarios where an existing system is extended or
 retrofitted — e.g., upgrading a residential heat pump system by adding more boreholes,
@@ -24,12 +23,11 @@ from juliacall import Main as jl
 import numpy as np
 import pandas as pd
 
-
 # --- User defined input ---
 dt = 3600.          # Time steps in seconds (1 hour)
-Nt = 7 * 8760         # Total number of time steps (20 years of hourly data)
+Nt = 3 * 8760         # Total number of time steps (20 years of hourly data)
 
-Nt_BH2 = 3 * 8760     # Time steps at which borehole starts operating (after 10 years)
+Nt_BH2 = 1 * 8760     # Time steps at which borehole starts operating (after 10 years)
 
 D = 0.              # Borehole buried depth (m)
 H = 150.            # Borehole active length (m)
@@ -44,7 +42,7 @@ T0 = 9.                 # Undisturbed ground temperature (°C)
 
 positions = jl.Array[jl.Tuple[jl.Float64, jl.Float64]]([(0., 0.), (0., σ)])     # Coordinates of the two boreholes
 
-Tin = 10.                                                 # Fluid inlet temperature (°C)
+Tin = T0 - 3.                                             # Initial fluid inlet temperature (°C)
 mass_flows = jl.Array[jl.Float64](0.3 * np.ones(Nb))      # Fluid mass flow rates through each borehole #[kg/s]
 
 fluid = jl.Water()
@@ -95,6 +93,10 @@ class StepOperator():
         self.mass_flow_containers = jl.Array[jl.Float64](np.zeros(Nb))
         self.mass_flows = mass_flows
         self.activation_step = activation_step
+        self.Tin = 0
+
+    def update(self, Tin):
+        self.Tin = Tin
 
     def operate(self,step, options,X):
         after_step = step >= self.activation_step
@@ -114,15 +116,57 @@ operator = StepOperator(mass_flows, Nt_BH2,Nb)
 
 # --- Run simulation ---
 for i in range(0,Nt):
-    jl.simulate_steps_b(n = 1, initial_step =i, operator=operator, options=options, containers=containers)
 
-# --- Print outlet temperature ---
-# print(containers.X[2 * Nb, :])
+    if i > 0:
+        if i < Nt_BH2:
+            Tout = np.mean(containers.X[1, i - 2])
+        else: 
+            Tout = np.mean(containers.X[1:4:2, i - 2])
+
+        Tin = Tout - 3
+
+    operator.update(Tin)
+
+    new_options = jl.SimulationOptions(
+    method = options.method,
+    constraint = jl.uniform_InletTempConstraint(jl.Array[jl.Float64]([Tin for i in range(1, Nt+1)]), Nb),
+    borefield = options.borefield,
+    fluid = options.fluid,
+    medium = options.medium,
+    boundary_condition = jl.DirichletBoundaryCondition(),  # changed field
+    Δt = options.Δt,
+    Nt = options.Nt,
+    configurations = options.configurations
+)
+
+    jl.simulate_steps_b(n = 1, initial_step =i, operator=operator, options=new_options, containers=containers)
 
 # --- Plot results ---
 import plotly.express as px
 
 # Plot temperature
 fig=px.scatter(np.array(containers.X[2 * Nb, :]))
-fig.update_layout(yaxis=dict(range=[9, 10]))
+fig.update_layout(yaxis=dict(range=[0, 10]))
 fig.show()
+
+# Plot inlet temperature (BH 1)
+fig0=px.scatter(np.array(containers.X[0, :]))
+fig0.update_layout(yaxis=dict(range=[-10, 10]))
+fig0.show()
+
+# Plot outlet temperature (BH 1)
+fig1=px.scatter(np.array(containers.X[1, :]))
+fig1.update_layout(yaxis=dict(range=[-10, 10]))
+fig1.show()
+
+# Plot inlet temperature (BH 2)
+# When BH 2 is not operating, the borehole wall temperature is plotted instead
+fig2=px.scatter(np.array(containers.X[2, :]))
+fig2.update_layout(yaxis=dict(range=[-10, 10]))
+fig2.show()
+
+# Plot outlet temperature (BH 2)
+# When BH 2 is not operating, the borehole wall temperature is plotted instead
+fig3=px.scatter(np.array(containers.X[3, :]))
+fig3.update_layout(yaxis=dict(range=[-10,10]))
+fig3.show()

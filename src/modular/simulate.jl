@@ -61,7 +61,7 @@ function simulate_steps!(;n, initial_step = nothing, operator, options::Simulati
     fluid_T = initial_step == 1 ? get_T0(medium) .* ones(2Nb) : X[1:2Nb, initial_step-1]
 
     for i = initial_step:initial_step+n-1
-        @show i
+        # @show i
         simulation_loop!(operator=operator, options=options, containers=containers, mass_flows=mass_flows, fluid_T=fluid_T, i=i)
     end
 end
