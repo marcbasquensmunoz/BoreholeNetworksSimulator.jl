@@ -1,10 +1,10 @@
 """
 This script simulates the operation of a geothermal borehole system in which a single borehole
 operates alone for the first 3 years, after which a second borehole is connected in parallel. 
-The two boreholes then continue operate for four more years. Both boreholes share the same
+The two boreholes then continue to operate for four more years. Both boreholes share the same
 geometric characteristics.
 
-The script  can be generalized to handle different numbers of initial and added boreholes
+The script can be generalized to handle a different numbers of initial and added boreholes
 by adjusting the relevant parameters and network definitions.
 
 Although this example uses equal mass flow rates for all boreholes, the script supports assigning
@@ -20,6 +20,7 @@ or scaling up a prototype borehole thermal storage system.
 using BoreholeNetworksSimulator
 using BNSPlots
 using Parameters
+using Statistics
 
 # --- User defined input ---
 Δt = 3600.         # Time steps in seconds (1 hour)
@@ -88,17 +89,23 @@ options = SimulationOptions(
 )
 containers = @time initialize(options)
 
-@with_kw struct StepOperator{T <: Number}
+@with_kw mutable struct StepOperator{T <: Number}
     mass_flow_containers::Vector{T} = zeros(T, 2)
     mass_flows::Vector{T}
     activation_step::Int
+    Tin::T = 0.
 end
+
+update(operator::StepOperator, Tin) = operator.Tin = Tin
 
 function BoreholeNetworksSimulator.operate(op::StepOperator, step, options, X)
     @unpack mass_flows, activation_step, mass_flow_containers = op
     after_step = step >= activation_step
     active_configuration = after_step ? 2 : 1
     active_network = options.configurations[active_configuration]
+
+    options.constraint.T_in[:, step] .= op.Tin
+
     if after_step 
         mass_flow_containers .= mass_flows
     else 
@@ -107,12 +114,21 @@ function BoreholeNetworksSimulator.operate(op::StepOperator, step, options, X)
     end
     BoreholeOperation(network=active_network, mass_flows=mass_flow_containers)
 end
-operator = StepOperator{Float64}(mass_flows = m, activation_step = Nt_BH2)
+operator = StepOperator{Float64}(mass_flows = m, activation_step = Nt_BH2, Tin=Tin)
 
 reset!(options)
 
 # --- Run simulation ---
 for i = 1:Nt
+    if i > 1
+        if i < Nt_BH2
+            @views Tout = mean(containers.X[2, i-1])
+        else
+            @views Tout = mean(containers.X[2:2:4, i-1])
+        end
+        Tin = Tout - 3.
+        update(operator, Tin)
+    end
     simulate_steps!(n = 1, initial_step = i, operator=operator, options=options, containers=containers)
 end
 

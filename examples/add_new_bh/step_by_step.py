@@ -98,10 +98,12 @@ class StepOperator():
     def update(self, Tin):
         self.Tin = Tin
 
-    def operate(self,step, options,X):
+    def operate(self,step, options, X):
         after_step = step >= self.activation_step
         active_configuration = 1 if after_step else 0
         active_network = options.configurations[active_configuration]
+
+        options.constraint.T_in[:, step] = self.Tin
 
         if after_step:
             self.mass_flow_containers[:] = self.mass_flows  
@@ -112,34 +114,22 @@ class StepOperator():
         return jl.BoreholeOperation(network=active_network, mass_flows=operator.mass_flow_containers)
 
 
-operator = StepOperator(mass_flows, Nt_BH2,Nb)
+operator = StepOperator(mass_flows, Nt_BH2, Nb)
 
 # --- Run simulation ---
 for i in range(0,Nt):
 
     if i > 0:
         if i < Nt_BH2:
-            Tout = np.mean(containers.X[1, i - 2])
+            Tout = np.mean(containers.X[1, i - 1])
         else: 
-            Tout = np.mean(containers.X[1:4:2, i - 2])
+            Tout = np.mean(containers.X[1:4:2, i - 1])
 
         Tin = Tout - 3
 
     operator.update(Tin)
+    jl.simulate_steps_b(n = 1, operator=operator, options=options, containers=containers)
 
-    new_options = jl.SimulationOptions(
-    method = options.method,
-    constraint = jl.uniform_InletTempConstraint(jl.Array[jl.Float64]([Tin for i in range(1, Nt+1)]), Nb),
-    borefield = options.borefield,
-    fluid = options.fluid,
-    medium = options.medium,
-    boundary_condition = jl.DirichletBoundaryCondition(),  # changed field
-    Δt = options.Δt,
-    Nt = options.Nt,
-    configurations = options.configurations
-)
-
-    jl.simulate_steps_b(n = 1, initial_step =i, operator=operator, options=new_options, containers=containers)
 
 # --- Plot results ---
 import plotly.express as px
