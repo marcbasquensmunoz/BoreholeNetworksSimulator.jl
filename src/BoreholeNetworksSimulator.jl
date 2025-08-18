@@ -18,7 +18,6 @@ using LegendrePolynomials
 using SpecialFunctions
 using RequiredInterfaces
 using Graphs
-using DataStructures
 
 using FiniteLineSource
 

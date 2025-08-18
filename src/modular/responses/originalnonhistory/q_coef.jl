@@ -1,13 +1,13 @@
 
-function q_coef(::NoBoundary, medium, method, setup, i)
-    (method isa NonHistoryMethod && (i-1)%2+1 != div(i-1, 2)+1 ? 0. : constant_integral(medium, setup, i)) + constant_coef(method, i)
+function q_coef(::NoBoundary, medium, method::OriginalNonHistoryMethod, setup, i)
+    constant_integral(medium, setup, i) + constant_coef(method, i)
 end
 
-function q_coef(::DirichletBoundaryCondition, medium, method, setup, i)
+function q_coef(::DirichletBoundaryCondition, medium, method::OriginalNonHistoryMethod, setup, i)
     constant_integral(medium, setup, i) - constant_integral(medium, image(setup), i) + constant_coef(method, i)
 end
 
-function q_coef(::NeumannBoundaryCondition, medium, method, setup, i)
+function q_coef(::NeumannBoundaryCondition, medium, method::OriginalNonHistoryMethod, setup, i)
     constant_integral(medium, setup, i) + constant_integral(medium, image(setup), i) + constant_coef(method, i)
 end
 
@@ -15,19 +15,6 @@ function constant_coef(method::OriginalNonHistoryMethod, i)
     @unpack expΔt, w, ζ, aux = method
     @. aux = expΔt / ζ
     @views -dot(w[:, i], aux)
-end
-
-function constant_coef(method::NonHistoryMethod, i)
-    @unpack HM, sr_F, sr_w, sr_expt, sr_ζ = method
-    Nb = size(HM, 2)
-    source = (i-1)%Nb+1
-    target = div(i-1, Nb)+1
-
-    res = 0.
-    if source == target
-        res = -dot(sr_expt[source] ./ sr_ζ[source], sr_w[source])
-    end
-    return res
 end
 
 function constant_integral(medium::GroundMedium, setup::SegmentToSegment, i)
