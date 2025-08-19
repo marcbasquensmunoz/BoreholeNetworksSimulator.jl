@@ -32,13 +32,14 @@ function simulate!(;operator, options::SimulationOptions, containers::Simulation
     last_operation = BoreholeOperation(nothing)
     mass_flows = zeros(Nb+2)
     fluid_T = get_T0(medium) .* ones(2Nb)
+    node_queue = Queue{Tuple{Int, Float64}}()
 
     # Simulation loop
     for i = Ts:Nt
         operation = @views operate(operator, i, options, X[:, 1:i-1])
         operation = unwrap(operation)
         @unpack network = operation
-        compute_mass_flows!(mass_flows, network, operation)
+        compute_mass_flows!(node_queue, mass_flows, network, operation)
 
         @views @. mf[:, i] = mass_flows[1:Nb]
 
