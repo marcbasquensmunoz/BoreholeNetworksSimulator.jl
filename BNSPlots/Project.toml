@@ -10,7 +10,7 @@ WGLMakie = "276b4fcb-3e11-5398-bf8b-a0c2d153d008"
 
 [compat]
 julia = "1.10"
-GraphMakie = "0.6"
+GraphMakie = "0"
 Graphs = "1.13"
 WGLMakie = "0.13"
 
