@@ -12,6 +12,10 @@ initialize
 simulate!
 ```
 
+```@docs
+simulate_steps!
+```
+
 Note that an array of `BoreholeNetwork` containing all the configurations allowed during the simulation must be specified in `SimulationOptions`.
 On the other hand, `BoreholeOperation` is an object that needs to be returned by an object subtype of `[Operator](@ref)` at each time step , representing the dynamical changes in the operation. 
 See [Basic tutorial](@ref) for more details.

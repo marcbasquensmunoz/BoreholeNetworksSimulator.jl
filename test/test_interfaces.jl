@@ -18,6 +18,7 @@ end
 
 @testset "test_Borefield_interfaces" begin
     @test RI.check_interface_implemented(Borefield, EqualBoreholesBorefield)
+    @test RI.check_interface_implemented(Borefield, HeterogeneousBorefield)
 end
 
 @testset "test_TimeSuperpositionMethod_interfaces" begin
