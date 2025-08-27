@@ -9,7 +9,6 @@ CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
 CoolProp = "e084ae63-2819-5025-826e-f8e611a84251"
 DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
 DataStructures = "864edb3b-99cc-5e75-8d2d-829cb0a9cfe8"
-DelimitedFiles = "8bb1440f-4735-579b-a4ab-409b98df4dab"
 ExponentialUtilities = "d4d017d3-3776-5f7e-afef-a10c40355c18"
 FastGaussQuadrature = "442a2c76-b920-505d-bb47-c5924d526838"
 FiniteLineSource = "64cfb1b1-06f0-48af-b80e-43c410dfe9e8"
@@ -28,7 +27,31 @@ StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
 
 [compat]
 Aqua = "0.8"
-DataStructures = "0.18.22"
+Bessels = "0.2"
+CSV = "0.10"
+CoolProp = "0.2"
+DataFrames = "1.7"
+DataStructures = "0.19"
+Documenter = "1.14"
+ExponentialUtilities = "1.27"
+FastGaussQuadrature = "1.0"
+FiniteLineSource = "1.1"
+GeometryTypes = "0.8"
+Graphs = "1.13"
+JLD2 = "0.6"
+LegendrePolynomials = "0.4"
+LinearAlgebra = "1"
+LinearSolve = "3.37"
+Literate = "2.20"
+Parameters = "0.12"
+QuadGK = "2.11"
+RequiredInterfaces = "0.1"
+SparseArrays = "1.11"
+SpecialFunctions = "2.5"
+StaticArrays = "1.9"
+Tables = "1.12"
+Test = "1"
+julia = "1"
 
 [extras]
 Aqua = "4c88cf16-eb10-579e-8560-4a9242c79595"
@@ -40,4 +63,4 @@ Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
 docs = ["Documenter", "Literate"]
-test = ["Test", "Aqua", "CSV", "Tables"]
+test = ["Test", "Aqua", "Tables", "CSV"]
