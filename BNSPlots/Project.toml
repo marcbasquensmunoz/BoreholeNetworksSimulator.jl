@@ -9,10 +9,7 @@ Graphs = "86223c79-3864-5bf0-83f7-82e725a168b6"
 WGLMakie = "276b4fcb-3e11-5398-bf8b-a0c2d153d008"
 
 [compat]
-julia = "1.10"
-GraphMakie = "0"
-Graphs = "1.13"
-WGLMakie = "0.13"
+julia = "1"
 
 [extras]
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
