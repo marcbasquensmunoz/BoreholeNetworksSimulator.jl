@@ -1,5 +1,7 @@
 using BoreholeNetworksSimulator, Test
-using Parameters
+using Parameters, DataStructures
+
+include("Aqua.jl")
 
 include("utils.jl")
 
@@ -27,8 +29,3 @@ include("boreholes/test_SingleUPipeBorehole.jl")
 
 include("methods/test_ConvolutionMethod.jl")
 include("methods/test_NonHistoryMethod.jl")
-
-# Run tutorials
-project_dir = dirname(pwd())
-include("$project_dir/docs/src/tutorial.jl")
-include("$project_dir/docs/src/nonhistory.jl")

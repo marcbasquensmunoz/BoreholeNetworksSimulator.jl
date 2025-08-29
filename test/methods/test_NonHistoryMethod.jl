@@ -2,11 +2,11 @@ import BoreholeNetworksSimulator: method_coeffs!, method_b!, precompute_auxiliar
 
 
 global const atol = eps()
-@testset "test_NonHistoryMethod_auxiliaries" begin
+@testset "test_OriginalNonHistoryMethod_auxiliaries" begin
     n_disc = 20
     segments_disc = 13 
 
-    method = NonHistoryMethod(n_disc=n_disc)
+    method = OriginalNonHistoryMethod(n_disc=n_disc)
     Nb = 2
     Nt = 10
     g = 4.5
@@ -64,8 +64,8 @@ global const atol = eps()
     @test F ≈ method.F atol=atol
 end
 
-@testset "test_NonHistoryMethod_method_coeffs!" begin
-    method = NonHistoryMethod()
+@testset "test_OriginalNonHistoryMethod_method_coeffs!" begin
+    method = OriginalNonHistoryMethod()
     Nb = 2
     Nt = 10
     g = 4.5
@@ -101,8 +101,8 @@ end
     @test test_sparse_matrix(M, expected)
 end
 
-@testset "test_NonHistoryMethod_method_b!" begin
-    method = NonHistoryMethod()
+@testset "test_OriginalNonHistoryMethod_method_b!" begin
+    method = OriginalNonHistoryMethod()
     Nb = 2
     Nt = 10
     g = 4.5

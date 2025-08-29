@@ -1,19 +1,17 @@
 
-function q_coef(::NoBoundary, medium, method, setup, i)
+function q_coef(::NoBoundary, medium, method::OriginalNonHistoryMethod, setup, i)
     constant_integral(medium, setup, i) + constant_coef(method, i)
 end
 
-function q_coef(::DirichletBoundaryCondition, medium, method, setup, i)
-    @unpack expΔt, w, ζ = method
+function q_coef(::DirichletBoundaryCondition, medium, method::OriginalNonHistoryMethod, setup, i)
     constant_integral(medium, setup, i) - constant_integral(medium, image(setup), i) + constant_coef(method, i)
 end
 
-function q_coef(::NeumannBoundaryCondition, medium, method, setup, i)
-    @unpack expΔt, w, ζ = method
+function q_coef(::NeumannBoundaryCondition, medium, method::OriginalNonHistoryMethod, setup, i)
     constant_integral(medium, setup, i) + constant_integral(medium, image(setup), i) + constant_coef(method, i)
 end
 
-function constant_coef(method::NonHistoryMethod, i)
+function constant_coef(method::OriginalNonHistoryMethod, i)
     @unpack expΔt, w, ζ, aux = method
     @. aux = expΔt / ζ
     @views -dot(w[:, i], aux)

@@ -8,10 +8,4 @@ BoreholeNetworksSimulator = "b11dda51-a240-44f0-a43d-fea4e1309b86"
 PythonCall = "6099a3de-0909-46bc-b1f4-468b9a2dfc0d"
 
 [compat]
-julia = "1.10"
-
-[extras]
-Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
-
-[targets]
-test = ["Test"]
+julia = "1"

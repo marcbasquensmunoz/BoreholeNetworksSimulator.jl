@@ -16,7 +16,7 @@ end
 
 # evaluate fluid propert at a given absolute temperature. 
 # default mixture is water&Ethanol with 20% concentration of Ethanol
-function thermophysical_properties(Tref, fluidname::String)
+function compute_thermophysical_properties(Tref, fluidname::String)
     μ =  PropsSI("viscosity","T",Tref,"P",101325,fluidname)
     ρ =  PropsSI("D","T", Tref,"P",101325,fluidname)
     cp = PropsSI("C","T",Tref,"P",101325,fluidname)

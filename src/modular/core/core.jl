@@ -27,7 +27,7 @@
 
 Specifies all the options for the simulation.
 
-- `method`: time superposition method used to compute the response. Available options: `ConvolutionMethod`, `NonHistoryMethod`.
+- `method`: time superposition method used to compute the response. Available options: `ConvolutionMethod`, `OriginalNonHistoryMethod`.
 - `constraint`: constraint that the system must satisfy. Can be variable with time. Available options: `HeatLoadConstraint`, `InletTempConstraint`, `TotalHeatLoadConstraint`.
 - `borefield`: describes the geometrical properties and the boreholes of the borefield on which the simulation will be performed. Available options: `EqualBoreholesBorefield`.
 - `medium`: properties of the ground where the `borefield` is places. Available options: `GroundMedium`, `FlowInPorousMedium`.

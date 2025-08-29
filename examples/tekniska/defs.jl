@@ -44,7 +44,7 @@ medium = GroundMedium(λ = 3.1, α = 1e-6, T0 = 9.)
 borehole = SingleUPipeBorehole(H = 240., D = 4., λg = 2.5, pipe_position = ((0.03, 0.0), (-0.03, 0.0)))
 borefield = EqualBoreholesBorefield(borehole_prototype=borehole, positions=borehole_positions)
 constraint = TotalHeatLoadConstraint(Q_tot)
-method = NonHistoryMethod()
+method = OriginalNonHistoryMethod()
 fluid = EthanolMix()
 
 options = SimulationOptions(

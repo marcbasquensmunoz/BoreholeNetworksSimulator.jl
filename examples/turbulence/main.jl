@@ -23,7 +23,7 @@ network = all_parallel_network(Nb)
 positions = [(0., 0.)]
 configurations = [network]
 
-method = NonHistoryMethod()
+method = OriginalNonHistoryMethod()
 medium = GroundMedium(λ=λ, α=α, T0=9.)
 borehole = SingleUPipeBorehole(H=H, D=D, pipe_position = ((0.03, 0.0), (-0.03, 0.0)))
 borefield = EqualBoreholesBorefield(borehole_prototype=borehole, positions=positions)

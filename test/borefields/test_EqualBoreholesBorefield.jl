@@ -40,7 +40,9 @@ end
     network = all_parallel_network(Nb)
     mass_flows = initialize_mass_flows(network)
     operation = BoreholeOperation(network=network, mass_flows=ones(Nb))
-    compute_mass_flows!(mass_flows, network, operation)
+    node_queue = Queue{Tuple{Int, Float64}}()
+
+    compute_mass_flows!(node_queue, mass_flows, network, operation)
 
     M = zeros(Nb, 4*Nb)
     internal_model_coeffs!(M, borefield, medium, mass_flows, T_fluid, fluid)

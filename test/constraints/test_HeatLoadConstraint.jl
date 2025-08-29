@@ -15,7 +15,9 @@ import BoreholeNetworksSimulator: constraints_coeffs!, constraints_b!
     network = all_parallel_network(Nb)
     mass_flows = initialize_mass_flows(network)
     operation = BoreholeOperation(network=network, mass_flows=ones(Nbr))
-    compute_mass_flows!(mass_flows, network, operation)
+    node_queue = Queue{Tuple{Int, Float64}}()
+
+    compute_mass_flows!(node_queue, mass_flows, network, operation)
 
     borefield = BorefieldMock(H = H * ones(3))
 
@@ -41,7 +43,9 @@ end
     network = all_parallel_network(Nb)
     mass_flows = initialize_mass_flows(network)
     operation = BoreholeOperation(network=network, mass_flows=zeros(Nbr))
-    compute_mass_flows!(mass_flows, network, operation)
+    node_queue = Queue{Tuple{Int, Float64}}()
+
+    compute_mass_flows!(node_queue, mass_flows, network, operation)
 
     borefield = BorefieldMock(H = H * ones(3))
 
@@ -71,7 +75,9 @@ end
     network = all_parallel_network(Nb)
     mass_flows = initialize_mass_flows(network)
     operation = BoreholeOperation(network=network, mass_flows=vcat(zeros(1), ones(1), zeros(1)))
-    compute_mass_flows!(mass_flows, network, operation)
+    node_queue = Queue{Tuple{Int, Float64}}()
+
+    compute_mass_flows!(node_queue, mass_flows, network, operation)
 
     borefield = BorefieldMock(H = H * ones(3))
 
@@ -102,7 +108,9 @@ end
     network = all_series_network(Nb)
     mass_flows = initialize_mass_flows(network)
     operation = BoreholeOperation(network=network, mass_flows=ones(Nbr))
-    compute_mass_flows!(mass_flows, network, operation)
+    node_queue = Queue{Tuple{Int, Float64}}()
+
+    compute_mass_flows!(node_queue, mass_flows, network, operation)
 
     constraints_coeffs!(M, constraint, borefield, network, mass_flows)
 
@@ -127,7 +135,9 @@ end
     network = all_series_network(Nb)
     mass_flows = initialize_mass_flows(network)
     operation = BoreholeOperation(network=network, mass_flows=zeros(Nbr))
-    compute_mass_flows!(mass_flows, network, operation)
+    node_queue = Queue{Tuple{Int, Float64}}()
+
+    compute_mass_flows!(node_queue, mass_flows, network, operation)
 
     constraints_coeffs!(M, constraint, borefield, network, mass_flows)
 
@@ -154,7 +164,9 @@ end
     connect_to_sink!(network, [2, 4, 5])
     operation = BoreholeOperation(network=network, mass_flows=ones(Nbr))
     mass_flows = initialize_mass_flows(network)
-    compute_mass_flows!(mass_flows, network, operation)
+    node_queue = Queue{Tuple{Int, Float64}}()
+
+    compute_mass_flows!(node_queue, mass_flows, network, operation)
 
     borefield = BorefieldMock(H = H * ones(5))
 
@@ -183,7 +195,9 @@ end
     connect_to_sink!(network, [2, 4, 5])
     operation = BoreholeOperation(network=network, mass_flows=zeros(Nbr))
     mass_flows = initialize_mass_flows(network)
-    compute_mass_flows!(mass_flows, network, operation)
+    node_queue = Queue{Tuple{Int, Float64}}()
+
+    compute_mass_flows!(node_queue, mass_flows, network, operation)
 
     borefield = BorefieldMock(H = H * ones(5))
 
@@ -213,7 +227,9 @@ end
     network = all_parallel_network(Nb)
     operation = BoreholeOperation(network=network, mass_flows=ones(Nbr))
     mass_flows = initialize_mass_flows(network)
-    compute_mass_flows!(mass_flows, network, operation)
+    node_queue = Queue{Tuple{Int, Float64}}()
+
+    compute_mass_flows!(node_queue, mass_flows, network, operation)
 
     b_time = zeros(Nbr, Nt)
     for step in 1:Nt
@@ -240,7 +256,9 @@ end
     network = all_parallel_network(Nb)
     operation = BoreholeOperation(network=network, mass_flows=zeros(Nbr))
     mass_flows = initialize_mass_flows(network)
-    compute_mass_flows!(mass_flows, network, operation)
+    node_queue = Queue{Tuple{Int, Float64}}()
+
+    compute_mass_flows!(node_queue, mass_flows, network, operation)
 
     b_time = zeros(Nbr, Nt)
     for step in 1:Nt

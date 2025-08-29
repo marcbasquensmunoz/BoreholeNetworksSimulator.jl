@@ -1,4 +1,3 @@
-using Graphs
 
 make_color_range(color_pair, n) = n == 1 ? [color_pair[1]] : range(color_pair[1], stop=color_pair[2], length=n)
 

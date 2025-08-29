@@ -46,5 +46,5 @@ end
 
 @testset "test_Methods" begin
     @test ConvolutionMethod() isa Any
-    @test NonHistoryMethod() isa Any
+    @test OriginalNonHistoryMethod() isa Any
 end
