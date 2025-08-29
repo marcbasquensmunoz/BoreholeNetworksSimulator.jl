@@ -1,7 +1,8 @@
 module BNSPlots
 
-using CairoMakie
+using WGLMakie
 using GraphMakie
+using Graphs
 
 include("results.jl")
 include("borefield.jl")
