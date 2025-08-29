@@ -1,6 +1,6 @@
 module BNSPlots
 
-using WGLMakie
+using CairoMakie
 using GraphMakie
 
 include("results.jl")
