@@ -244,9 +244,8 @@ end
 Determine the mass flow each borehole receives, as determined by the network topology `network` 
 and the operation `operation` and write the result in `mass_flows`.
 """
-function compute_mass_flows!(mass_flows, network::BoreholeNetwork, operation::BoreholeOperation{T}) where {T <: Number}
+function compute_mass_flows!(q, mass_flows, network::BoreholeNetwork, operation::BoreholeOperation{T}) where {T <: Number}
     mass_flows .= zero(eltype(mass_flows))
-    q = Queue{Tuple{Int, T}}()
     enqueue!(q, (source(network), operation.source_mass_flow))
     mass_flows[source(network)] = operation.source_mass_flow
 

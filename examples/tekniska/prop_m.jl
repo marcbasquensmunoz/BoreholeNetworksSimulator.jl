@@ -15,8 +15,8 @@ end
 
 operator = VariableMFOperator(0.5 .* Q_tot ./ Q_ref, zeros(n_branches(network)))
 
-containers = @time initialize(options)
-@time simulate!(operator=operator, options=options, containers=containers)
+containers = initialize(options)
+simulate!(operator=operator, options=options, containers=containers)
 
 t_range = (5*8760-24*7):5*8760
 prop_m_plot = monitor(containers, [4, 7], options.t, steps = t_range, colors = [colorant"darkgreen", colorant"red"]) 

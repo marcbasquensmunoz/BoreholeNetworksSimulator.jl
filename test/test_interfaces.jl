@@ -23,7 +23,7 @@ end
 
 @testset "test_TimeSuperpositionMethod_interfaces" begin
     @test RI.check_interface_implemented(TimeSuperpositionMethod, ConvolutionMethod)
-    @test RI.check_interface_implemented(TimeSuperpositionMethod, NonHistoryMethod)
+    @test RI.check_interface_implemented(TimeSuperpositionMethod, OriginalNonHistoryMethod)
 end
 
 @testset "test_Fluid_interfaces" begin
