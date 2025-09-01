@@ -14,7 +14,7 @@ configurations = [network]
 operator = ConstantOperator(network, mass_flows = 2 * ones(2))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">ConstantOperator{Float64}
   valves: Dict{Int64, Valve{Float64}}
   mass_flow: Float64 4.0
-</code></pre><p>Now, we define two different options using different <code>method</code> parameters, one with <code>ConvolutionMethod</code> corresponding to the convolution, and the other with <code>NonHistoryMethod</code>, corresponding with the non-history method.</p><pre><code class="language-julia hljs">options_convolution = SimulationOptions(
+</code></pre><p>Now, we define two different options using different <code>method</code> parameters, one with <code>ConvolutionMethod</code> corresponding to the convolution, and the other with <code>OriginalNonHistoryMethod</code>, corresponding with the non-history method.</p><pre><code class="language-julia hljs">options_convolution = SimulationOptions(
     method = ConvolutionMethod(),
     constraint = constraint,
     borefield = borefield,
@@ -26,7 +26,7 @@ operator = ConstantOperator(network, mass_flows = 2 * ones(2))</code></pre><pre 
 )
 
 options_nonhistory = SimulationOptions(
-    method = NonHistoryMethod(),
+    method = OriginalNonHistoryMethod(),
     constraint = constraint,
     borefield = borefield,
     medium = medium,
@@ -34,8 +34,8 @@ options_nonhistory = SimulationOptions(
     Δt = Δt,
     Nt = Nt,
     configurations = configurations
-)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">SimulationOptions{Float64, Float64, NonHistoryMethod{Float64}, HeatLoadConstraint{Float64}, EqualBoreholesBorefield{SingleUPipeBorehole{Float64}, Float64}, GroundMedium{Float64}, DirichletBoundaryCondition, MeanApproximation, Water}
-  method: NonHistoryMethod{Float64}
+)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">SimulationOptions{Float64, Float64, OriginalNonHistoryMethod{Float64}, HeatLoadConstraint{Float64}, EqualBoreholesBorefield{SingleUPipeBorehole{Float64}, Float64}, GroundMedium{Float64}, DirichletBoundaryCondition, MeanApproximation, Water}
+  method: OriginalNonHistoryMethod{Float64}
   constraint: HeatLoadConstraint{Float64}
   borefield: EqualBoreholesBorefield{SingleUPipeBorehole{Float64}, Float64}
   medium: GroundMedium{Float64}
@@ -53,8 +53,8 @@ options_nonhistory = SimulationOptions(
   atol: Float64 0.0
   rtol: Float64 1.4901161193847656e-8
 </code></pre><p>Let us run the convolution</p><pre><code class="language-julia hljs">containers_convolution = @time initialize(options_convolution)
-@time simulate!(operator=operator, options=options_convolution, containers=containers_convolution)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">  1.596424 seconds (1.18 M allocations: 87.873 MiB, 65.29% compilation time)
-  2.181470 seconds (1.55 M allocations: 246.487 MiB, 2.45% gc time, 53.90% compilation time)</code></pre><p>And now let us run the non-history</p><pre><code class="language-julia hljs">containers_nonhistory = @time initialize(options_nonhistory)
+@time simulate!(operator=operator, options=options_convolution, containers=containers_convolution)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">  1.554799 seconds (1.10 M allocations: 81.501 MiB, 64.19% compilation time)
+  2.069806 seconds (1.52 M allocations: 107.611 MiB, 53.70% compilation time)</code></pre><p>And now let us run the non-history</p><pre><code class="language-julia hljs">containers_nonhistory = @time initialize(options_nonhistory)
 @time simulate!(operator=operator, options=options_nonhistory, containers=containers_nonhistory)
 
 abs.(containers_convolution.X - containers_nonhistory.X)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">8×8760 Matrix{Float64}:
@@ -65,4 +65,4 @@ abs.(containers_convolution.X - containers_nonhistory.X)</code></pre><pre class=
  4.49312e-11  4.13696e-11  3.96714e-11     1.39799e-11  1.39799e-11
  4.49312e-11  4.13696e-11  3.96714e-11  …  1.39799e-11  1.39799e-11
  0.0          0.0          0.0             0.0          0.0
- 0.0          0.0          0.0             0.0          0.0</code></pre><h2 id="References"><a class="docs-heading-anchor" href="#References">References</a><a id="References-1"></a><a class="docs-heading-anchor-permalink" href="#References" title="Permalink"></a></h2><p>[1] <a href="https://doi.org/10.22488/okstate.24.000021">Lazzarotto, Alberto; Basquens, Marc; Cimmino, Massimo; <em>Non-history dependent temporal superposition algorithm for the point source solution</em>, Research Conference Proceedings of the IGSHPA (2024).</a></p><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../tutorial/">« Basic tutorial</a><a class="docs-footer-nextpage" href="../python/">Running from python »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.14.1 on <span class="colophon-date" title="Tuesday 26 August 2025 11:36">Tuesday 26 August 2025</span>. Using Julia version 1.10.10.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+ 0.0          0.0          0.0             0.0          0.0</code></pre><h2 id="References"><a class="docs-heading-anchor" href="#References">References</a><a id="References-1"></a><a class="docs-heading-anchor-permalink" href="#References" title="Permalink"></a></h2><p>[1] <a href="https://doi.org/10.22488/okstate.24.000021">Lazzarotto, Alberto; Basquens, Marc; Cimmino, Massimo; <em>Non-history dependent temporal superposition algorithm for the point source solution</em>, Research Conference Proceedings of the IGSHPA (2024).</a></p><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../tutorial/">« Basic tutorial</a><a class="docs-footer-nextpage" href="../python/">Running from python »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.14.1 on <span class="colophon-date" title="Monday 1 September 2025 13:38">Monday 1 September 2025</span>. Using Julia version 1.10.10.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
