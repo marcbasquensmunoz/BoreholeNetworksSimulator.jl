@@ -2,10 +2,15 @@ from juliacall import Main as jl
 from juliacall import Pkg as jlPkg
 import pathlib
 
+# path = jl.Base.find_package("BoreholeNetworksSimulator")
+
 project_dir = str(pathlib.Path(__file__).parent.parent.resolve().absolute())
 
 jlPkg.activate(jl.pyconvert(jl.String, project_dir))
-jlPkg.update()
+# jlPkg.activate("C:/BoreholeNetworksSimulator.jl") 
+
+# jlPkg.Registry.add("https://github.com/marcbasquensmunoz/geothermal_registry")
+# jlPkg.update()
 jlPkg.resolve()
 jlPkg.instantiate()
 jl.seval("using BNSPythonAdapter")
