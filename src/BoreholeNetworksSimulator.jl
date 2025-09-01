@@ -4,7 +4,6 @@ using LinearAlgebra
 using GeometryTypes
 using Parameters
 using CoolProp
-using ExponentialUtilities
 using StaticArrays
 using SparseArrays
 using LinearSolve
@@ -34,7 +33,7 @@ export Borehole, SingleUPipeBorehole
 export Borefield, EqualBoreholesBorefield, RectangularBorefield, HeterogeneousBorefield
 export Medium, GroundMedium, FlowInPorousMedium
 export Constraint, TotalHeatLoadConstraint, HeatLoadConstraint, InletTempConstraint, constant_HeatLoadConstraint, uniform_HeatLoadConstraint, constant_InletTempConstraint, uniform_InletTempConstraint
-export TimeSuperpositionMethod, ConvolutionMethod, OriginalNonHistoryMethod, NonHistoryMethod
+export TimeSuperpositionMethod, ConvolutionMethod, NonHistoryMethod, OriginalNonHistoryMethod
 export BoundaryCondition, NoBoundary, DirichletBoundaryCondition, NeumannBoundaryCondition
 export Approximation, MidPointApproximation, MeanApproximation
 export SimulationOptions, SimulationContainers
@@ -42,7 +41,7 @@ export BoreholeNetwork, Valve, BoreholeOperation
 export connect_to_source!, connect_to_sink!, connect!, all_series_network, all_parallel_network, compute_mass_flows!, source, sink, connect_in_series!, equal_valve, valve, absolute_valve, initialize_mass_flows, boreholes_in_branch, first_bhs_in_branch, connect_in_parallel!
 export Operator, operate
 export ConstantOperator
-export simulate!, load_cache!, save_cache, initialize, reset!
+export simulate!, simulate_steps!, load_cache!, save_cache, initialize, reset!
 export n_branches, all_parallel_network, all_series_network
 export ThermophysicalProperties
 export extract_Tfin, extract_Tfout, extract_Tb, extract_q
