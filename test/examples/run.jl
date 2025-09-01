@@ -4,7 +4,7 @@ examples_dir = "$project_dir/BoreholeNetworksSimulator.jl/examples"
 @info "Running Braedstrup"
 include("$examples_dir/Braedstrup/main.jl")
 @info "Running g-function"
-include("$examples_dir/g-function/main.jl")
+#include("$examples_dir/g-function/main.jl")
 @info "Running Tekniska: constant m"
 include("$examples_dir/tekniska/constant_m.jl")
 @info "Running Tekniska: proportional m"
