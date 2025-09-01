@@ -23,18 +23,20 @@ using BoreholeNetworksSimulator
 Nt = 8760
 
 medium = GroundMedium(α=1e-6, λ=3., T0=10.)
-borehole = SingleUPipeBorehole(H=10., D=10.)
+borehole = SingleUPipeBorehole(H=100., D=10.)
 positions = [(0., 0.), (0., 5.)]
 borefield = EqualBoreholesBorefield(borehole_prototype=borehole, positions=positions)
 constraint = constant_HeatLoadConstraint(5 .* ones(BoreholeNetworksSimulator.n_boreholes(borefield)), Nt)
+fluid = Water()
 
-configurations = [BoreholeNetwork([[1], [2]])]
-operator = SimpleOperator(mass_flow = 2., branches = 2)
+network = all_parallel_network(2)
+configurations = [network]
+operator = ConstantOperator(network, mass_flows = 2 * ones(2))
 ````
 
 Now, we define two different options using different `method` parameters,
 one with `ConvolutionMethod` corresponding to the convolution,
-and the other with `NonHistoryMethod`, corresponding with the non-history method.
+and the other with `OriginalNonHistoryMethod`, corresponding with the non-history method.
 
 ````@example nonhistory
 options_convolution = SimulationOptions(
@@ -42,18 +44,18 @@ options_convolution = SimulationOptions(
     constraint = constraint,
     borefield = borefield,
     medium = medium,
-    fluid = Water(),
+    fluid = fluid,
     Δt = Δt,
     Nt = Nt,
     configurations = configurations
 )
 
 options_nonhistory = SimulationOptions(
-    method = NonHistoryMethod(),
+    method = OriginalNonHistoryMethod(),
     constraint = constraint,
     borefield = borefield,
     medium = medium,
-    fluid = Water(),
+    fluid = fluid,
     Δt = Δt,
     Nt = Nt,
     configurations = configurations
@@ -72,7 +74,6 @@ And now let us run the non-history
 ````@example nonhistory
 containers_nonhistory = @time initialize(options_nonhistory)
 @time simulate!(operator=operator, options=options_nonhistory, containers=containers_nonhistory)
-
 
 abs.(containers_convolution.X - containers_nonhistory.X)
 ````

@@ -85,7 +85,7 @@ In our example, we want to simulate two independent boreholes, so each of them m
 Also, for the moment, we are only interested in this configuration, so we define:
 
 ````@example tutorial
-configurations = [BoreholeNetwork([[1], [2]])]
+network = all_parallel_network(2)
 ````
 
 Even with all these specifications, the evolution of the system is still not fully determined.
@@ -96,8 +96,8 @@ we will impose the total amount of heat that we want to extract from each boreho
 load, equal for both boreholes. This is specified by
 
 ````@example tutorial
-q1 = 5.
-q2 = 5.
+q1 = H
+q2 = H
 constraint = constant_HeatLoadConstraint([q1, q2], Nt)
 ````
 
@@ -112,7 +112,7 @@ options = SimulationOptions(
     fluid = Water(),
     Δt = Δt,
     Nt = Nt,
-    configurations = configurations
+    configurations = [network]
 )
 ````
 
@@ -124,10 +124,12 @@ current state of the borefield and outputs a [`BoreholeOperation`](@ref) object.
 configuration will be used for the next time step. In our case, we only want a static, simple configuration.
 The second specifies the mass flow rate through each branch of the selected configuration, provided as
 a vector. In our example, we will keep this constant through the simulation.
-For this purpose, there exists the type [`SimpleOperator`](@ref), that implements precisely this strategy.
+For this purpose, there exists the type [`ConstantOperator`](@ref), that implements precisely this strategy.
+
+TODO: Update tutorial with new operation and network
 
 ````@example tutorial
-operator = SimpleOperator(mass_flow = 2., branches = 2)
+operator = ConstantOperator(network, mass_flows = 2 * ones(2))
 ````
 
 Before simulating, we first need to call [`initialize`](@ref) to run some precomputations

@@ -27,10 +27,11 @@ function simulate!(;operator, options::SimulationOptions, containers::Simulation
     
     mass_flows = zeros(Nb+2)
     fluid_T = get_T0(medium) .* ones(2Nb)
+    node_queue = Queue{Tuple{Int, Float64}}()
 
     # Simulation loop
     for i = Ts:Nt
-        simulation_loop!(operator=operator, options=options, containers=containers, mass_flows=mass_flows, fluid_T=fluid_T, i=i)
+        simulation_loop!(node_queue=node_queue, operator=operator, options=options, containers=containers, mass_flows=mass_flows, fluid_T=fluid_T, i=i)
     end
 end
 
@@ -47,7 +48,6 @@ end
     simulate_steps!(;n, initial_step = nothing, options::SimulationOptions, operator, containers::SimulationContainers)
 
 Similar to [`simulate!`](@ref), but only run `n` steps, starting at the step `initial_step`, of the simulation defined by `options`. 
-If `initial_step` is not specified, the index of first zero column of `containers.X` is taken as the initial step.
 """
 function simulate_steps!(;n, initial_step = nothing, operator, options::SimulationOptions, containers::SimulationContainers)
     @unpack X = containers
@@ -60,12 +60,14 @@ function simulate_steps!(;n, initial_step = nothing, operator, options::Simulati
     end
     fluid_T = initial_step == 1 ? get_T0(medium) .* ones(2Nb) : X[1:2Nb, initial_step-1]
 
+    node_queue = Queue{Tuple{Int, Float64}}()
     for i = initial_step:initial_step+n-1
-        simulation_loop!(operator=operator, options=options, containers=containers, mass_flows=mass_flows, fluid_T=fluid_T, i=i)
+        @show i
+        simulation_loop!(node_queue=node_queue, operator=operator, options=options, containers=containers, mass_flows=mass_flows, fluid_T=fluid_T, i=i)
     end
 end
 
-function simulation_loop!(;operator, options::SimulationOptions, containers::SimulationContainers, mass_flows, fluid_T, i)
+function simulation_loop!(;node_queue, operator, options::SimulationOptions, containers::SimulationContainers, mass_flows, fluid_T, i)
     @unpack configurations, method, constraint, borefield, medium, fluid, boundary_condition, approximation = options
     @unpack Nb, Ns, Nt, Ts = options
     @unpack M, b, X, mf = containers 
@@ -73,7 +75,7 @@ function simulation_loop!(;operator, options::SimulationOptions, containers::Sim
     operation = @views operate(operator, i, options, X[:, 1:i-1])
     operation = unwrap(operation)
     @unpack network = operation
-    compute_mass_flows!(mass_flows, network, operation)
+    compute_mass_flows!(node_queue, mass_flows, network, operation)
 
     @views @. mf[:, i] = mass_flows[1:Nb]
 
@@ -109,5 +111,3 @@ function simulation_loop!(;operator, options::SimulationOptions, containers::Sim
 
     @views @. fluid_T = X[1:2Nb, i]
 end
-
-
