@@ -115,9 +115,12 @@ function method_b!(b, method::NonHistoryMethod, borefield, medium, step)
 end
 
 function reset!(method::NonHistoryMethod) 
-    @unpack F, sr_F = method
+    @unpack F, qaux, first_block_buffer = method
     F .= 0
-    for f in sr_F
-        f .= 0
+    qaux .= 0
+    for buffer in first_block_buffer
+        empty!(buffer)
+        fill!(buffer, 0.)
     end
+    return nothing
 end
