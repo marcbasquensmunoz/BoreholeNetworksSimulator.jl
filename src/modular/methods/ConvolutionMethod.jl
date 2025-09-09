@@ -45,7 +45,7 @@ function method_b!(b, method::ConvolutionMethod, borefield, medium, step)
     @unpack g, q, aux = method
 
     Ns = n_segments(borefield)
-    b .= -get_T0(medium)
+    b .= -get_T0(medium) .- T_past_influence(borefield)
 
     for k in 1:step-1
         for i in 1:Ns

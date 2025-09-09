@@ -3,12 +3,14 @@
     boreholes::Vector{Borehole}
     positions::Vector{Tuple{S, S}}
     Nb::Int = length(positions)
+    initial_ΔT::Vector{S} = zeros(S, Nb)
 end
 
 n_boreholes(bf::HeterogeneousBorefield) = bf.Nb
 get_H(bf::HeterogeneousBorefield, i) = get_H(bf.boreholes[i])
 get_h(bf::HeterogeneousBorefield, i) = get_h(bf.boreholes[i])
 get_rb(bf::HeterogeneousBorefield, i) = get_rb(bf.boreholes[i])
+T_past_influence(bf::HeterogeneousBorefield) = bf.initial_ΔT
 
 function segment_coordinates(bf::HeterogeneousBorefield, segment)
     @unpack boreholes, Nb = bf

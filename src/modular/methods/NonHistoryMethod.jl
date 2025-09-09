@@ -94,7 +94,7 @@ end
 
 function method_b!(b, method::NonHistoryMethod, borefield, medium, step)
     @unpack F, HM, Kranges, K_min, g, first_block_buffer = method
-    b .= -get_T0(medium)
+    b .= -get_T0(medium) .- T_past_influence(borefield)
     Nb = n_boreholes(borefield)
 
     for i in 1:Nb
