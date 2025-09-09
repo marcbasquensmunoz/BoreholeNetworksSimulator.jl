@@ -10,7 +10,7 @@ Note that the length of `positions` determines the amount of boreholes in the fi
     borehole_prototype::T
     positions::Vector{Tuple{S, S}}
     Nb::Int = length(positions)
-    initial_ΔT::Vector{S} = zeros(S, Nb)
+    initial_ΔT::Vector{S} = zeros(Nb)
 end
 
 n_boreholes(bf::EqualBoreholesBorefield) = bf.Nb
