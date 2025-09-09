@@ -119,7 +119,7 @@ end
 
 function method_b!(b, method::OriginalNonHistoryMethod, borefield, medium, step)
     @unpack w, expΔt, F, aux = method
-    b .= -get_T0(medium)
+    b .= -get_T0(medium) .- T_past_influence(borefield)
     Nb = n_boreholes(borefield)
 
     @inbounds for i in eachindex(b)

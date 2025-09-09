@@ -10,6 +10,7 @@ Note that the length of `positions` determines the amount of boreholes in the fi
     borehole_prototype::T
     positions::Vector{Tuple{S, S}}
     Nb::Int = length(positions)
+    initial_ΔT::Vector{S} = zeros(S, Nb)
 end
 
 n_boreholes(bf::EqualBoreholesBorefield) = bf.Nb
@@ -18,6 +19,7 @@ get_H(bf::EqualBoreholesBorefield, i) = get_H(bf.borehole_prototype)
 get_h(bf::EqualBoreholesBorefield, i) = get_h(bf.borehole_prototype)
 get_rb(bf::EqualBoreholesBorefield, i) = get_rb(bf.borehole_prototype)
 where_is_segment(bf::EqualBoreholesBorefield, i) = div((i-1), get_n_segments(bf.borehole_prototype)) + 1  
+T_past_influence(bf::EqualBoreholesBorefield) = bf.initial_ΔT
 
 function segment_coordinates(bf::EqualBoreholesBorefield, segment)
     D = get_D(bf.borehole_prototype)

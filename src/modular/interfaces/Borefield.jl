@@ -25,6 +25,7 @@ abstract type Borefield end
     segment_coordinates(::Borefield, segment)
     internal_model_coeffs!(M, ::Borefield, medium, operation, T_fluid, fluid)
     internal_model_b!(b, ::Borefield)
+    T_past_influence(::Borefield)
 end
 
 n_segments(bf::Borefield) = n_boreholes(bf)
